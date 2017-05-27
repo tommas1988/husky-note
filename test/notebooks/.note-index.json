@@ -1,0 +1,18 @@
+{
+    "C/C++": [
+        "Syntax",
+        "Tools"
+    ],
+    "Typescript": [
+        "Syntax",
+        "Tools"
+    ],
+    "Emacs": [
+        "Modes",
+        "Keybindings"
+    ],
+    "PHP": [
+        "Syntax",
+        "Frameworks"
+    ]
+}

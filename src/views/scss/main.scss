@@ -1,0 +1,125 @@
+@import 'variables';
+@import 'mixins';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
+
+// _common/scrollbar/scrollbar.scss
+/* Let's get this party started */
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+    // -webkit-box-shadow: inset 0 0 6px #626d77; 
+    // background: #626d77;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    background: darken($color-primary, 5%); 
+    // -webkit-box-shadow: inset 0 0 6px $color-primary; 
+}
+::-webkit-scrollbar-thumb:window-inactive {
+	background: $color-primary; 
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0;
+	height: 100%;
+	min-height: 100%;
+	font-family: 'Open Sans', sans-serif;
+	color: $color-text;
+	overflow-x: hidden;
+
+	a {
+		outline: none;
+	}
+}
+
+.app {
+	position: relative;
+	width: 100%;
+	padding-left: $sidebar-width;
+	min-height: 100vh;
+	margin: 0 auto;
+	left: 0;
+	background-color: $color-bg;
+	box-shadow: 0 0 3px #ccc;
+	transition: left 0.3s ease, padding-left 0.3s ease; 
+	overflow: hidden;
+
+	// @include media-down(md) {
+	// 	padding-left: 0;
+	// 	// background-color: #ccc;
+	// 	// left: -$sidebar-width;
+	// 	// width: calc(100% + #{$sidebar-width});
+	// }
+	
+	&.sidebar-open {
+		// Disable content scrolling when sidebar is open
+		@include media-down(md) {
+			left: 0;
+			// position: absolute;
+			// height: 100%;
+			// overflow: hidden;
+		}
+	}
+
+	article .row {
+		// overwrite bootstrap style
+		margin: 0;
+	}
+
+	&.blank {
+		background-color: #667380;
+	}
+}
+
+// _common/_styles/layout.scss
+.row {
+	.col {
+		padding-left: $grid-gutter-width-base/2;
+		padding-right: $grid-gutter-width-base/2;
+		float: left;
+	}
+}
+
+a:not(.btn) {
+	// display: inline-block;
+	// position: relative;
+	// overflow: hidden;
+	// vertical-align: top;
+	// z-index: 0;
+	transition: $link-transition;
+	text-decoration: $link-decoration;
+	color: $link-color;
+
+	// &:before {
+	// 	&:extend(.underline-animation);
+	// }
+
+	&:hover{
+		text-decoration: $link-hover-decoration;
+		color: $link-hover-color;
+
+		&:before {
+			transform: scaleX(1);
+		}
+	}
+
+	&:focus {
+		text-decoration: none;
+	}
+}
+
+span a {
+	vertical-align: text-bottom;   		
+}

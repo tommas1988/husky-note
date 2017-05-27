@@ -1,0 +1,112 @@
+@import 'variables';
+
+#setting {
+    $header-height: 55px;
+
+    position: absolute;
+    display: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: lighten($color-bg, 5%);
+    animation-duration: 0.4s;
+    z-index: 100;
+
+    .btn:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    aside {
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        .back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: {
+                left: 26px;
+                top: 10px;
+            }
+
+            a {
+                color: darken($link-color, 20%);
+                font: {
+                    size: 32px;
+                }
+            }
+        }
+
+        nav {
+            position: absolute;
+            top: $header-height + 10;
+            padding-left: 18px;
+
+            a {
+                color: $link-color;
+                text-decoration: none;
+                
+                &.active {
+                    color: darken($link-color, 30%);
+                }
+
+                &:hover {
+                    color: $link-color;
+                    text-decoration: none;
+                }
+            }
+        }
+    }
+
+    .setting-container {
+        margin-left: 180px;
+        box-sizing: border-box;
+        max-width: 888px;
+        min-width: 600px;
+        padding-top: $header-height;
+
+        header {
+            position: fixed;
+            top: 0;
+            height: 55px;
+            width: 100%;
+            max-width: 738px;
+            min-width: 600px;
+
+            h3 {
+                line-height: 1;
+                padding: 20px 0 12px;
+            }
+            h3::after {
+                -webkit-margin-end: 20px;
+                background-color: darken($color-divider, 5%);
+                content: ' ';
+                display: block;
+                height: 1px;
+                position: relative;
+                top: 13px;
+            }
+        }
+
+        section {
+            $padding-start: 18px;
+            
+            -webkit-padding-start: $padding-start;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            max-width: 600px;
+
+            .setting-title {
+                margin: {
+                    top: 15px;
+                    bottom: 15px;
+                    left: -$padding-start;
+                };
+            }
+        }
+    }
+    
+}

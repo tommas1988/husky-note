@@ -1,0 +1,41 @@
+@import 'variables';
+
+.editor {
+    background: #fff;
+
+    -webkit-box-flex: 0;
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding: 0;
+
+    .CodeMirror {
+        margin-top: $header-height;
+        font: {
+            family: Consolas, "Courier New", monospace;
+        }
+
+        // theme
+        &.cm-s-default {
+            .cm-header {
+                color: #800000;
+            }
+
+            // code
+            .cm-comment {
+                color: #bd4147;
+            }
+
+            .cm-quote {
+                color: #292b2c;
+            }
+        }
+
+        .CodeMirror-linenumber {
+            color: #2b91af;
+        }
+
+        .CodeMirror-gutters {
+            background-color: #fffffe;
+        }
+    }
+}

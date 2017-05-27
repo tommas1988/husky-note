@@ -1,0 +1,73 @@
+@import 'variables';
+@import 'mixins';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
+
+.header {
+    background-color: $color-divider;
+	height: $header-height;
+	position: absolute;
+	left: $sidebar-width;
+	right: 0;
+	transition: left 0.3s ease;
+	z-index: 10;
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+
+	// @include media-down(md) {
+	// 	left: 0;
+	// }
+
+	// @include media-down(sm) {
+	// 	left: 0;
+	// 	height: $header-height-xs;
+	// }
+
+	.header-fixed & {
+		position: fixed;
+	}
+
+	.header-block {
+		@include media-down(sm) {
+			padding: 5px;
+		}
+	}
+
+	.container {
+		margin: 0;
+		width: 100%;
+
+		& > ul > li{
+			padding-right: 16px;
+			& > a {
+				display: inline;
+				font: {
+					size: 21px;
+				}
+				color: rgb(51, 51, 51);
+				&:hover {
+					color: $link-hover-color;
+				}
+			}
+		}
+	}
+
+	.setting {
+		position: absolute;
+		right: 10px;
+		display: inline;
+		font: {
+			size: 21px;
+		}
+
+		a {
+			color: rgb(51, 51, 51);
+			&:hover {
+				color: $link-hover-color;
+			}
+		}
+	}
+}

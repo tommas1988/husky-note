@@ -1,0 +1,29 @@
+{
+  "name": "husky",
+  "dependencies": {
+    "marked": "^0.3.5",
+    "highlightjs": "^9.2.0",
+    "bootstrap": "v4.0.0-alpha.6",
+    "animate.css": "^3.5.2",
+    "font-awesome": "^4.7.0",
+    "code-mirror-themes": "^0.0.3"
+  },
+  "overrides": {
+    "bootstrap": {
+      "main": [
+        "dist/css/bootstrap.css",
+        "dist/css/bootstrap-theme.css",
+        "dist/js/bootstrap.js"
+      ]
+    },
+    "animate.css": {
+      "main": "animate.css"
+    },
+    "font-awesome": {
+      "main": [
+        "css/font-awesome.css",
+        "fonts/*"
+      ]
+    }
+  }
+}

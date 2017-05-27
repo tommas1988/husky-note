@@ -1,0 +1,39 @@
+{
+  "name": "husky",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "scripts": {
+    "build": "gulp --gulpfile build/gulpfile.js build"
+  },
+  "private": true,
+  "dependencies": {
+    "codemirror": "^5.25.2",
+    "fs-promise": "^2.0.2",
+    "html-entities": "^1.2.1",
+    "jquery": "^3.2.1",
+    "log4js": "^1.1.1",
+    "marked": "^0.3.6"
+  },
+  "devDependencies": {
+    "@types/bootstrap": "^3.3.33",
+    "@types/fs-extra": "^3.0.1",
+    "@types/fs-promise": "^1.0.3",
+    "@types/html-entities": "^1.2.15",
+    "@types/jquery": "^2.0.41",
+    "@types/log4js": "0.0.32",
+    "@types/marked": "0.0.28",
+    "@types/node": "^7.0.12",
+    "babel-preset-env": "^1.4.0",
+    "gulp": "^3.9.1",
+    "gulp-atom-electron": "^1.10.0",
+    "gulp-babel": "^6.1.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-install": "^1.1.0",
+    "gulp-load-plugins": "^1.5.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-typescript": "^3.1.6",
+    "main-bower-files": "^2.13.1",
+    "rimraf": "^2.6.1",
+    "typescript": "^2.2.2"
+  }
+}
