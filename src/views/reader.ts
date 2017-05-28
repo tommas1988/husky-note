@@ -21,7 +21,7 @@ export class ReaderView extends AbstractView {
     constructor(el: JQuery) {
         super(el);
 
-        this._container = $('<div></div>').appendTo(this._el);
+        this._container = $('<div></div>').appendTo(this._el).addClass('markdown-body');
         this._outline = new OutlineView(this._el.find('.outline'));
     }
 

@@ -6,7 +6,8 @@
     "bootstrap": "v4.0.0-alpha.6",
     "animate.css": "^3.5.2",
     "font-awesome": "^4.7.0",
-    "code-mirror-themes": "^0.0.3"
+    "code-mirror-themes": "^0.0.3",
+    "github-markdown-css": "^2.6.0"
   },
   "overrides": {
     "bootstrap": {
