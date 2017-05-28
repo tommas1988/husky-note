@@ -88,6 +88,7 @@ interface INotebookView {
 }
 
 export class NotebookListView extends AbstractView {
+    // TODO: move events to top level
     // events
     static EVENT_SELECT_NOTE = 'notebook-list-view:select-note';
 

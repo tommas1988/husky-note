@@ -10,6 +10,7 @@ import ServiceLocator from './service-locator';
 type Index = { [notebook: string]: string[] };
 
 export class NoteManager extends EventEmitter {
+    // TODO: move events to top level
     static EVENT_RELOAD = 'note-manager:reload';
     static EVENT_LOADED = 'note-manager:loaded';
 

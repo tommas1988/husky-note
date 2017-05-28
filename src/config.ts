@@ -45,6 +45,7 @@ abstract class SubConfig extends BaseConfig {
 const configFile = `${remote.app.getPath('home')}${sep}.husky-note.json`;
 
 export class Config extends BaseConfig {
+    // TODO: move events to top level
     static EVENT_CONFIG_CHANGE: 'config:config-change';
     static EVENT_CONFIG_CHANGE_FAILED: 'config:config-change-failed';
 

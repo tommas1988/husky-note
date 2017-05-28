@@ -10,6 +10,7 @@ declare var Monaco: typeof monaco;
 const TEXT_MODE = 'markdown';
 
 export class Editor extends EventEmitter {
+    // TODO: move events to top level
     static EVENT_CHANGE = 'editor:change';
 
     private _notes: WeakMap<Note, monaco.editor.IModel>;
