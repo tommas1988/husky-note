@@ -1,9 +1,14 @@
 import * as marked from 'marked';
 
+const renderer = new marked.Renderer();
+renderer.heading = (text: string, level: number, raw: string): string => {
+    return `<h${level}>${text}</h${level}>`;
+};
+
 export class NoteRenderer {
     constructor() {
         marked.setOptions({
-            renderer: new marked.Renderer(),
+            renderer: renderer,
             gfm: true,
             tables: true,
             breaks: false,
