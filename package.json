@@ -12,7 +12,8 @@
     "html-entities": "^1.2.1",
     "jquery": "^3.2.1",
     "log4js": "^1.1.1",
-    "marked": "^0.3.6"
+    "marked": "^0.3.6",
+    "monaco-editor": "^0.8.3"
   },
   "devDependencies": {
     "@types/bootstrap": "^3.3.33",

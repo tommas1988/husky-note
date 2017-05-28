@@ -45,11 +45,46 @@
     <script type="text/javascript">
         window.$ = window.jQuery = require('jquery');
     </script>
+
     <script src="js/vendor.js"></script>
-    <!-- <script src="js/app.js"></script> -->
+
+    <!-- load monaco editor -->
     <script type="text/javascript">
+        // Monaco uses a custom amd loader that over-rides node's require.
+        // Keep a reference to node's require so we can restore it after executing the amd loader file.
+        const nodeRequire = global.require;
+    </script>
+    <script src="./node_modules/monaco-editor/dev/vs/loader.js"></script>
+    <script type="text/javascript">
+        // Save Monaco's amd require and restore Node's require
+        const amdRequire = global.require;
+        global.require = nodeRequire;
+
+        // require node modules before loader.js comes in
+        const path = require('path');
+        function uriFromPath(_path) {
+            var pathName = path.resolve(_path).replace(/\\/g, '/');
+            if (pathName.length > 0 && pathName.charAt(0) !== '/') {
+                pathName = '/' + pathName;
+            }
+
+            return encodeURI('file://' + pathName);
+        }
+
+        amdRequire.config({
+            baseUrl: uriFromPath(path.join(__dirname, './node_modules/monaco-editor/dev'))
+        });
+
+        // workaround monaco-css not understanding the environment
+        self.module = undefined;
+        // workaround monaco-typescript not understanding the environment
+        self.process.browser = true;
+
         const App = require('./src/app.js').App;
-        App.getInstance().run();
+        amdRequire(['vs/editor/editor.main'], function () {
+            global.Monaco = monaco;
+            App.getInstance().run();
+        });
     </script>
 </body>
 

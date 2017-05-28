@@ -1,7 +1,6 @@
 import { sep as pathSep } from 'path';
 import { readFileSync } from 'fs';
 import { ensureFile, writeFile, rename } from 'fs-promise';
-import * as CodeMirror from 'codemirror';
 import ServiceLocator from './service-locator';
 import { NoteManager } from './note-manager';
 
@@ -67,7 +66,8 @@ export class Note {
 
     private _name: string;
     private _content: string;
-    private _doc: CodeMirror.Doc;
+    private _model: monaco.editor.IModel;
+    private _versionId: number;
     private _changed: boolean;
 
     get name(): string {
@@ -75,8 +75,8 @@ export class Note {
     }
 
     get content(): string {
-        if (this._doc) {
-            return this._doc.getValue();
+        if (this._model) {
+            return this._model.getValue();
         }
 
         if (typeof this._content === 'undefined') {
@@ -95,8 +95,8 @@ export class Note {
             return true;
         }
 
-        if (this._doc) {
-            return !this._doc.isClean();
+        if (this._model) {
+            return this._model.getAlternativeVersionId() !== this._versionId;
         }
 
         return false;
@@ -111,27 +111,30 @@ export class Note {
         this.notebook = notebook;
     }
 
-    setDoc(doc: CodeMirror.Doc) {
-        this._doc = doc;
+    setModel(model: monaco.editor.IModel) {
+        this._model = model;
+        this._versionId = model.getAlternativeVersionId();
+
         // set content to null to save memory
         this._content = null;
-        // use CodeMirror.Doc to manager changes
+        // use monaco.editor.IModel to manager changes
         this._changed = false;
     }
 
     save() {
-        let doc = this._doc;
+        let model = this._model;
+        let versionId;
 
-        if (!doc || doc.isClean()) {
+        if (!model || (versionId = model.getAlternativeVersionId()) === this._versionId) {
             // not edit note yet
             return;
         }
 
-        doc.markClean();
+        this._versionId = versionId;
 
         let filename = getNoteFilename(this.notebook.name, this._name);
         ensureFile(filename).then(() => {
-            return writeFile(filename, doc.getValue());
+            return writeFile(filename, model.getValue());
         }).then(() => {
             ServiceLocator.noteManager.emit(NoteManager.EVENT_NOTE_SAVED, this);
         }).catch((e) => {

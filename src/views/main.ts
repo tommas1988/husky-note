@@ -1,7 +1,6 @@
 import { AbstractView } from './view';
 import { EditorView } from './editor';
 import { ReaderView } from './reader';
-import ServiceLocator from '../service-locator';
 
 export class MainView extends AbstractView {
     public editor: EditorView;
@@ -40,7 +39,7 @@ export class MainView extends AbstractView {
         // exclude header height
         height -= 40;
         this.reader.setHeight(height);
-        ServiceLocator.editor.setHeight(height);
+        this.editor.setHeight(height);
     }
 
     showEditor() {
@@ -54,6 +53,8 @@ export class MainView extends AbstractView {
             maxWidth: 0,
             display: 'none'
         });
+
+        $(window).resize();
     }
 
     showReader() {
@@ -67,6 +68,8 @@ export class MainView extends AbstractView {
             maxWidth: 0,
             display: 'none'
         });
+
+        $(window).resize();
     }
 
     splitView() {
@@ -80,5 +83,7 @@ export class MainView extends AbstractView {
             maxWidth: '50%',
             display: 'block'
         });
+
+        $(window).resize();
     }
 }
