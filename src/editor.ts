@@ -1,11 +1,7 @@
-/// <reference types="../node_modules/monaco-editor/monaco"/>
-
 import { EventEmitter } from 'events';
 import { EditorView } from './views/editor';
 import { Note } from './note';
 import ViewManager from './view-manager';
-
-declare var Monaco: typeof monaco;
 
 const TEXT_MODE = 'markdown';
 
