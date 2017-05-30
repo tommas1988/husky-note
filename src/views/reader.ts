@@ -9,7 +9,7 @@ import ServiceLocator from '../service-locator';
 let containerKey = 0;
 
 function noteHtml(content: string = ''): string {
-    return `<div class="${containerKey++}">${content}</div>`;
+    return `<div class="markdown-body ${containerKey++}">${content}</div>`;
 }
 
 export class ReaderView extends AbstractView {
@@ -21,7 +21,7 @@ export class ReaderView extends AbstractView {
     constructor(el: JQuery) {
         super(el);
 
-        this._container = $('<div></div>').appendTo(this._el).addClass('markdown-body');
+        this._container = $('<div></div>').appendTo(this._el);
         this._outline = new OutlineView(this._el.find('.outline'));
     }
 
