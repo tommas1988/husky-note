@@ -8,6 +8,7 @@ import { Notebook, Note } from './note';
 import ViewManager from './view-manager';
 import { NotebookListView } from './views/notebook-list';
 import * as $ from 'jquery';
+import commonCommands from './commands/common';
 
 const { app, Menu } = remote;
 
@@ -83,7 +84,7 @@ export class App {
 
             if (containActiveNote) {
                 // open orphan note
-                Commands.openOrphanNote();
+                this.execCommand('openOrphanNote');
             }
         });
     }
@@ -96,7 +97,7 @@ export class App {
 
             if (note === this._activeNote) {
                 // open orphan note
-                Commands.openOrphanNote();
+                this.execCommand('openOrphanNote');
             }
         });
     }
@@ -138,19 +139,19 @@ export class App {
                     {
                         label: 'Read',
                         click: () => {
-                            Commands.readNote();
+                            this.execCommand('readNote');
                         }
                     },
                     {
                         label: 'Edit',
                         click: () => {
-                            Commands.editNote();
+                            this.execCommand('editNote');
                         }
                     },
                     {
                         label: 'Live Preview',
                         click: () => {
-                            Commands.livePreview();
+                            this.execCommand('livePreview');
                         }
                     }
                 ]
@@ -222,5 +223,26 @@ export class App {
         }
 
         this._activeNote = note;
+    }
+
+    execCommand(command: string) {
+        let parts = command.split('.');
+
+        if (parts.length > 1) {
+            if (parts[0] !== 'editor') {
+                ServiceLocator.alerter.fatal(new Error(`Unkown command: ${command}`));
+                return;
+            }
+
+            ServiceLocator.editor.kernel.executeCommand('husky-editor-command', parts[1]);
+            return;
+        }
+
+        if (!commonCommands[command]) {
+            ServiceLocator.alerter.fatal(new Error(`Unkown command: ${command}`));
+            return;
+        }
+
+        commonCommands[command]();
     }
 }

@@ -1,10 +1,9 @@
-/// <reference path="common.ts" />
+import ServiceLocator from '../service-locator';
 
-namespace Commands.editor {
-    const ServiceLocator = require('../service-locator');
-    const monacoEditor = ServiceLocator.editor.kernel;
+const monacoEditor = ServiceLocator.editor.kernel;
 
-    export function insertCodeBlock() {
+export default class EditorCommads {
+    static insertCodeBlock() {
         let lineNumber = monacoEditor.getPosition().lineNumber;
         let selections = monacoEditor.getSelections();
         let model = monacoEditor.getModel();
@@ -27,7 +26,7 @@ namespace Commands.editor {
         });
     }
 
-    export function recenter() {
+    static recenter() {
 
     }
 }

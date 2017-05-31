@@ -54,13 +54,14 @@ export class HeaderView extends AbstractView {
 
         this._el.append(SETTING_HTML);
 
+        let app = App.getInstance();
         this._el.on('click', '> nav > ul .nav-item', (event) => {
             let name = event.currentTarget.getAttribute('_data');
-            Commands[name]();
+            app.execCommand(name);
         });
 
         this._el.on('click', '.setting', () => {
-            Commands.openSettingPanel();
+            app.execCommand('openSettingPanel');
         });
     }
 }

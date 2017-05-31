@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { EditorView } from './views/editor';
 import { Note } from './note';
 import ViewManager from './view-manager';
+import editorCommands from './commands/editor';
 
 const TEXT_MODE = 'markdown';
 
@@ -44,6 +45,10 @@ export class Editor extends EventEmitter {
                 timmer = null;
             }, 100);
         });
+    }
+
+    private _registerCommands() {
+        
     }
 
     setSize(width: number, height: number) {

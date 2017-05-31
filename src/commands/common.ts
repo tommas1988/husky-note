@@ -1,30 +1,30 @@
-namespace Commands {
-    const { App, NoteView } = require('../app');
-    const ViewManager = require('../view-manager');
-    const ServiceLocator = require('../service-locator');
-    
-    const app = App.getInstance();
+import { App, NoteView } from '../app';
+import ViewManager from '../view-manager';
+import ServiceLocator from '../service-locator';
 
-    export function readNote() {
+const app = App.getInstance();
+
+export default class CommonCommands {
+    static readNote() {
         app.openNote(app.activeNote, NoteView.ReadMode);
     }
 
-    export function editNote() {
+    static editNote() {
         app.openNote(app.activeNote, NoteView.EditMode);
     }
 
-    export function livePreview() {
+    static livePreview() {
         app.openNote(app.activeNote, NoteView.LivePreview);
     }
 
-    export function openOrphanNote() {
+    static openOrphanNote() {
         // clear notebook list view active note
         ViewManager.notebookList.clearActiveNote();
         /* Open orphen note action */
         app.openNote(ServiceLocator.noteManager.orphanNote, NoteView.LivePreview);
     }
 
-    export function saveNote() {
+    static saveNote() {
         let saveNote = app.activeNote;
         let orphanNote = ServiceLocator.noteManager.orphanNote;
 
@@ -38,7 +38,7 @@ namespace Commands {
         saveNote.save();
     }
 
-    export function openSettingPanel() {
+    static openSettingPanel() {
         ViewManager.settings.openPanel();
     }
 }
