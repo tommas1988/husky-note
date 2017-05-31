@@ -1,32 +1,31 @@
-import { App, NoteView } from './app';
-import ViewManager from './view-manager';
-import ServiceLocator from './service-locator';
+namespace Commands {
+    const { App, NoteView } = require('../app');
+    const ViewManager = require('../view-manager');
+    const ServiceLocator = require('../service-locator');
+    
+    const app = App.getInstance();
 
-const Commands = {
-    readNote() {
-        let app = App.getInstance();
+    export function readNote() {
         app.openNote(app.activeNote, NoteView.ReadMode);
-    },
+    }
 
-    editNote() {
-        let app = App.getInstance();
+    export function editNote() {
         app.openNote(app.activeNote, NoteView.EditMode);
-    },
+    }
 
-    livePreview() {
-        let app = App.getInstance();
+    export function livePreview() {
         app.openNote(app.activeNote, NoteView.LivePreview);
-    },
+    }
 
-    openOrphanNote() {
+    export function openOrphanNote() {
         // clear notebook list view active note
         ViewManager.notebookList.clearActiveNote();
         /* Open orphen note action */
-        App.getInstance().openNote(ServiceLocator.noteManager.orphanNote, NoteView.LivePreview);
-    },
+        app.openNote(ServiceLocator.noteManager.orphanNote, NoteView.LivePreview);
+    }
 
-    saveNote() {
-        let saveNote = App.getInstance().activeNote;
+    export function saveNote() {
+        let saveNote = app.activeNote;
         let orphanNote = ServiceLocator.noteManager.orphanNote;
 
         if (orphanNote === saveNote) {
@@ -37,11 +36,9 @@ const Commands = {
         }
 
         saveNote.save();
-    },
+    }
 
-    openSettingPanel() {
+    export function openSettingPanel() {
         ViewManager.settings.openPanel();
     }
-};
-
-export default Commands;
+}

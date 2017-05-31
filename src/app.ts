@@ -7,7 +7,6 @@ import { NoteRenderer } from './note-renderer';
 import { Notebook, Note } from './note';
 import ViewManager from './view-manager';
 import { NotebookListView } from './views/notebook-list';
-import Commands from './commands';
 import * as $ from 'jquery';
 
 const { app, Menu } = remote;

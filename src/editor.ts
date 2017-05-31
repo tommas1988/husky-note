@@ -9,17 +9,14 @@ export class Editor extends EventEmitter {
     // TODO: move events to top level
     static EVENT_CHANGE = 'editor:change';
 
-    private _editingNote: Note;
+    readonly kernel: monaco.editor.IStandaloneCodeEditor;
 
-    private _editor: monaco.editor.IStandaloneCodeEditor;
+    private _editingNote: Note;
 
     constructor() {
         super();
-        this._init();
-    }
 
-    private _init() {
-        this._editor = Monaco.editor.create(ViewManager.main.editor.dom, {
+        this.kernel = Monaco.editor.create(ViewManager.main.editor.dom, {
             theme: 'vs',
             model: null,
             renderLineHighlight: 'none',
@@ -30,8 +27,12 @@ export class Editor extends EventEmitter {
             }
         });
 
+        this._init();
+    }
+
+    private _init() {
         let timmer = null;
-        this._editor.onDidChangeModelContent(() => {
+        this.kernel.onDidChangeModelContent(() => {
             let note = this._editingNote;
 
             if (timmer) {
@@ -46,7 +47,7 @@ export class Editor extends EventEmitter {
     }
 
     setSize(width: number, height: number) {
-        this._editor.layout({ width, height });
+        this.kernel.layout({ width, height });
     }
 
     edit(note: Note): Editor {
@@ -56,14 +57,14 @@ export class Editor extends EventEmitter {
             note.setModel(model);
         }
 
-        this._editor.setModel(model);
+        this.kernel.setModel(model);
         this._editingNote = note;
 
         return this;
     }
 
     focus(): Editor {
-        this._editor.focus();
+        this.kernel.focus();
         return this;
     }
 }

@@ -1,5 +1,4 @@
 import { AbstractView } from './view';
-import Commands from '../commands';
 import { App } from '../app';
 import * as $ from 'jquery';
 
