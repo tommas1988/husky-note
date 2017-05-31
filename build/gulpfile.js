@@ -68,8 +68,11 @@ const ts = require('gulp-typescript');
 const babel = require('gulp-babel');
 // convert ts to es5
 gulp.task('app-js', function() {
-    var tsProject = ts.createProject('../tsconfig.json');
-    var result = gulp.src('../src/**/*.ts')
+    // remove this declaration file to avoid ts compile errors
+    rimraf.sync(npmDir + '/fs-promise/index.d.ts');
+
+    let tsProject = ts.createProject('../tsconfig.json');
+    let result = gulp.src('../src/**/*.ts')
     .pipe(tsProject())
     .js
     .pipe(babel({

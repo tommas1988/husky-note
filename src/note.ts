@@ -66,7 +66,7 @@ export class Note {
 
     private _name: string;
     private _content: string;
-    private _model: monaco.editor.IModel;
+    private _editorModel: monaco.editor.IModel;
     private _versionId: number;
     private _changed: boolean;
 
@@ -75,8 +75,8 @@ export class Note {
     }
 
     get content(): string {
-        if (this._model) {
-            return this._model.getValue();
+        if (this._editorModel) {
+            return this._editorModel.getValue();
         }
 
         if (typeof this._content === 'undefined') {
@@ -95,8 +95,8 @@ export class Note {
             return true;
         }
 
-        if (this._model) {
-            return this._model.getAlternativeVersionId() !== this._versionId;
+        if (this._editorModel) {
+            return this._editorModel.getAlternativeVersionId() !== this._versionId;
         }
 
         return false;
@@ -106,13 +106,17 @@ export class Note {
         return getNoteFilename(this.notebook.name, this._name);
     }
 
+    get editorModel(): monaco.editor.IModel {
+        return this._editorModel;
+    }
+
     constructor(name: string, notebook: Notebook = null) {
         this._name = name;
         this.notebook = notebook;
     }
 
     setModel(model: monaco.editor.IModel) {
-        this._model = model;
+        this._editorModel = model;
         this._versionId = model.getAlternativeVersionId();
 
         // set content to null to save memory
@@ -122,7 +126,7 @@ export class Note {
     }
 
     save() {
-        let model = this._model;
+        let model = this._editorModel;
         let versionId;
 
         if (!model || (versionId = model.getAlternativeVersionId()) === this._versionId) {

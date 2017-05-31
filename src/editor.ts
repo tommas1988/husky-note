@@ -9,15 +9,12 @@ export class Editor extends EventEmitter {
     // TODO: move events to top level
     static EVENT_CHANGE = 'editor:change';
 
-    private _notes: WeakMap<Note, monaco.editor.IModel>;
     private _editingNote: Note;
 
     private _editor: monaco.editor.IStandaloneCodeEditor;
 
     constructor() {
         super();
-        this._notes = new WeakMap<Note, monaco.editor.IModel>();
-
         this._init();
     }
 
@@ -53,10 +50,9 @@ export class Editor extends EventEmitter {
     }
 
     edit(note: Note): Editor {
-        let model = this._notes.get(note);
+        let model = note.editorModel;
         if (!model) {
             model = Monaco.editor.createModel(note.content, TEXT_MODE);
-            this._notes.set(note, model);
             note.setModel(model);
         }
 
