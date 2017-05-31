@@ -1,8 +1,4 @@
 import { type as processType } from 'process';
 
-const utils = {
-    isRendererProcess: processType === 'renderer',
-    isMainProcess: processType === 'browser',
-};
-
-export default utils;
+export const isRendererProcess: boolean = processType === 'renderer';
+export const isMainProcess: boolean = processType === 'browser';

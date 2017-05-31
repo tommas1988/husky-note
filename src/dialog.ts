@@ -1,6 +1,6 @@
 import { dialog, remote, BrowserWindow } from 'electron';
 import { APP_NAME } from './app';
-import utils from './utils';
+import * as utils from './utils';
 
 export class Dialog {
     private _dialog: Electron.Dialog;
