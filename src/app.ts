@@ -46,9 +46,6 @@ export class App {
     }
 
     private constructor() {
-        // load views
-        ViewManager.load();
-
         // init handlers
         this._initViewHandlers();
         this._initNotebookHandlers();
@@ -182,6 +179,9 @@ export class App {
         let manager = ServiceLocator.noteManager;
         let orphanNote = manager.orphanNote;
 
+        // load views
+        ViewManager.load();
+
         if (!ServiceLocator.config.noteDir) {
             ServiceLocator.alerter.warn('No note directory is setted, __set it first!__');
         }
@@ -234,7 +234,7 @@ export class App {
                 return;
             }
 
-            ServiceLocator.editor.kernel.executeCommand('husky-editor-command', parts[1]);
+            //ServiceLocator.editor.kernel.executeCommand('husky-editor-command', parts[1]);
             return;
         }
 

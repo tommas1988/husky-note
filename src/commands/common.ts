@@ -2,18 +2,21 @@ import { App, NoteView } from '../app';
 import ViewManager from '../view-manager';
 import ServiceLocator from '../service-locator';
 
-const app = App.getInstance();
+// TODO: should have a register commands function to register commands
 
 export default class CommonCommands {
     static readNote() {
+        let app = App.getInstance();
         app.openNote(app.activeNote, NoteView.ReadMode);
     }
 
     static editNote() {
+        let app = App.getInstance();
         app.openNote(app.activeNote, NoteView.EditMode);
     }
 
     static livePreview() {
+        let app = App.getInstance();
         app.openNote(app.activeNote, NoteView.LivePreview);
     }
 
@@ -21,11 +24,11 @@ export default class CommonCommands {
         // clear notebook list view active note
         ViewManager.notebookList.clearActiveNote();
         /* Open orphen note action */
-        app.openNote(ServiceLocator.noteManager.orphanNote, NoteView.LivePreview);
+        App.getInstance().openNote(ServiceLocator.noteManager.orphanNote, NoteView.LivePreview);
     }
 
     static saveNote() {
-        let saveNote = app.activeNote;
+        let saveNote = App.getInstance().activeNote;
         let orphanNote = ServiceLocator.noteManager.orphanNote;
 
         if (orphanNote === saveNote) {

@@ -1,3 +1,4 @@
+import { App } from './app';
 import { EventEmitter } from 'events';
 import { EditorView } from './views/editor';
 import { Note } from './note';
@@ -45,10 +46,34 @@ export class Editor extends EventEmitter {
                 timmer = null;
             }, 100);
         });
+
+        this._setKeyBindings();
     }
 
-    private _registerCommands() {
-        
+    private _setKeyBindings() {
+        const kernel = this.kernel;
+        const KeyMod = Monaco.KeyMod;
+        const KeyCode = Monaco.KeyCode;
+
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_X & KeyMod.CtrlCmd | KeyCode.KEY_S, () => {
+            App.getInstance().execCommand('saveNote');
+        }, '');
+
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_F, editorCommands.forwardChar, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_B, editorCommands.backwardChar, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_A, editorCommands.moveBeginningOfLine, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_E, editorCommands.moveEndOfLine, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_P, editorCommands.previousLine, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_N, editorCommands.nextLine, '');
+        kernel.addCommand(KeyMod.Alt | KeyMod.Shift | KeyCode.US_DOT, editorCommands.endOfText, '');
+        kernel.addCommand(KeyMod.Alt | KeyMod.Shift | KeyCode.US_COMMA, editorCommands.beginningOfText, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_W, editorCommands.cut, '');
+        kernel.addCommand(KeyMod.Alt | KeyCode.KEY_W, editorCommands.copy, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_Y, editorCommands.paste, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.US_MINUS, editorCommands.undo, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.Space, editorCommands.toggleMark, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_G, editorCommands.abort, '');
+        kernel.addCommand(KeyMod.Alt | KeyCode.KEY_G, editorCommands.gotoLine, '');
     }
 
     setSize(width: number, height: number) {
