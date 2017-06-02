@@ -28,6 +28,7 @@ export class SettingsView extends AbstractView {
         this._setPanelHandlers()
 
         this._initNoteDirSetting();
+        this._initDebugSetting();
 
         el.addClass(FADE_IN_CLASS).show();
     }
@@ -48,8 +49,12 @@ export class SettingsView extends AbstractView {
         });
     }
 
+    private _getSettingEl(name: string): JQuery {
+        return this._el.find(`section[_data="${name}"]`);
+    }
+
     private _initNoteDirSetting() {
-        let el = this._el.find('section[_data="noteDir"]')
+        let el = this._getSettingEl('nodeDir');
         let inputEl = el.find('input');
         let config = ServiceLocator.config;
         let noteDir = config.noteDir;
@@ -71,6 +76,31 @@ export class SettingsView extends AbstractView {
 
             config.noteDir = newDir;
             inputEl.val(newDir);
+        });
+    }
+
+    private _initDebugSetting() {
+        let radios = this._getSettingEl('debug').find('input');
+        let config = ServiceLocator.config;
+
+        if (config.debug) {
+            radios.get(0).setAttribute('checked', 'checked');
+        } else {
+            radios.get(1).setAttribute('checked', 'checked');
+        }
+
+        radios.click((event) => {
+            let el = $(event.currentTarget);
+            let val = el.val();
+            if ('on' === val && !config.debug) {
+                config.debug = true;
+                radios.get(1).removeAttribute('checked');
+                el.attr('checked', 'checked');
+            } else if ('off' === val && config.debug) {
+                config.debug = false;
+                radios.get(0).removeAttribute('checked');
+                el.attr('checked', 'checked');
+            }
         });
     }
 }

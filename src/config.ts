@@ -67,6 +67,14 @@ export class Config extends BaseConfig {
         this._setConfig('noteDir', dirname);
     }
 
+    get debug(): boolean {
+        return this._configs.debug || false;
+    }
+
+    set debug(val: boolean) {
+        this._setConfig('debug', val);
+    }
+
     save(name: string, newVal: any, oldVal: any) {
         writeJson(configFile, this._configs).then(() => {
             this.emit(Config.EVENT_CONFIG_CHANGE, name, newVal, oldVal);

@@ -9,6 +9,7 @@ import ViewManager from './view-manager';
 import { NotebookListView } from './views/notebook-list';
 import * as $ from 'jquery';
 import commonCommands from './commands/common';
+import { Config } from './config';
 
 const { app, Menu } = remote;
 
@@ -126,6 +127,15 @@ export class App {
                 return;
             }
         };
+
+        let config = ServiceLocator.config;
+        config.on(Config.EVENT_CONFIG_CHANGE, (name, newVal, oldVal) => {
+            switch (name) {
+                case 'debug':
+                    ServiceLocator.alerter.info('__Reboot is needed__');
+                    break;
+            }
+        });
     }
 
     private _initAppMenu() {

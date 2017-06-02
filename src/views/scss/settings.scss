@@ -93,20 +93,19 @@
 
         section {
             $padding-start: 18px;
-            
+
             -webkit-padding-start: $padding-start;
             margin-top: 24px;
             margin-bottom: 8px;
             max-width: 600px;
 
             .setting-title {
+                -webkit-margin-start: -$padding-start;
                 margin: {
                     top: 15px;
                     bottom: 15px;
-                    left: -$padding-start;
                 };
             }
         }
     }
-    
 }
