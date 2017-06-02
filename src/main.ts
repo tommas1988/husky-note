@@ -1,6 +1,7 @@
 import { app, screen, BrowserWindow } from 'electron';
 import { join as pathJoin } from 'path';
 import { format as urlFormat } from 'url';
+import { Config } from './config';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -9,7 +10,7 @@ let mainWindow
 function createWindow() {
 
     // Create the browser window.
-    const {width, height} = screen.getPrimaryDisplay().workAreaSize
+    const { width, height } = screen.getPrimaryDisplay().workAreaSize
     mainWindow = new BrowserWindow({
         width,
         height,
@@ -24,7 +25,10 @@ function createWindow() {
         slashes: true,
     }));
 
-    // mainWindow.webContents.toggleDevTools();
+    let config = new Config();
+    if (config.debug) {
+        mainWindow.webContents.toggleDevTools();
+    }
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {

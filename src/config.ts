@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
-import { remote } from 'electron';
+import { remote, app } from 'electron';
 import { sep } from 'path';
 import { readJsonSync } from 'fs-extra';
 import { writeJson } from 'fs-promise';
+import * as utils from './utils';
 
 abstract class BaseConfig extends EventEmitter {
     protected _configs;
@@ -42,7 +43,7 @@ abstract class SubConfig extends BaseConfig {
     }
 }
 
-const configFile = `${remote.app.getPath('home')}${sep}.husky-note.json`;
+const configFile = `${utils.isMainProcess ? app.getPath('home') : remote.app.getPath('home')}${sep}.husky-note.json`;
 
 export class Config extends BaseConfig {
     // TODO: move events to top level
