@@ -55,7 +55,7 @@ export class Editor extends EventEmitter {
         const KeyMod = Monaco.KeyMod;
         const KeyCode = Monaco.KeyCode;
 
-        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_X & KeyMod.CtrlCmd | KeyCode.KEY_S, () => {
+        kernel.addCommand((KeyMod.CtrlCmd | KeyCode.KEY_X) | (KeyMod.CtrlCmd | KeyCode.KEY_S) << 16, () => {
             App.getInstance().execCommand('saveNote');
         }, '');
 
@@ -75,17 +75,16 @@ export class Editor extends EventEmitter {
         kernel.addCommand(KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.US_MINUS, editorCommands.undo, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.Space, editorCommands.toggleMark, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_G, editorCommands.abort, '');
-        kernel.addCommand(KeyMod.Alt | KeyCode.KEY_G, editorCommands.gotoLine, '');
+        kernel.addCommand((KeyMod.Alt | KeyCode.KEY_G) | (KeyMod.Alt | KeyCode.KEY_G) << 16, editorCommands.gotoLine, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_S, editorCommands.search, '!findWidgetVisible');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_S, editorCommands.searchForward, 'findWidgetVisible');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_R, editorCommands.search, '!findWidgetVisible');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_R, editorCommands.searchBackward, 'findWidgetVisible');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_L, editorCommands.recenter, '');
-        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_X & KeyMod.CtrlCmd | KeyCode.KEY_I, editorCommands.insertCodeBlock, '');
+        kernel.addCommand((KeyMod.CtrlCmd | KeyCode.KEY_X) | (KeyMod.CtrlCmd | KeyCode.KEY_I) << 16, editorCommands.insertCodeBlock, '');
 
         // disable default keybindings
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_C, null, '');
-        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_X, null, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_Z, null, '');
     }
 
