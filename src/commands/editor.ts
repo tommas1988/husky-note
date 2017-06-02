@@ -1,4 +1,5 @@
 import ServiceLocator from '../service-locator';
+import ViewManager from '../view-manager';
 
 // TODO: should have register command function
 
@@ -93,7 +94,15 @@ export default class EditorCommads {
     }
 
     static gotoLine() {
+        if (EditorCommads.quickOpenWidgetVisable()) {
+            return;
+        }
         ServiceLocator.editor.kernel.getAction('editor.action.gotoLine').run();
+    }
+
+    private static quickOpenWidgetVisable() {
+        // workaround to check whether gotoLine is showing
+        return ViewManager.main.editor.el.find('.quick-open-widget:visible').length !== 0;
     }
 
     static toggleMark() {
@@ -110,41 +119,79 @@ export default class EditorCommads {
     }
 
     static killLine() {
+        let kernel = ServiceLocator.editor.kernel;
+        let Handler = Monaco.editor.Handler;
+        kernel.trigger(source, Handler.CursorEndSelect, null);
+        kernel.trigger(source, Handler.DeleteRight, null);
+    }
 
+    static deleteChar() {
+        ServiceLocator.editor.kernel.trigger(source, Monaco.editor.Handler.DeleteRight, null);
     }
 
     static abort() {
+        let kernel = ServiceLocator.editor.kernel;
+
         if (EditorCommads.markSetted) {
             EditorCommads.toggleMark();
         }
-        ServiceLocator.editor.kernel.focus();
+        kernel.focus();
+
+        var press = jQuery.Event("keypress");
+        press.ctrlKey = false;
+        press.which = 27;
+        ViewManager.main.editor.el.trigger(press);
+
+        if (EditorCommads.findWidgetVisable()) {
+            kernel.trigger(source, 'closeFindWidget', null);
+        }
+    }
+
+    static search() {
+        ServiceLocator.editor.kernel.getAction('actions.find').run();
+    }
+
+    static searchForward() {
+        ServiceLocator.editor.kernel.getAction('editor.action.nextMatchFindAction').run();
+    }
+
+    static searchBackward() {
+        ServiceLocator.editor.kernel.getAction('editor.action.previousMatchFindAction').run();
+    }
+
+    private static findWidgetVisable() {
+        // workaround to check findWidget visable
+        return ViewManager.main.editor.el.find('.editor-widget.find-widget.visible').length !== 0;
     }
 
     static insertCodeBlock() {
-        const monacoEditor = ServiceLocator.editor.kernel;
-        let lineNumber = monacoEditor.getPosition().lineNumber;
-        let selections = monacoEditor.getSelections();
+        let monacoEditor = ServiceLocator.editor.kernel;
+        let position = monacoEditor.getPosition();
         let model = monacoEditor.getModel();
-        let eol = model.getEOL();
+        let lineContent = model.getLineContent(position.lineNumber);
+
+        // not empty line
+        if (position.column !== 1 || lineContent && model.getEOL() !== lineContent) {
+            return;
+        }
+
+        let lineNumber = position.lineNumber;
+        let selections = monacoEditor.getSelections();
         let operation: monaco.editor.IIdentifiedSingleEditOperation = {
             identifier: null,
-			range: null,
-			text: "``` \n```\n",
+			range: new Monaco.Range(lineNumber, 0, lineNumber, 0),
+			text: "``` \n```",
 			forceMoveMarkers: true
         };
 
-        // not empty line insert to next line
-        if (eol !== model.getLineContent(lineNumber)) {
-            lineNumber++;
-        }
-        operation.range = new Monaco.Range(lineNumber, 0, lineNumber, 0);
+        model.pushEditOperations(selections, [operation], null);
 
-        model.pushEditOperations(selections, [operation], () => {
-            return [new Monaco.Selection(lineNumber, 4, lineNumber, 4)];
-        });
+        monacoEditor.setPosition(new Monaco.Position(lineNumber, 5));
     }
 
     static recenter() {
-
+        let kernel = ServiceLocator.editor.kernel;
+        let position = kernel.getPosition();
+        kernel.revealPositionInCenter(position);
     }
 }

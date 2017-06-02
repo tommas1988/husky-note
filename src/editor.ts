@@ -70,10 +70,23 @@ export class Editor extends EventEmitter {
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_W, editorCommands.cut, '');
         kernel.addCommand(KeyMod.Alt | KeyCode.KEY_W, editorCommands.copy, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_Y, editorCommands.paste, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_D, editorCommands.deleteChar, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, editorCommands.killLine, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.US_MINUS, editorCommands.undo, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.Space, editorCommands.toggleMark, '');
         kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_G, editorCommands.abort, '');
         kernel.addCommand(KeyMod.Alt | KeyCode.KEY_G, editorCommands.gotoLine, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_S, editorCommands.search, '!findWidgetVisible');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_S, editorCommands.searchForward, 'findWidgetVisible');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_R, editorCommands.search, '!findWidgetVisible');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_R, editorCommands.searchBackward, 'findWidgetVisible');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_L, editorCommands.recenter, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_X & KeyMod.CtrlCmd | KeyCode.KEY_I, editorCommands.insertCodeBlock, '');
+
+        // disable default keybindings
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_C, null, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_X, null, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_Z, null, '');
     }
 
     setSize(width: number, height: number) {
