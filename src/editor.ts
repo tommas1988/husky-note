@@ -4,6 +4,7 @@ import { EditorView } from './views/editor';
 import { Note } from './note';
 import ViewManager from './view-manager';
 import editorCommands from './commands/editor';
+import { noop } from './utils';
 
 const TEXT_MODE = 'markdown';
 
@@ -86,8 +87,8 @@ export class Editor extends EventEmitter {
         kernel.addCommand((KeyMod.CtrlCmd | KeyCode.KEY_X) | (KeyMod.CtrlCmd | KeyCode.KEY_I) << 16, editorCommands.insertCodeBlock, '');
 
         // disable default keybindings
-        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_C, null, '');
-        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_Z, null, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_C, noop, '');
+        kernel.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_Z, noop, '');
     }
 
     setSize(width: number, height: number) {
