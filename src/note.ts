@@ -2,7 +2,7 @@ import { sep as pathSep } from 'path';
 import { readFileSync } from 'fs';
 import { ensureFile, writeFile, rename } from 'fs-promise';
 import ServiceLocator from './service-locator';
-import { NoteManager } from './note-manager';
+import { Event as  NoteManagerEvent } from './note-manager';
 
 const CONVERT_NAME_REG = /[/\\:?"<>| ]/g;
 
@@ -140,9 +140,9 @@ export class Note {
         ensureFile(filename).then(() => {
             return writeFile(filename, model.getValue());
         }).then(() => {
-            ServiceLocator.noteManager.emit(NoteManager.EVENT_NOTE_SAVED, this);
+            ServiceLocator.noteManager.emit(NoteManagerEvent.note_saved, this);
         }).catch((e) => {
-            ServiceLocator.noteManager.emit(NoteManager.EVENT_SAVE_NOTE_FAILED, this);
+            ServiceLocator.noteManager.emit(NoteManagerEvent.save_note_failed, this);
             e.message = `__Reboot Needed!!!__ ${e.message}`;
             ServiceLocator.alerter.fatal(e);
         });

@@ -4,50 +4,52 @@ import { EventEmitter } from 'events';
 import { readJson, writeJson, remove, move, exists } from 'fs-promise';
 import { existsSync } from 'fs';
 import { Notebook, Note } from './note';
-import { Config } from './config';
+import { Event as ConfigEvent } from './config';
 import ServiceLocator from './service-locator';
 
-type Index = { [notebook: string]: string[] };
+type NoteIndex = { [notebook: string]: string[] };
 
-export class NoteManager extends EventEmitter {
+export const Event = {
     // TODO: move events to top level
-    static EVENT_RELOAD = 'note-manager:reload';
-    static EVENT_LOADED = 'note-manager:loaded';
+    reload: 'note-manager:reload',
+    loaded: 'note-manager:loaded',
 
     // create notebook events
-    static EVENT_CREATE_NOTEBOOK = 'note-manager:create-notebook';
-    static EVENT_NOTEBOOK_CREATED = 'note-manager:notebook-created';
-    static EVENT_CREATE_NOTEBOOK_FAILED = 'note-manager:create-notebook-failed';
+    create_notebook: 'note-manager:create-notebook',
+    notebook_created: 'note-manager:notebook-created',
+    create_notebook_failed: 'note-manager:create-notebook-failed',
 
     // create note events
-    static EVENT_CREATE_NOTE = 'note-manager:create-note';
-    static EVENT_NOTE_CREATED = 'note-manager:note-created';
-    static EVENT_CREATE_NOTE_FAILED = 'note-manager:create-note-failed';
+    create_note: 'note-manager:create-note',
+    note_created: 'note-manager:note-created',
+    create_note_failed: 'note-manager:create-note-failed',
 
     // rename notebook events
-    static EVENT_RENAME_NOTEBOOK = 'note-manager:rename-notebook';
-    static EVENT_NOTEBOOK_RENAMED = 'note-manager:notebook-renamed';
-    static EVENT_RENAME_NOTEBOOK_FAILED = 'note-manager:rename-notebook-failed';
+    rename_notebook: 'note-manager:rename-notebook',
+    notebook_renamed: 'note-manager:notebook-renamed',
+    rename_notebook_failed: 'note-manager:rename-notebook-failed',
 
     // rename note events;
-    static EVENT_RENAME_NOTE = 'note-manager:rename-note';
-    static EVENT_NOTE_RENAMED = 'note-manager:note-renamed';
-    static EVENT_RENAME_NOTE_FAILED = 'note-manager:rename-note-failed';
+    rename_note: 'note-manager:rename-note',
+    note_renamed: 'note-manager:note-renamed',
+    rename_note_failed: 'note-manager:rename-note-failed',
 
     // delete notebook events
-    static EVENT_DELETE_NOTEBOOK = 'note-manager:delete-notebook';
-    static EVENT_NOTEBOOK_DELETED = 'note-manager:notebook-deleted';
-    static EVENT_DELETE_NOTEBOOK_FAILED = 'note-manager:delete-notebook-failed';
+    delete_notebook: 'note-manager:delete-notebook',
+    notebook_deleted: 'note-manager:notebook-deleted',
+    delete_notebook_failed: 'note-manager:delete-notebook-failed',
 
     // delete note events
-    static EVENT_DELETE_NOTE = 'note-manager:delete-note';
-    static EVENT_NOTE_DELETED = 'note-manager:note-deleted';
-    static EVENT_DELETE_NOTE_FAILED = 'note-manager:delete-note-failed';
+    delete_note: 'note-manager:delete-note',
+    note_deleted: 'note-manager:note-deleted',
+    delete_note_failed: 'note-manager:delete-note-failed',
 
     // save note events
-    static EVENT_NOTE_SAVED = 'note-manager:note-saved';
-    static EVENT_SAVE_NOTE_FAILED = 'note-manager:save-note-failed';
+    note_saved: 'note-manager:note-saved',
+    save_note_failed: 'note-manager:save-note-failed',
+};
 
+export class NoteManager extends EventEmitter {
     // Notes structure
     private _notebooks: Map<string, Notebook>;
 
@@ -86,11 +88,11 @@ export class NoteManager extends EventEmitter {
         this._basedir = config.noteDir;
 
         // TODO: IPC reload event should defined in NoteManager
-        ipc.on(NoteManager.EVENT_RELOAD, () => {
+        ipc.on(Event.reload, () => {
             this.load();
         });
 
-        config.on(Config.EVENT_CONFIG_CHANGE, (name, newVal, oldVal) => {
+        config.on(ConfigEvent.config_change, (name, newVal, oldVal) => {
             if (name !== 'noteDir') {
                 return;
             }
@@ -121,7 +123,7 @@ export class NoteManager extends EventEmitter {
                 throw new Error(`Index file: ${indexFile} not exists`);
             }
             return readJson(indexFile);
-        }).then((index: Index) => {
+        }).then((index: NoteIndex) => {
             let isReload = this._notebooks.size ? true : false;
             let notes = new Map<string, Notebook>();
 
@@ -136,9 +138,9 @@ export class NoteManager extends EventEmitter {
 
             // emit loaded or reload event
             if (isReload) {
-                this.emit(NoteManager.EVENT_RELOAD);
+                this.emit(Event.reload);
             } else {
-                this.emit(NoteManager.EVENT_LOADED);
+                this.emit(Event.loaded);
             }
         }).catch((e) => {
             throw e;
@@ -175,11 +177,11 @@ export class NoteManager extends EventEmitter {
         this._notebooks.set(name, notebook);
 
         // emit create notebook event
-        this.emit(NoteManager.EVENT_CREATE_NOTEBOOK, notebook);
+        this.emit(Event.create_notebook, notebook);
 
         this._save().catch((e) => {
             // TODO: do some clean work
-            this.emit(NoteManager.EVENT_CREATE_NOTEBOOK_FAILED, notebook);
+            this.emit(Event.create_notebook_failed, notebook);
             e.message = `__Reload Needed!!!__ ${e.message}`;
             ServiceLocator.alerter.fatal(e);
         });
@@ -203,11 +205,11 @@ export class NoteManager extends EventEmitter {
         notebook.notes.set(name, note);
 
         // emit create note event
-        this.emit(NoteManager.EVENT_CREATE_NOTE, note);
+        this.emit(Event.create_note, note);
 
         this._save().catch((e) => {
             // TODO: do some clean work
-            this.emit(NoteManager.EVENT_CREATE_NOTE_FAILED, note);
+            this.emit(Event.create_note_failed, note);
             e.message = `__Reload Needed!!!__ ${e.message}`;
             ServiceLocator.alerter.fatal(e);
         });
@@ -226,10 +228,10 @@ export class NoteManager extends EventEmitter {
         notebook.rename(newName).then(() => {
             return this._save();
         }).then(() => {
-            this.emit(NoteManager.EVENT_NOTEBOOK_RENAMED, notebook);
+            this.emit(Event.notebook_renamed, notebook);
         }).catch((e) => {
             // TODO: do some clean work
-            this.emit(NoteManager.EVENT_RENAME_NOTEBOOK_FAILED, oldName, notebook);
+            this.emit(Event.rename_notebook_failed, oldName, notebook);
             e.message = `__Restore Manually Needed!!!__ ${e.message}`;
             ServiceLocator.alerter.fatal(e);
         });
@@ -238,7 +240,7 @@ export class NoteManager extends EventEmitter {
         notebooks.delete(oldName);
 
         // emit rename notebook event
-        this.emit(NoteManager.EVENT_RENAME_NOTEBOOK, notebook);
+        this.emit(Event.rename_notebook, notebook);
         return notebook;
     }
 
@@ -253,10 +255,10 @@ export class NoteManager extends EventEmitter {
         note.rename(newName).then(() => {
             return this._save();
         }).then(() => {
-            this.emit(NoteManager.EVENT_NOTE_RENAMED, note);
+            this.emit(Event.note_renamed, note);
         }).catch((e) => {
             // TODO: do some clean work
-            this.emit(NoteManager.EVENT_RENAME_NOTE_FAILED, newName, note);
+            this.emit(Event.rename_note_failed, newName, note);
             e.message = `__Restore Manually Needed!!!__ ${e.message}`;
             ServiceLocator.alerter.fatal(e);
         });
@@ -265,23 +267,23 @@ export class NoteManager extends EventEmitter {
         notes.delete(oldName);
 
         // emit rename note event
-        this.emit(NoteManager.EVENT_RENAME_NOTE, note);
+        this.emit(Event.rename_note, note);
         return note;
     }
 
     deleteNotebook(notebook: Notebook) {
         // emit delete notebook event
-        this.emit(NoteManager.EVENT_DELETE_NOTEBOOK, notebook);
+        this.emit(Event.delete_notebook, notebook);
 
         remove(notebook.pathname).then(() => {
             notebook.notes.clear();
             this._notebooks.delete(notebook.name);
             return this._save();
         }).then(() => {
-            this.emit(NoteManager.EVENT_NOTEBOOK_DELETED, notebook);
+            this.emit(Event.notebook_deleted, notebook);
         }).catch((e) => {
             // TODO: do some clean work
-            this.emit(NoteManager.EVENT_DELETE_NOTEBOOK_FAILED, notebook);
+            this.emit(Event.delete_notebook_failed, notebook);
             e.message = `__Restore Manually Needed!!!__ ${e.message}`;
             ServiceLocator.alerter.fatal(e);
         });
@@ -289,16 +291,16 @@ export class NoteManager extends EventEmitter {
 
     deleteNote(note: Note) {
         // emit delete note event
-        this.emit(NoteManager.EVENT_DELETE_NOTE, note);
+        this.emit(Event.delete_note, note);
 
         remove(note.filename).then(() => {
             note.notebook.notes.delete(note.name);
             return this._save();
         }).then(() => {
-            this.emit(NoteManager.EVENT_NOTE_DELETED, note);
+            this.emit(Event.note_deleted, note);
         }).catch((e) => {
             // TODO: do some clean work
-            this.emit(NoteManager.EVENT_DELETE_NOTE_FAILED, note);
+            this.emit(Event.delete_note_failed, note);
             e.message = `__Restore Manually Needed!!!__ ${e.message}`;
             ServiceLocator.alerter.fatal(e);
         });
@@ -313,8 +315,8 @@ export class NoteManager extends EventEmitter {
             });
         }
 
-        let promise = new Promise<Index>((resolve, reject) => {
-            let raw: Index = {};
+        let promise = new Promise<NoteIndex>((resolve, reject) => {
+            let raw: NoteIndex = {};
             let notebooks = this._notebooks;
             for (let notebook of notebooks.values()) {
                 let notes: string[] = [];
@@ -324,7 +326,7 @@ export class NoteManager extends EventEmitter {
                 raw[notebook.name] = notes.sort();
             }
 
-            let ordered: Index = {};
+            let ordered: NoteIndex = {};
             Object.keys(raw).sort().forEach((notebookName) => {
                 ordered[notebookName] = raw[notebookName];
             });
@@ -332,7 +334,7 @@ export class NoteManager extends EventEmitter {
             resolve(ordered);
         });
 
-        return promise.then((index: Index) => {
+        return promise.then((index: NoteIndex) => {
             return writeJson(indexFile, index);
         });
     }

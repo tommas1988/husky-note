@@ -1,6 +1,5 @@
 import { AbstractView } from './view';
 import { App } from '../app';
-import * as $ from 'jquery';
 
 const quickAccessers = [
     {

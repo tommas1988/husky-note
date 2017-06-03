@@ -1,9 +1,8 @@
 import { AbstractView } from './view';
-import * as $ from 'jquery';
-import { NoteManager } from '../note-manager';
+import { Event as NoteManagerEvent } from '../note-manager';
 import { AllHtmlEntities } from 'html-entities';
 import { App, NoteView } from '../app';
-import { Editor } from '../editor';
+import { Event as EditorEvent } from '../editor';
 import { Notebook, Note } from '../note';
 import ServiceLocator from '../service-locator';
 import { remote } from 'electron';
@@ -87,11 +86,11 @@ interface INotebookView {
     notes: Map<Note, INoteView>;
 }
 
-export class NotebookListView extends AbstractView {
-    // TODO: move events to top level
-    // events
-    static EVENT_SELECT_NOTE = 'notebook-list-view:select-note';
+export const Event = {
+    select_note: 'notebook-list-view:select-note',
+};
 
+export class NotebookListView extends AbstractView {
     private _container: JQuery;
     private _notebooks: Map<Notebook, INotebookView> = new Map();
 
@@ -110,7 +109,7 @@ export class NotebookListView extends AbstractView {
 
     private _initLoadNotesHandlers() {
         // render notebook list when note index is loaded
-        ServiceLocator.noteManager.on(NoteManager.EVENT_LOADED, () => {
+        ServiceLocator.noteManager.on(NoteManagerEvent.loaded, () => {
             this.build();
         });
     }
@@ -131,13 +130,13 @@ export class NotebookListView extends AbstractView {
         });
 
         // creation
-        manager.on(NoteManager.EVENT_CREATE_NOTEBOOK, (notebook: Notebook) => {
+        manager.on(NoteManagerEvent.create_notebook, (notebook: Notebook) => {
             this.addNotebook(notebook);
             this.reorderNotebook();
         });
 
         // rename
-        manager.on(NoteManager.EVENT_RENAME_NOTEBOOK, (notebook: Notebook) => {
+        manager.on(NoteManagerEvent.rename_notebook, (notebook: Notebook) => {
             let el = this._notebooks.get(notebook).el;
             let newName = entities.encode(notebook.name);
 
@@ -147,16 +146,16 @@ export class NotebookListView extends AbstractView {
 
             this.reorderNotebook();
         });
-        manager.on(NoteManager.EVENT_NOTEBOOK_RENAMED, (notebook: Notebook) => {
+        manager.on(NoteManagerEvent.notebook_renamed, (notebook: Notebook) => {
             this._notebooks.get(notebook).isRenaming = false;
         });
 
         // deletion
-        manager.on(NoteManager.EVENT_DELETE_NOTEBOOK, (notebook: Notebook) => {
+        manager.on(NoteManagerEvent.delete_notebook, (notebook: Notebook) => {
             this.deleteNotebook(notebook);
 
         });
-        manager.on(NoteManager.EVENT_NOTEBOOK_DELETED, (notebook: Notebook) => {
+        manager.on(NoteManagerEvent.notebook_deleted, (notebook: Notebook) => {
             this._notebooks.get(notebook).notes.clear();
             this._notebooks.delete(notebook);
         });
@@ -185,22 +184,22 @@ export class NotebookListView extends AbstractView {
         });
 
         // change
-        ServiceLocator.editor.on(Editor.EVENT_CHANGE, (note: Note) => {
+        ServiceLocator.editor.on(EditorEvent.change, (note: Note) => {
             if (note !== manager.orphanNote) {
                 this.noteChange(note);
             }
         });
 
         // save
-        manager.on(NoteManager.EVENT_NOTE_SAVED, (note: Note) => {
+        manager.on(NoteManagerEvent.note_saved, (note: Note) => {
             this.saveNote(note);
         });
-        manager.on(NoteManager.EVENT_SAVE_NOTE_FAILED, (note: Note) => {
+        manager.on(NoteManagerEvent.save_note_failed, (note: Note) => {
             // TODO: do some clean work
         });
 
         // creation
-        manager.on(NoteManager.EVENT_CREATE_NOTE, (note: Note) => {
+        manager.on(NoteManagerEvent.create_note, (note: Note) => {
             this.addNote(note);
             this.reorderNote(note.notebook);
             this.selectNote(note, NoteView.LivePreview);
@@ -210,7 +209,7 @@ export class NotebookListView extends AbstractView {
         });
 
         // rename
-        manager.on(NoteManager.EVENT_RENAME_NOTE, (note: Note) => {
+        manager.on(NoteManagerEvent.rename_note, (note: Note) => {
             let el = this._notebooks.get(note.notebook).notes.get(note).el;
             let newName = entities.encode(note.name);
 
@@ -220,15 +219,15 @@ export class NotebookListView extends AbstractView {
 
             this.reorderNote(note.notebook);
         });
-        manager.on(NoteManager.EVENT_NOTE_RENAMED, (note: Note) => {
+        manager.on(NoteManagerEvent.note_renamed, (note: Note) => {
             this._notebooks.get(note.notebook).notes.get(note).isRenaming = false;
         });
 
         // deletion
-        manager.on(NoteManager.EVENT_DELETE_NOTE, (note: Note) => {
+        manager.on(NoteManagerEvent.delete_note, (note: Note) => {
             this.deleteNote(note);
         });
-        manager.on(NoteManager.EVENT_NOTE_DELETED, (note: Note) => {
+        manager.on(NoteManagerEvent.note_deleted, (note: Note) => {
             this._notebooks.get(note.notebook).notes.delete(note);
         });
     }
@@ -270,7 +269,7 @@ export class NotebookListView extends AbstractView {
         }
 
         // trigger select note event
-        this.emit(NotebookListView.EVENT_SELECT_NOTE, note, view);
+        this.emit(Event.select_note, note, view);
     }
 
     private _getNotebookView(notebook: Notebook): INotebookView {

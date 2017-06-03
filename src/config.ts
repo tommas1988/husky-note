@@ -45,11 +45,12 @@ abstract class SubConfig extends BaseConfig {
 
 const configFile = `${utils.isMainProcess ? app.getPath('home') : remote.app.getPath('home')}${sep}.husky-note.json`;
 
-export class Config extends BaseConfig {
-    // TODO: move events to top level
-    static EVENT_CONFIG_CHANGE: 'config:config-change';
-    static EVENT_CONFIG_CHANGE_FAILED: 'config:config-change-failed';
+export const Event = {
+    config_change: 'config:config-change',
+    config_change_failed: 'config:config-change-failed',
+};
 
+export class Config extends BaseConfig {
     constructor() {
         super();
 
@@ -78,9 +79,9 @@ export class Config extends BaseConfig {
 
     save(name: string, newVal: any, oldVal: any) {
         writeJson(configFile, this._configs).then(() => {
-            this.emit(Config.EVENT_CONFIG_CHANGE, name, newVal, oldVal);
+            this.emit(Event.config_change, name, newVal, oldVal);
         }).catch(() => {
-            this.emit(Config.EVENT_CONFIG_CHANGE_FAILED, name);
+            this.emit(Event.config_change_failed, name);
             let parts = name.split('.');
             let config = this._configs;
 

@@ -1,9 +1,8 @@
 import { AbstractView } from './view';
 import { Note, Notebook } from '../note';
-import * as $ from 'jquery';
-import { NoteManager } from '../note-manager';
+import { Event as NoteManagerEvent } from '../note-manager';
 import { NoteRenderer } from '../note-renderer';
-import { Editor } from '../editor';
+import { Event as EditorEvent } from '../editor';
 import ServiceLocator from '../service-locator';
 
 let containerKey = 0;
@@ -27,20 +26,20 @@ export class ReaderView extends AbstractView {
 
     init() {
         // update note reader view when note changes
-        ServiceLocator.editor.on(Editor.EVENT_CHANGE, (note: Note) => {
+        ServiceLocator.editor.on(EditorEvent.change, (note: Note) => {
             this.updateNote(note);
         });
 
         let manager = ServiceLocator.noteManager;
         // remove note view when delete notebook/note
-        manager.on(NoteManager.EVENT_DELETE_NOTEBOOK, (notebook: Notebook) => {
+        manager.on(NoteManagerEvent.delete_notebook, (notebook: Notebook) => {
             for (let note of notebook.notes.values()) {
                 if (this._notes.has(note)) {
                     this._notes.get(note).remove();
                 }
             }
         });
-        manager.on(NoteManager.EVENT_DELETE_NOTE, (note: Note) => {
+        manager.on(NoteManagerEvent.delete_note, (note: Note) => {
             if (this._notes.has(note)) {
                 this._notes.get(note).remove();
             }

@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events';
-import * as $ from 'jquery';
 
 export abstract class AbstractView extends EventEmitter {
     protected _el: JQuery;

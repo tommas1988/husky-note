@@ -2,14 +2,13 @@ import { remote } from 'electron';
 import { on as processOn } from 'process';
 import ServiceLocator from './service-locator';
 import { Editor } from './editor';
-import { NoteManager } from './note-manager';
+import { Event as NoteManagerEvent } from './note-manager';
 import { NoteRenderer } from './note-renderer';
 import { Notebook, Note } from './note';
 import ViewManager from './view-manager';
-import { NotebookListView } from './views/notebook-list';
-import * as $ from 'jquery';
+import { Event as NotebookListViewEvent } from './views/notebook-list';
 import commonCommands from './commands/common';
-import { Config } from './config';
+import { Event as ConfigEvent } from './config';
 
 const { app, Menu } = remote;
 
@@ -60,14 +59,14 @@ export class App {
     private _initViewHandlers() {
         // TODO: call app.openNote in NotebookListView and remove event ??
         // listen on select note event
-        ViewManager.notebookList.on(NotebookListView.EVENT_SELECT_NOTE, (selectedNote: Note, view: NoteView) => {
+        ViewManager.notebookList.on(NotebookListViewEvent.select_note, (selectedNote: Note, view: NoteView) => {
             this.openNote(selectedNote, view);
         });
     }
 
     private _initNotebookHandlers() {
         // cleanup open notes when note/notebook deleted
-        ServiceLocator.noteManager.on(NoteManager.EVENT_DELETE_NOTEBOOK, (notebook: Notebook) => {
+        ServiceLocator.noteManager.on(NoteManagerEvent.delete_notebook, (notebook: Notebook) => {
             let openNotes = this._openNotes;
             let containActiveNote = false;
 
@@ -88,7 +87,7 @@ export class App {
     }
 
     private _initNoteHandlers() {
-        ServiceLocator.noteManager.on(NoteManager.EVENT_DELETE_NOTE, (note: Note) => {
+        ServiceLocator.noteManager.on(NoteManagerEvent.delete_note, (note: Note) => {
             if (this._openNotes.has(note)) {
                 this._openNotes.delete(note);
             }
@@ -129,7 +128,7 @@ export class App {
         };
 
         let config = ServiceLocator.config;
-        config.on(Config.EVENT_CONFIG_CHANGE, (name, newVal, oldVal) => {
+        config.on(ConfigEvent.config_change, (name, newVal, oldVal) => {
             switch (name) {
                 case 'debug':
                     ServiceLocator.alerter.info('__Reboot is needed__');

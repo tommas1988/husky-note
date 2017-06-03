@@ -7,10 +7,11 @@ import editorCommands from './commands/editor';
 
 const TEXT_MODE = 'markdown';
 
-export class Editor extends EventEmitter {
-    // TODO: move events to top level
-    static EVENT_CHANGE = 'editor:change';
+export const Event = {
+    change: 'editor:change',
+};
 
+export class Editor extends EventEmitter {
     readonly kernel: monaco.editor.IStandaloneCodeEditor;
 
     private _editingNote: Note;
@@ -43,7 +44,7 @@ export class Editor extends EventEmitter {
             }
 
             timmer = setTimeout(() => {
-                this.emit(Editor.EVENT_CHANGE, note);
+                this.emit(Event.change, note);
                 timmer = null;
             }, 100);
         });
@@ -99,6 +100,8 @@ export class Editor extends EventEmitter {
             model = Monaco.editor.createModel(note.content, TEXT_MODE);
             note.setModel(model);
         }
+
+        // TODO: save previous edit position
 
         this.kernel.setModel(model);
         this._editingNote = note;
