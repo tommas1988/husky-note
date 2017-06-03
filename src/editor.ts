@@ -111,7 +111,12 @@ export class Editor extends EventEmitter {
     }
 
     focus(): Editor {
+        // TODO: reveal position
         this.kernel.focus();
         return this;
+    }
+
+    execCommand(command: string) {
+        editorCommands[command]();
     }
 }

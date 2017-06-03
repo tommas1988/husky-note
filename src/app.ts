@@ -243,7 +243,7 @@ export class App {
                 return;
             }
 
-            //ServiceLocator.editor.kernel.executeCommand('husky-editor-command', parts[1]);
+            ServiceLocator.editor.execCommand(parts[1]);
             return;
         }
 
