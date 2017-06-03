@@ -23,6 +23,7 @@ export class Editor extends EventEmitter {
             model: null,
             renderLineHighlight: 'none',
             wrappingColumn: 0,
+            quickSuggestions: false,
             scrollbar: {
                 horizontalScrollbarSize: 0,
                 verticalScrollbarSize: 0
