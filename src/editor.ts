@@ -16,6 +16,7 @@ export class Editor extends EventEmitter {
     readonly kernel: monaco.editor.IStandaloneCodeEditor;
 
     private _editingNote: Note;
+    private _positions: WeakMap<Note, monaco.Position>;
 
     constructor() {
         super();
@@ -31,11 +32,13 @@ export class Editor extends EventEmitter {
                 verticalScrollbarSize: 0
             }
         });
+        this._positions = new WeakMap<Note, monaco.Position>();
 
         this._init();
     }
 
     private _init() {
+        // emit change event when note content change
         let timmer = null;
         this.kernel.onDidChangeModelContent(() => {
             let note = this._editingNote;
@@ -50,6 +53,17 @@ export class Editor extends EventEmitter {
             }, 100);
         });
 
+        // set saved postion when editor is focused
+        this.kernel.onDidFocusEditorText(() => {
+            let kernel = this.kernel;
+            let postion = this._positions.get(this._editingNote);
+
+            postion = postion ? postion : new Monaco.Position(1, 1);
+            kernel.setPosition(postion);
+            kernel.revealPositionInCenter(postion);
+        });
+
+        // set keybindings
         this._setKeyBindings();
     }
 
@@ -97,21 +111,28 @@ export class Editor extends EventEmitter {
 
     edit(note: Note): Editor {
         let model = note.editorModel;
+        let editingNote = this._editingNote;
+
         if (!model) {
             model = Monaco.editor.createModel(note.content, TEXT_MODE);
             note.setModel(model);
         }
 
-        // TODO: save previous edit position
+        // save postion while change edit note
+        if (this._editingNote) {
+            this._positions.set(this._editingNote, this.kernel.getPosition());
+        }
 
         this.kernel.setModel(model);
         this._editingNote = note;
+
+        // foucs editor
+        this.kernel.focus();
 
         return this;
     }
 
     focus(): Editor {
-        // TODO: reveal position
         this.kernel.focus();
         return this;
     }

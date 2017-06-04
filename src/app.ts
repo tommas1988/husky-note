@@ -211,12 +211,12 @@ export class App {
                 break;
             case NoteView.EditMode:
                 mainView.showEditor();
-                ServiceLocator.editor.edit(note).focus();
+                ServiceLocator.editor.edit(note);
                 break;
             case NoteView.LivePreview:
                 mainView.reader.openNote(note);
                 mainView.splitView();
-                ServiceLocator.editor.edit(note).focus();
+                ServiceLocator.editor.edit(note);
                 break;
             default:
                 throw new Error(`Unknown note view: ${view}`);
