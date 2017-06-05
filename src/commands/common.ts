@@ -29,9 +29,8 @@ export function saveNote() {
     let orphanNote = ServiceLocator.noteManager.orphanNote;
 
     if (orphanNote === saveNote) {
-        ServiceLocator.alerter.warn('Currently, cannot save orphan note');
         // Saving orphan note
-        // ViewManager.modal.saveOrphanNote();
+        ViewManager.modal.saveOrphanNote();
         return;
     }
 

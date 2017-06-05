@@ -15,7 +15,6 @@
     "monaco-editor": "^0.8.3"
   },
   "devDependencies": {
-    "@types/bootstrap": "^3.3.33",
     "@types/fs-extra": "^3.0.1",
     "@types/fs-promise": "^1.0.3",
     "@types/html-entities": "^1.2.15",
@@ -23,6 +22,7 @@
     "@types/log4js": "0.0.32",
     "@types/marked": "0.0.28",
     "@types/node": "^7.0.12",
+    "@types/typeahead": "^0.11.28",
     "babel-preset-env": "^1.4.0",
     "gulp": "^3.9.1",
     "gulp-atom-electron": "^1.10.0",

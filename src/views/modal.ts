@@ -1,11 +1,13 @@
 import { AbstractView } from './view';
 import { readFile } from 'fs-promise';
 import { sep } from 'path';
+import ServiceLoactor from '../service-locator';
 
 const basedir = `${__dirname}${sep}templates${sep}modals${sep}`;
 
 const FADE_IN_CLASS = 'zoomIn';
 const FADE_OUT_CLASS = 'zoomOut';
+const KEYCODE_ENTER = 13;
 
 export class ModalView extends AbstractView {
     constructor() {
@@ -15,7 +17,39 @@ export class ModalView extends AbstractView {
 
     saveOrphanNote() {
         this._loadModal('save-orphan-note', (el: JQuery) => {
+            let notebooks = [];
+            for (let notebook of ServiceLoactor.noteManager.notebooks.keys()) {
+                notebooks.push(notebook);
+            }
 
+            let dataSource = new Bloodhound<string>({
+                local: notebooks,
+                datumTokenizer: Bloodhound.tokenizers.whitespace,
+                queryTokenizer: Bloodhound.tokenizers.whitespace
+            });
+
+            let dataset = {
+                source: (query, sync, async) => {
+                    if (query === '') {
+                        sync(notebooks);
+                    } else {
+                        dataSource.search(query, sync, async);
+                    }
+                }
+            };
+
+            let input = $('#modal-orphan-notebook-text-input');
+            input.typeahead<string>({
+                minLength: 0,
+                highlight: true
+            }, dataset);
+
+            input.parent().css({ width: '100%' });
+            input.on('keyup', (event) => {
+                if (KEYCODE_ENTER === event.keyCode) {
+                    input.typeahead('close');
+                }
+            });
         });
     }
 
