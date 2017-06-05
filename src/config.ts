@@ -30,12 +30,14 @@ abstract class BaseConfig extends EventEmitter {
     }
 }
 
-abstract class SubConfig extends BaseConfig {
+class SubConfig extends BaseConfig {
     protected _parent: BaseConfig;
     protected _nodeName: string;
 
-    get configs() {
-        return this._configs;
+    constructor(parent: BaseConfig, configs) {
+        super();
+        this._configs = configs;
+        this._parent = parent;
     }
 
     save(name: string, newVal: any, oldVal: any) {
@@ -43,14 +45,31 @@ abstract class SubConfig extends BaseConfig {
     }
 }
 
-const configFile = `${utils.isMainProcess ? app.getPath('home') : remote.app.getPath('home')}${sep}.husky-note.json`;
+class EditorConfig extends SubConfig {
+    constructor(parent, configs) {
+        super(parent, configs);
+        this._nodeName = 'editor';
+    }
+
+    get keybinding() {
+        return this._configs.keybinding || 'default';
+    }
+
+    set keybinding(val: string) {
+        this._setConfig('keybinding', val);
+    }
+}
 
 export const Event = {
     config_change: 'config:config-change',
     config_change_failed: 'config:config-change-failed',
 };
 
+const configFile = `${utils.isMainProcess ? app.getPath('home') : remote.app.getPath('home')}${sep}.husky-note.json`;
+
 export class Config extends BaseConfig {
+    readonly editor: EditorConfig;
+
     constructor() {
         super();
 
@@ -59,6 +78,9 @@ export class Config extends BaseConfig {
         } catch (e) {
             this._configs = {};
         }
+
+        this._configs.editor = this._configs.editor || {};
+        this.editor = new EditorConfig(this, this._configs.editor);
     }
 
     get noteDir(): string {

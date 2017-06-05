@@ -29,6 +29,7 @@ export class SettingsView extends AbstractView {
 
         this._initNoteDirSetting();
         this._initDebugSetting();
+        this._initEditorKeybinding();
 
         el.addClass(FADE_IN_CLASS).show();
     }
@@ -101,6 +102,16 @@ export class SettingsView extends AbstractView {
                 radios.get(0).removeAttribute('checked');
                 el.attr('checked', 'checked');
             }
+        });
+    }
+
+    private _initEditorKeybinding() {
+        let select = $('#setting-keybinding');
+        let config = ServiceLocator.config.editor;
+
+        select.val(config.keybinding);
+        select.change(() => {
+            config.keybinding = select.val();
         });
     }
 }

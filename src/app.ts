@@ -131,6 +131,7 @@ export class App {
         config.on(ConfigEvent.config_change, (name, newVal, oldVal) => {
             switch (name) {
                 case 'debug':
+                case 'editor.keybinding':
                     ServiceLocator.alerter.info('__Reboot is needed__');
                     break;
             }
