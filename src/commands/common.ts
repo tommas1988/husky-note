@@ -2,46 +2,42 @@ import { App, NoteView } from '../app';
 import ViewManager from '../view-manager';
 import ServiceLocator from '../service-locator';
 
-// TODO: should have a register commands function to register commands
+export function readNote() {
+    let app = App.getInstance();
+    app.openNote(app.activeNote, NoteView.ReadMode);
+}
 
-export default class CommonCommands {
-    static readNote() {
-        let app = App.getInstance();
-        app.openNote(app.activeNote, NoteView.ReadMode);
+export function editNote() {
+    let app = App.getInstance();
+    app.openNote(app.activeNote, NoteView.EditMode);
+}
+
+export function livePreview() {
+    let app = App.getInstance();
+    app.openNote(app.activeNote, NoteView.LivePreview);
+}
+
+export function openOrphanNote() {
+    // clear notebook list view active note
+    ViewManager.notebookList.clearActiveNote();
+    /* Open orphen note action */
+    App.getInstance().openNote(ServiceLocator.noteManager.orphanNote, NoteView.LivePreview);
+}
+
+export function saveNote() {
+    let saveNote = App.getInstance().activeNote;
+    let orphanNote = ServiceLocator.noteManager.orphanNote;
+
+    if (orphanNote === saveNote) {
+        ServiceLocator.alerter.warn('Currently, cannot save orphan note');
+        // Saving orphan note
+        // ViewManager.modal.saveOrphanNote();
+        return;
     }
 
-    static editNote() {
-        let app = App.getInstance();
-        app.openNote(app.activeNote, NoteView.EditMode);
-    }
+    saveNote.save();
+}
 
-    static livePreview() {
-        let app = App.getInstance();
-        app.openNote(app.activeNote, NoteView.LivePreview);
-    }
-
-    static openOrphanNote() {
-        // clear notebook list view active note
-        ViewManager.notebookList.clearActiveNote();
-        /* Open orphen note action */
-        App.getInstance().openNote(ServiceLocator.noteManager.orphanNote, NoteView.LivePreview);
-    }
-
-    static saveNote() {
-        let saveNote = App.getInstance().activeNote;
-        let orphanNote = ServiceLocator.noteManager.orphanNote;
-
-        if (orphanNote === saveNote) {
-            ServiceLocator.alerter.warn('Currently, cannot save orphan note');
-            // Saving orphan note
-            // ViewManager.modal.saveOrphanNote();
-            return;
-        }
-
-        saveNote.save();
-    }
-
-    static openSettingPanel() {
-        ViewManager.settings.openPanel();
-    }
+export function openSettingPanel() {
+    ViewManager.settings.openPanel();
 }

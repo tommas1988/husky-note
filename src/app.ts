@@ -7,7 +7,7 @@ import { NoteRenderer } from './note-renderer';
 import { Notebook, Note } from './note';
 import ViewManager from './view-manager';
 import { Event as NotebookListViewEvent } from './views/notebook-list';
-import commonCommands from './commands/common';
+import * as commonCommands from './commands/common';
 import { Event as ConfigEvent } from './config';
 
 const { app, Menu } = remote;

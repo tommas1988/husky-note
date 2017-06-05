@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { EditorView } from './views/editor';
 import { Note } from './note';
 import ViewManager from './view-manager';
-import editorCommands from './commands/editor';
+import * as editorCommands from './commands/editor';
 import { noop } from './utils';
 
 const TEXT_MODE = 'markdown';
