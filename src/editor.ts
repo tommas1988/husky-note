@@ -17,7 +17,8 @@ export class Editor extends EventEmitter {
     readonly kernel: monaco.editor.IStandaloneCodeEditor;
 
     private _editingNote: Note;
-    private _positions: WeakMap<Note, monaco.Position>;
+    // view state of last edition
+    private _viewStates: WeakMap<Note, monaco.editor.IEditorViewState>;
 
     constructor() {
         super();
@@ -33,7 +34,7 @@ export class Editor extends EventEmitter {
                 verticalScrollbarSize: 0
             }
         });
-        this._positions = new WeakMap<Note, monaco.Position>();
+        this._viewStates = new WeakMap<Note, monaco.editor.IEditorViewState>();
 
         this._init();
     }
@@ -52,16 +53,6 @@ export class Editor extends EventEmitter {
                 this.emit(Event.change, note);
                 timmer = null;
             }, 100);
-        });
-
-        // set saved postion when editor is focused
-        this.kernel.onDidFocusEditorText(() => {
-            let kernel = this.kernel;
-            let postion = this._positions.get(this._editingNote);
-
-            postion = postion ? postion : new Monaco.Position(1, 1);
-            kernel.setPosition(postion);
-            kernel.revealPositionInCenter(postion);
         });
 
         // set keybindings
@@ -149,20 +140,23 @@ export class Editor extends EventEmitter {
 
         // save postion while change edit note
         if (this._editingNote) {
-            this._positions.set(this._editingNote, this.kernel.getPosition());
+            this._viewStates.set(this._editingNote, this.kernel.saveViewState());
         }
 
         this.kernel.setModel(model);
         this._editingNote = note;
 
         // foucs editor
-        this.kernel.focus();
+        this.focus();
 
         return this;
     }
 
     focus(): Editor {
-        this.kernel.focus();
+        let kernel = this.kernel;
+        
+        kernel.focus();
+        kernel.restoreViewState(this._viewStates.get(this._editingNote));
         return this;
     }
 
