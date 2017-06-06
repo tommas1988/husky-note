@@ -189,19 +189,26 @@ export class NoteManager extends EventEmitter {
         return notebook;
     }
 
-    createNote(name: string, notebook: Notebook): Note {
+    createNote(name: string, notebook: Notebook, fromOrphan: boolean = false): Note {
         if (!name) {
             throw new Error('Empty note name');
         } else if (notebook.notes.has(name)) {
             throw new Error(`Note: ${name} already exists`);
         }
 
-        let note = new Note(name, notebook);
-
-        // if note is note exists on the disk, set content to empty
-        if (!existsSync(note.filename)) {
-            note.content = '';
+        let note;
+        if (fromOrphan) {
+            note = this._orphanNote;
+            note.notebook = notebook;
+            note.name = name;
+        } else {
+            note = new Note(name, notebook);
+            // if note is note exists on the disk, set content to empty
+            if (!existsSync(note.filename)) {
+                note.content = '';
+            }
         }
+
         notebook.notes.set(name, note);
 
         // emit create note event
@@ -335,7 +342,7 @@ export class NoteManager extends EventEmitter {
         });
 
         return promise.then((index: NoteIndex) => {
-            return writeJson(indexFile, index);
+            return writeJson(indexFile, index, { flag: 'w' });
         });
     }
 }

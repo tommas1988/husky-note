@@ -23,7 +23,7 @@ function getNoteContents(note: Note): string {
 }
 
 export class Notebook {
-    notes: Map<string, Note>;
+    readonly notes: Map<string, Note>;
 
     private _name: string;
 
@@ -62,16 +62,35 @@ export class Notebook {
 }
 
 export class Note {
-    notebook: Notebook;
-
+    private _notebook: Notebook;
     private _name: string;
     private _content: string;
     private _editorModel: monaco.editor.IModel;
     private _versionId: number;
     private _changed: boolean;
 
+    get notebook(): Notebook {
+        return this._notebook;
+    }
+
+    set notebook(notebook: Notebook) {
+        // can only set orphan note notebook
+        if (this._notebook) {
+            return;
+        }
+        this._notebook = notebook;
+    }
+
     get name(): string {
         return this._name;
+    }
+
+    set name(val) {
+        // can only set orphan note name
+        if (this._name) {
+            return;
+        }
+        this._name = val;
     }
 
     get content(): string {
@@ -103,7 +122,7 @@ export class Note {
     }
 
     get filename(): string {
-        return getNoteFilename(this.notebook.name, this._name);
+        return getNoteFilename(this._notebook.name, this._name);
     }
 
     get editorModel(): monaco.editor.IModel {
@@ -112,7 +131,7 @@ export class Note {
 
     constructor(name: string, notebook: Notebook = null) {
         this._name = name;
-        this.notebook = notebook;
+        this._notebook = notebook;
     }
 
     setModel(model: monaco.editor.IModel) {
@@ -136,7 +155,7 @@ export class Note {
 
         this._versionId = versionId;
 
-        let filename = getNoteFilename(this.notebook.name, this._name);
+        let filename = getNoteFilename(this._notebook.name, this._name);
         ensureFile(filename).then(() => {
             return writeFile(filename, model.getValue());
         }).then(() => {
@@ -154,7 +173,7 @@ export class Note {
         }
 
         let oldName = this.name;
-        let notebookName = this.notebook.name;
+        let notebookName = this._notebook.name;
         this._name = newName;
 
         return rename(getNoteFilename(notebookName, oldName), getNoteFilename(notebookName, newName));

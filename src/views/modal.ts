@@ -17,8 +17,55 @@ export class ModalView extends AbstractView {
 
     saveOrphanNote() {
         this._loadModal('save-orphan-note', (el: JQuery) => {
+            const ERROR_CLASS = 'has-danger';
+            const PARENT_CLASS = 'form-group';
+            const NOTEBOOK_ID = 'modal-orphan-notebook-text-input';
+            const NOTE_ID = 'modal-orphan-note-text-input';
+
+            // remove error class
+            el.on('focus', 'input', (event) => {
+                let targetId = event.currentTarget.id;
+                if (targetId !== NOTEBOOK_ID && targetId !== NOTE_ID) {
+                    return;
+                }
+                $(event.currentTarget).parents(`.${PARENT_CLASS}`).removeClass(ERROR_CLASS);
+            });
+            // check input & add error class
+            el.on('blur', 'input', (event) => {
+                let targetId = event.currentTarget.id;
+                if (targetId !== NOTEBOOK_ID && targetId !== NOTE_ID) {
+                    return;
+                }
+
+                let targetEl = $(event.currentTarget);
+                if (!targetEl.val()) {
+                    targetEl.parents(`.${PARENT_CLASS}`).addClass(ERROR_CLASS);
+                }
+            });
+
+            let noteManager = ServiceLoactor.noteManager;
+
+            // save handler
+            el.on('click', 'button.save', (event) => {
+                let notebookName = $(`#${NOTEBOOK_ID}`).val();
+                let noteName = $(`#${NOTE_ID}`).val();
+
+                if (!notebookName || !noteName) {
+                    return;
+                }
+
+                let notebook = noteManager.notebooks.get(notebookName);
+                if (!notebook) {
+                    notebook = noteManager.createNotebook(notebookName);
+                }
+
+                noteManager.createNote(noteName, notebook, true);
+
+                this.close();
+            });
+
             let notebooks = [];
-            for (let notebook of ServiceLoactor.noteManager.notebooks.keys()) {
+            for (let notebook of noteManager.notebooks.keys()) {
                 notebooks.push(notebook);
             }
 
@@ -38,16 +85,17 @@ export class ModalView extends AbstractView {
                 }
             };
 
-            let input = $('#modal-orphan-notebook-text-input');
-            input.typeahead<string>({
+            let notebookEl = $(`#${NOTEBOOK_ID}`);
+            notebookEl.typeahead<string>({
                 minLength: 0,
                 highlight: true
             }, dataset);
 
-            input.parent().css({ width: '100%' });
-            input.on('keyup', (event) => {
+            notebookEl.parent().css({ width: '100%' });
+
+            notebookEl.on('keyup', (event) => {
                 if (KEYCODE_ENTER === event.keyCode) {
-                    input.typeahead('close');
+                    notebookEl.typeahead('close');
                 }
             });
         });

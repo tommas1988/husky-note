@@ -202,6 +202,13 @@ export class NotebookListView extends AbstractView {
         manager.on(NoteManagerEvent.create_note, (note: Note) => {
             this.addNote(note);
             this.reorderNote(note.notebook);
+
+            let notebookView = this._notebooks.get(note.notebook);
+            // if note list is hidden, open it!
+            if (notebookView.noteCon.is(':hidden')) {
+                this.toggleNotebook(note.notebook.name);
+            }
+
             this.selectNote(note, NoteView.LivePreview);
             if (note.changed) {
                 this.noteChange(note);
@@ -256,7 +263,7 @@ export class NotebookListView extends AbstractView {
         }
 
         let activeNote = App.getInstance().activeNote;
-        if (note !== activeNote) {
+        if (note !== activeNote || !notebookView.el.hasClass('active')) {
             if (activeNote !== ServiceLocator.noteManager.orphanNote) {
                 let notebookView = this._getNotebookView(activeNote.notebook);
                 let noteView = this._getNoteView(notebookView, activeNote);
