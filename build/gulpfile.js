@@ -31,14 +31,10 @@ gulp.task('vendor-css', function () {
     let cssFiles = mainBowerFiles({
         filter: [
             '**/*.css',
-            '!**/*.min.css',
-            '!/codemirror',
-            '!/code-mirror-themes'
+            '!**/*.min.css'
         ],
         paths: rootDir
     });
-
-    cssFiles.push(npmDir + '/codemirror/lib/codemirror.css');
 
     console.log(cssFiles);
 
@@ -87,9 +83,7 @@ gulp.task('vendor-js', function () {
         filter: [
             '**/*.js',
             '!**/*.min.js',
-            '!**/jquery/**/*.js',
-            '!/codemirror',
-            '!/code-mirror-themes'
+            '!**/jquery/**/*.js'
         ],
         paths: rootDir
     });
