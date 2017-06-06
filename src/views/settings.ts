@@ -55,7 +55,7 @@ export class SettingsView extends AbstractView {
     }
 
     private _initNoteDirSetting() {
-        let el = this._getSettingEl('nodeDir');
+        let el = this._getSettingEl('noteDir');
         let inputEl = el.find('input');
         let config = ServiceLocator.config;
         let noteDir = config.noteDir;
