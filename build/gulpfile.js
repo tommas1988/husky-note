@@ -9,6 +9,7 @@ const srcDir = '../src';
 const npmDir = '../node_modules';
 const bowerDir = '../bower_components';
 const electronSrc = '../dist/electron/resources/app';
+const electronVersion = '1.6.5';
 
 // compile app css
 gulp.task('app-css', function () {
@@ -116,7 +117,13 @@ gulp.task('install-deps', ['package.json'], function () {
     return gulp.src(electronSrc + '/' + 'package.json')
         .pipe(gulp.dest(electronSrc))
         .pipe(plugins.install({
-            npm: '--production'
+            production: true,
+            npm: {
+                "runtime": "electron",
+                "target": electronVersion,
+                "target_arch": "x64",
+                "disturl": "https://atom.io/download/atom-shell"
+            }
         }));
 });
 
@@ -134,7 +141,7 @@ const electron = require('gulp-atom-electron');
 gulp.task('get-electron', function () {
     return gulp.src('../package.json')
         .pipe(electron({
-            version: '1.6.5',
+            version: electronVersion,
             platform: 'win32',
             arch: 'x64'
         }))
