@@ -1,16 +1,21 @@
 import { sep as pathSep } from 'path';
-import { ipcRenderer as ipc } from 'electron';
+import { ipcRenderer, ipcMain } from 'electron';
 import { EventEmitter } from 'events';
 import { readJson, writeJson, remove, move, exists } from 'fs-promise';
 import { existsSync } from 'fs';
 import { Notebook, Note } from './note';
 import { Event as ConfigEvent } from './config';
 import ServiceLocator from './service-locator';
+import { isRendererProcess } from './utils';
 
 type NoteIndex = { [notebook: string]: string[] };
 
+const IpcEvent = {
+    reload: 'ipc:note-manager:reload',
+    sync: 'ipc:note-manager:sync'
+};
+
 export const Event = {
-    // TODO: move events to top level
     reload: 'note-manager:reload',
     loaded: 'note-manager:loaded',
 
@@ -82,13 +87,20 @@ export class NoteManager extends EventEmitter {
     constructor() {
         super();
 
+        if (isRendererProcess) {
+            this._initFromRenderer();
+        } else {
+            this._initFromMain();
+        }
+    }
+
+    private _initFromRenderer() {
         this._notebooks = new Map<string, Notebook>();
 
         let config = ServiceLocator.config;
         this._basedir = config.noteDir;
 
-        // TODO: IPC reload event should defined in NoteManager
-        ipc.on(Event.reload, () => {
+        ipcRenderer.on(IpcEvent.reload, () => {
             this.load();
         });
 
@@ -108,6 +120,21 @@ export class NoteManager extends EventEmitter {
                 this._move(newVal);
             }
         });
+    }
+
+    private _initFromMain() {
+        ipcMain.on(IpcEvent.sync, (event) => {
+            this.sync(event.sender);
+        });
+    }
+
+    sync(sender?: Electron.WebContents) {
+        if (isRendererProcess) {
+            // TODO: send note sync ipc
+            return;
+        }
+
+        // TODO: note sync action
     }
 
     load() {
