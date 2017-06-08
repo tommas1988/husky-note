@@ -137,6 +137,13 @@ export class NoteManager extends EventEmitter {
         // TODO: note sync action
     }
 
+    archive() {
+        // should only be called in main process
+        if (isRendererProcess) {
+            return;
+        }
+    }
+
     load() {
         let indexFile = this._getIndexFile();
 

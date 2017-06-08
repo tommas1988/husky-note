@@ -1,17 +1,39 @@
 import * as NoteGit from 'nodegit';
+import { sep } from 'path';
+import ServiceLocator from './service-locator';
+import { existsSync } from 'fs';
 
 export class Git {
     private _repository;
 
-    static clone(url: string) {
+    get hasReopsitory(): boolean {
+        return existsSync(`${ServiceLocator.config.noteDir}${sep}.git`);
+    }
+
+    constructor() {
+    }
+
+    init() {
 
     }
 
-    constructor(path: string);
-    constructor(repo: Object);
-    constructor(arg: any) {
-        if (typeof arg === 'string') {
+    addAll() {
 
-        }
+    }
+
+    commit() {
+
+    }
+
+    setRemote(url: string) {
+
+    }
+
+    pull() {
+
+    }
+
+    push() {
+
     }
 }

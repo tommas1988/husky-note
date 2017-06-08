@@ -4,7 +4,7 @@ import { NoteRenderer } from './note-renderer';
 import { Alerter } from './alerter';
 import { Config } from './config';
 import { Dialog } from './dialog';
-import ViewManager from './view-manager';
+import { isMainProcess } from './utils';
 
 let config: Config;
 let editor: Editor;
@@ -22,6 +22,10 @@ const ServiceLocator = {
     },
 
     get editor(): Editor {
+        if (isMainProcess) {
+            return;
+        }
+
         if (!editor) {
             editor = new Editor();
         }
@@ -36,6 +40,10 @@ const ServiceLocator = {
     },
 
     get noteRenderer(): NoteRenderer {
+        if (isMainProcess) {
+            return;
+        }
+
         if (!noteRenderer) {
             noteRenderer = new NoteRenderer();
         }
@@ -43,6 +51,10 @@ const ServiceLocator = {
     },
 
     get alerter(): Alerter {
+        if (isMainProcess) {
+            return;
+        }
+
         if (!alerter) {
             alerter = new Alerter();
         }

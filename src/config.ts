@@ -14,6 +14,10 @@ abstract class BaseConfig extends EventEmitter {
 
     abstract save(name: string, newVal: any, oldVal: any);
 
+    protected _getConfig(name: string, defaults: any = '') {
+        return this._configs[name] || defaults;
+    }
+
     protected _setConfig(name: string, newVal: any, compare?: (oldVal: any, newVal: any) => boolean) {
         let oldVal = this._configs[name];
 
@@ -52,11 +56,58 @@ class EditorConfig extends SubConfig {
     }
 
     get keybinding() {
-        return this._configs.keybinding || 'default';
+        return  this._getConfig('keybinding', 'default');
     }
 
     set keybinding(val: string) {
         this._setConfig('keybinding', val);
+    }
+}
+
+class GitConfig extends SubConfig {
+    constructor(parent, configs) {
+        super(parent, configs);
+        this._nodeName = 'git';
+    }
+
+    get userName(): string {
+        return this._getConfig('userName');
+    }
+
+    set userName(name: string) {
+        this._setConfig('userName', name);
+    }
+
+    get userEmail(): string {
+        return this._getConfig('userEmail');
+    }
+
+    set userEmail(email: string) {
+        this._setConfig('userEmail', email);
+    }
+
+    get remote(): string {
+        return this._getConfig('remote');
+    }
+
+    set remote(url: string) {
+        this._setConfig('remote', url);
+    }
+
+    get sshKeyDir(): string {
+        return this._getConfig('sshKeyDir');
+    }
+
+    set sshKeyDir(dir: string) {
+        this._setConfig('sshKeyDir', dir);
+    }
+
+    get remoteUsername(): string {
+        return this._getConfig('remoteUsername');
+    }
+
+    set remoteUsername(username: string) {
+        this._setConfig('remoteUsername', username);
     }
 }
 
@@ -69,6 +120,7 @@ const configFile = `${utils.isMainProcess ? app.getPath('home') : remote.app.get
 
 export class Config extends BaseConfig {
     readonly editor: EditorConfig;
+    readonly git: GitConfig;
 
     constructor() {
         super();
@@ -81,10 +133,13 @@ export class Config extends BaseConfig {
 
         this._configs.editor = this._configs.editor || {};
         this.editor = new EditorConfig(this, this._configs.editor);
+
+        this._configs.git = this._configs.git || {};
+        this.git = new GitConfig(this, this._configs.git);
     }
 
     get noteDir(): string {
-        return this._configs.noteDir || '';
+        return this._getConfig('noteDir');
     }
 
     set noteDir(dirname: string) {
@@ -92,7 +147,7 @@ export class Config extends BaseConfig {
     }
 
     get debug(): boolean {
-        return this._configs.debug || false;
+        return this._getConfig('debug', false);
     }
 
     set debug(val: boolean) {
