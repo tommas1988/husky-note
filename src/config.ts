@@ -64,6 +64,7 @@ class EditorConfig extends SubConfig {
     }
 }
 
+// TODO: update corresponding git config e.g. user.name
 class GitConfig extends SubConfig {
     constructor(parent, configs) {
         super(parent, configs);
@@ -94,12 +95,20 @@ class GitConfig extends SubConfig {
         this._setConfig('remote', url);
     }
 
-    get sshKeyDir(): string {
-        return this._getConfig('sshKeyDir');
+    get sshPubKey(): string {
+        return this._getConfig('sshPubKey');
     }
 
-    set sshKeyDir(dir: string) {
-        this._setConfig('sshKeyDir', dir);
+    set sshPubKey(filename: string) {
+        this._setConfig('sshPubKey', filename);
+    }
+
+    get sshPrivKey(): string {
+        return this._getConfig('sshPrivKey');
+    }
+
+    set sshPrivKey(filename: string) {
+        this._setConfig('sshPrivKey', filename);
     }
 
     get remoteUsername(): string {
@@ -108,6 +117,14 @@ class GitConfig extends SubConfig {
 
     set remoteUsername(username: string) {
         this._setConfig('remoteUsername', username);
+    }
+
+    get remotePassword(): string {
+        return this._getConfig('remotePassword');
+    }
+
+    set remotePassword(password: string) {
+        this._setConfig('remotePassword', password);
     }
 }
 
