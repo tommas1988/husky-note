@@ -104,7 +104,7 @@ export class NoteManager extends EventEmitter {
             this.load();
         });
 
-        config.on(ConfigEvent.config_change, (name, newVal, oldVal) => {
+        config.on(ConfigEvent.change, (name, newVal, oldVal) => {
             if (name !== 'noteDir') {
                 return;
             }

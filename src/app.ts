@@ -128,7 +128,7 @@ export class App {
         };
 
         let config = ServiceLocator.config;
-        config.on(ConfigEvent.config_change, (name, newVal, oldVal) => {
+        config.on(ConfigEvent.change, (name, newVal, oldVal) => {
             switch (name) {
                 case 'debug':
                 case 'editor.keybinding':

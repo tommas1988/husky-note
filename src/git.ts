@@ -1,23 +1,35 @@
 import * as nodegit from 'nodegit';
-import ServiceLocator from './service-locator';
+import { GitConfig } from './config';
 
 const Repository = nodegit.Repository;
 const Signature = nodegit.Signature;
 const Remote = nodegit.Remote;
 const Graph = nodegit.Graph;
 const Cred = nodegit.Cred;
+const Config = nodegit.Config;
 const defaultRemote = 'origin';
 const defaultBranch = 'master';
 
+/**
+ * should not be called in renderer process
+ */
 export class Git {
+    private _config: GitConfig;
     private _repository;
     private _addResult;
     private _commitResult;
+    private _pulled: boolean;
 
-    constructor() {
-        let path = ServiceLocator.config.noteDir;
-        this._repository = Repository.open(path).catch(() => {
-            return Repository.init(path, 0);
+    constructor(repoPath: string, config: GitConfig) {
+        this._config = config;
+        this._repository = Repository.open(repoPath).catch(() => {
+            return Repository.init(repoPath, 0);
+        });
+    }
+
+    setConfig(name, value) {
+        this._repository.then((repo) => {
+            return Config.setString(name, value);
         });
     }
 
@@ -53,7 +65,7 @@ export class Git {
                     repo.getHeadCommit()
                 ]);
             }).then((result) => {
-                let config = ServiceLocator.config.git;
+                let config = this._config;
                 let signature = Signature.now(config.userName, config.userEmail);
                 return {
                     tree: result[0],
@@ -63,6 +75,9 @@ export class Git {
                     message: '' // TODO: read from config
                 };
             }).then((data) => {
+                // reset add result
+                this._addResult = null;
+
                 return repo.createCommit(
                     'HEAD',
                     data.author,
@@ -85,42 +100,48 @@ export class Git {
                     }
                 );
             }).then(() => {
+                this._pulled = true;
                 return repo.mergeBranches(defaultBranch, `${defaultRemote}/${defaultBranch}`);
             });
         });
     }
 
     push() {
+        if (!this._pulled) {
+            throw new Error('push action should be called after pull action');
+        }
+
         this._repository.then((repo) => {
-            return this._getRemote(repo).then((remote) => {
-                remote.push(
-                    [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
-                    {
-                        callbacks: this._getRemoteCallbacks()
-                    }
-                );
+            return Promise.all<any, any>([
+                repo.getBranchCommit(defaultBranch),
+                repo.getBranchCommit(`${defaultRemote}/${defaultBranch}`)
+            ]).then((commits) => {
+                return Graph.aheadBehind(repo, commits[0].id(), commits[1].id());
+            }).then((result) => {
+                if (!result.ahead) {
+                    // local branch is not ahead of remote, no need to push
+                    return;
+                }
+
+                return this._getRemote(repo).then((remote) => {
+                    // reset pulled flag
+                    this._pulled = false;
+
+                    remote.push(
+                        [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
+                        {
+                            callbacks: this._getRemoteCallbacks()
+                        }
+                    );
+                });
             });
         });
-    }
-
-    private _aheadBehind(repo) {
-        return Promise.all<any, any>([
-            repo.getBranchCommit(defaultBranch),
-            repo.getBranchCommit(`${defaultRemote}/${defaultBranch}`)
-        ]).then((commits) => {
-            return Graph.aheadBehind(repo, commits[0].id(), commits[1].id());
-        }).then((result) => {
-            return {
-                localAhead: result.ahead !== 0,
-                remoteAhead: result.behind !== 0
-            };
-        })
     }
 
     private _getRemote(repo) {
         return repo.getRemote(defaultRemote).catch(() => {
             // not remote created yet
-            let url = ServiceLocator.config.git.remote;
+            let url = this._config.remote;
             if (!url) {
                 throw new Error('remote url is not setted');
             }
@@ -132,7 +153,7 @@ export class Git {
     private _getRemoteCallbacks() {
         return {
             credentials(url, username) {
-                let config = ServiceLocator.config.git;
+                let config = this._config;
 
                 let publicKey = config.sshPubKey;
                 let privateKey = config.sshPrivKey;

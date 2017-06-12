@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
-import { remote, app } from 'electron';
+import { remote, app, ipcMain, ipcRenderer } from 'electron';
 import { sep } from 'path';
 import { readJsonSync } from 'fs-extra';
 import { writeJson } from 'fs-promise';
-import * as utils from './utils';
+import { isMainProcess, isRendererProcess } from './utils';
 
 abstract class BaseConfig extends EventEmitter {
     protected _configs;
@@ -49,7 +49,7 @@ class SubConfig extends BaseConfig {
     }
 }
 
-class EditorConfig extends SubConfig {
+export class EditorConfig extends SubConfig {
     constructor(parent, configs) {
         super(parent, configs);
         this._nodeName = 'editor';
@@ -64,8 +64,7 @@ class EditorConfig extends SubConfig {
     }
 }
 
-// TODO: update corresponding git config e.g. user.name
-class GitConfig extends SubConfig {
+export class GitConfig extends SubConfig {
     constructor(parent, configs) {
         super(parent, configs);
         this._nodeName = 'git';
@@ -128,31 +127,27 @@ class GitConfig extends SubConfig {
     }
 }
 
-export const Event = {
-    config_change: 'config:config-change',
-    config_change_failed: 'config:config-change-failed',
+const IpcEvent = {
+    sync: 'config:sync',
 };
 
-const configFile = `${utils.isMainProcess ? app.getPath('home') : remote.app.getPath('home')}${sep}.husky-note.json`;
+export const Event = {
+    change: 'config:config-change',
+    change_failed: 'config:config-change-failed',
+};
+
+const configFile = `${isMainProcess ? app.getPath('home') : remote.app.getPath('home')}${sep}.husky-note.json`;
 
 export class Config extends BaseConfig {
-    readonly editor: EditorConfig;
-    readonly git: GitConfig;
+    private _editor: EditorConfig;
+    private _git: GitConfig;
 
-    constructor() {
-        super();
+    get editor(): EditorConfig {
+        return this._editor;
+    }
 
-        try {
-            this._configs = readJsonSync(configFile);
-        } catch (e) {
-            this._configs = {};
-        }
-
-        this._configs.editor = this._configs.editor || {};
-        this.editor = new EditorConfig(this, this._configs.editor);
-
-        this._configs.git = this._configs.git || {};
-        this.git = new GitConfig(this, this._configs.git);
+    get git(): GitConfig {
+        return this._git;
     }
 
     get noteDir(): string {
@@ -171,11 +166,42 @@ export class Config extends BaseConfig {
         this._setConfig('debug', val);
     }
 
+    constructor() {
+        super();
+
+        try {
+            this._configs = readJsonSync(configFile);
+        } catch (e) {
+            this._configs = {};
+        }
+
+        this._setConfigs(this._configs);
+
+        if (isMainProcess) {
+            ipcMain.on(IpcEvent.sync, (event, configs, name) => {
+                this.sync(configs, name);
+            });
+        }
+    }
+
+    sync(configs, name: string) {
+        this._setConfigs(configs);
+    }
+
+    private _setConfigs(configs) {
+        configs.editor = configs.editor || {};
+        this._editor = new EditorConfig(this, configs.editor);
+
+        configs.git = configs.git || {};
+        this._git = new GitConfig(this, configs.git);
+    }
+
     save(name: string, newVal: any, oldVal: any) {
         writeJson(configFile, this._configs).then(() => {
-            this.emit(Event.config_change, name, newVal, oldVal);
+            ipcRenderer.send(IpcEvent.sync, this._configs, name);
+            this.emit(Event.change, name, newVal, oldVal);
         }).catch(() => {
-            this.emit(Event.config_change_failed, name);
+            this.emit(Event.change_failed, name);
             let parts = name.split('.');
             let config = this._configs;
 
