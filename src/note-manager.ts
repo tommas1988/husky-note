@@ -6,7 +6,8 @@ import { existsSync } from 'fs';
 import { Notebook, Note } from './note';
 import { Event as ConfigEvent } from './config';
 import ServiceLocator from './service-locator';
-import { isRendererProcess } from './utils';
+import { isRendererProcess, checkMainProcess } from './utils';
+import { Git } from './git';
 
 type NoteIndex = { [notebook: string]: string[] };
 
@@ -130,18 +131,34 @@ export class NoteManager extends EventEmitter {
 
     sync(sender?: Electron.WebContents) {
         if (isRendererProcess) {
-            // TODO: send note sync ipc
+            ipcRenderer.send(IpcEvent.sync);
             return;
         }
 
-        // TODO: note sync action
+        this.archive();
+
+        let git = ServiceLocator.git;
+        git.pull();
+        git.push();
+
+        if (sender) {
+            sender.send(IpcEvent.reload);
+        }
     }
 
+    /**
+     * Could only by called in main process
+     */
     archive() {
-        // should only be called in main process
-        if (isRendererProcess) {
-            return;
-        }
+        checkMainProcess();
+
+        let git = ServiceLocator.git;
+        git.status().then((files) => {
+            if (files.length) {
+                git.addAll();
+                git.commit();
+            }
+        });
     }
 
     load() {

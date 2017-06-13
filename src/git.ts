@@ -11,7 +11,7 @@ const defaultRemote = 'origin';
 const defaultBranch = 'master';
 
 /**
- * should not be called in renderer process
+ * Could only be called in main process
  */
 export class Git {
     private _config: GitConfig;
@@ -66,7 +66,7 @@ export class Git {
                 ]);
             }).then((result) => {
                 let config = this._config;
-                let signature = Signature.now(config.userName, config.userEmail);
+                let signature = Signature.now(config.username, config.userEmail);
                 return {
                     tree: result[0],
                     commit: result[1],
@@ -92,8 +92,12 @@ export class Git {
 
     pull() {
         this._repository.then((repo) => {
-            return this._getRemote(repo).then((remote) => {
-                remote.fetch(
+            let commit = this._commitResult ? this._commitResult : Promise.resolve();
+
+            return commit.then(() => {
+                return this._getRemote(repo);
+            }).then((remote) => {
+                return remote.fetch(
                     [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
                     {
                         callbacks: this._getRemoteCallbacks()
@@ -127,7 +131,7 @@ export class Git {
                     // reset pulled flag
                     this._pulled = false;
 
-                    remote.push(
+                    return remote.push(
                         [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
                         {
                             callbacks: this._getRemoteCallbacks()

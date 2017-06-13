@@ -4,7 +4,8 @@ import { NoteRenderer } from './note-renderer';
 import { Alerter } from './alerter';
 import { Config } from './config';
 import { Dialog } from './dialog';
-import { isMainProcess } from './utils';
+import { Git } from './git';
+import { checkRendererProcess, checkMainProcess } from './utils';
 
 let config: Config;
 let editor: Editor;
@@ -12,6 +13,7 @@ let noteManager: NoteManager;
 let noteRenderer: NoteRenderer;
 let alerter: Alerter;
 let dialog: Dialog;
+let git: Git;
 
 const ServiceLocator = {
     get config(): Config {
@@ -22,9 +24,7 @@ const ServiceLocator = {
     },
 
     get editor(): Editor {
-        if (isMainProcess) {
-            return;
-        }
+        checkRendererProcess();
 
         if (!editor) {
             editor = new Editor();
@@ -40,9 +40,7 @@ const ServiceLocator = {
     },
 
     get noteRenderer(): NoteRenderer {
-        if (isMainProcess) {
-            return;
-        }
+        checkRendererProcess();
 
         if (!noteRenderer) {
             noteRenderer = new NoteRenderer();
@@ -51,9 +49,7 @@ const ServiceLocator = {
     },
 
     get alerter(): Alerter {
-        if (isMainProcess) {
-            return;
-        }
+        checkRendererProcess();
 
         if (!alerter) {
             alerter = new Alerter();
@@ -66,7 +62,17 @@ const ServiceLocator = {
             dialog = new Dialog();
         }
         return dialog;
-    }
+    },
+
+    get git(): Git {
+        checkMainProcess();
+
+        if (!git) {
+            let GitClass: typeof Git = require('./git');
+            git = new GitClass(this.config.noteDir, this.config.git);
+        }
+        return git;
+    },
 };
 
 export default ServiceLocator;

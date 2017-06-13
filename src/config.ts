@@ -3,7 +3,7 @@ import { remote, app, ipcMain, ipcRenderer } from 'electron';
 import { sep } from 'path';
 import { readJsonSync } from 'fs-extra';
 import { writeJson } from 'fs-promise';
-import { isMainProcess, isRendererProcess } from './utils';
+import { isMainProcess, checkMainProcess } from './utils';
 
 abstract class BaseConfig extends EventEmitter {
     protected _configs;
@@ -70,11 +70,11 @@ export class GitConfig extends SubConfig {
         this._nodeName = 'git';
     }
 
-    get userName(): string {
+    get username(): string {
         return this._getConfig('userName');
     }
 
-    set userName(name: string) {
+    set username(name: string) {
         this._setConfig('userName', name);
     }
 
@@ -178,14 +178,19 @@ export class Config extends BaseConfig {
         this._setConfigs(this._configs);
 
         if (isMainProcess) {
-            ipcMain.on(IpcEvent.sync, (event, configs, name) => {
-                this.sync(configs, name);
+            ipcMain.on(IpcEvent.sync, (event, configs, name, newVal, oldVal) => {
+                this.update(configs, name, newVal, oldVal);
             });
         }
     }
 
-    sync(configs, name: string) {
+    /**
+     * Could only be called in main process
+     */
+    update(configs, name: string, newVal: any, oldVal: any) {
+        checkMainProcess();
         this._setConfigs(configs);
+        this.emit(Event.change, name, newVal, oldVal);
     }
 
     private _setConfigs(configs) {
@@ -198,7 +203,7 @@ export class Config extends BaseConfig {
 
     save(name: string, newVal: any, oldVal: any) {
         writeJson(configFile, this._configs).then(() => {
-            ipcRenderer.send(IpcEvent.sync, this._configs, name);
+            ipcRenderer.send(IpcEvent.sync, this._configs, name, newVal, oldVal);
             this.emit(Event.change, name, newVal, oldVal);
         }).catch(() => {
             this.emit(Event.change_failed, name);
