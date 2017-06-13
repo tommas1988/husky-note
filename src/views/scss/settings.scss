@@ -2,6 +2,8 @@
 
 #setting {
     $header-height: 55px;
+    $bg-color: lighten($color-bg, 2%);
+    $z-index: 100;
 
     position: absolute;
     display: none;
@@ -9,9 +11,10 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: lighten($color-bg, 5%);
+    background-color: $bg-color;
     animation-duration: 0.4s;
-    z-index: 100;
+    z-index: $z-index;
+    overflow: scroll;
 
     .btn:focus {
         outline: none;
@@ -19,7 +22,7 @@
     }
 
     aside {
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
 
@@ -75,6 +78,8 @@
             width: 100%;
             max-width: 738px;
             min-width: 600px;
+            background-color: $bg-color;
+            z-index: $z-index;
 
             h3 {
                 line-height: 1;
@@ -82,12 +87,12 @@
             }
             h3::after {
                 -webkit-margin-end: 20px;
-                background-color: darken($color-divider, 5%);
+                background-color: darken($color-divider, 7%);
                 content: ' ';
                 display: block;
                 height: 1px;
                 position: relative;
-                top: 13px;
+                top: 7px;
             }
         }
 

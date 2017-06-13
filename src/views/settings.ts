@@ -9,6 +9,8 @@ const FADE_IN_CLASS = 'fadeInRight';
 const FADE_OUT_CLASS = 'fadeOutRight';
 
 export class SettingsView extends AbstractView {
+    private _setHeightHandler: () => void;
+
     constructor() {
         super('#setting');
         this._el.addClass('animated');
@@ -32,6 +34,16 @@ export class SettingsView extends AbstractView {
         this._initEditorKeybinding();
 
         el.addClass(FADE_IN_CLASS).show();
+
+        if (!this._setHeightHandler) {
+            this._setHeightHandler = () => {
+                el.height(window.innerHeight);
+            };
+        }
+        this._setHeightHandler();
+
+        // set height when window size change
+        $(window).on('resize', this._setHeightHandler);
     }
 
     closePanel() {
@@ -42,6 +54,8 @@ export class SettingsView extends AbstractView {
                 .hide()
                 .empty();
         }, 400);
+
+        $(window).off('resize', this._setHeightHandler);
     }
 
     private _setPanelHandlers() {

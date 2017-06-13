@@ -1,5 +1,4 @@
 import { dialog, remote, BrowserWindow } from 'electron';
-import { APP_NAME } from './app';
 import * as utils from './utils';
 
 export class Dialog {
@@ -28,7 +27,7 @@ export class Dialog {
         }
 
         if (!options.title) {
-            options.title = APP_NAME;
+            options.title = remote.app.getName();
         }
         if (typeof options.noLink === 'undefined') {
             options.noLink = true;

@@ -12,7 +12,7 @@ import { Event as ConfigEvent } from './config';
 
 const { app, Menu } = remote;
 
-export const APP_NAME = 'Husky Note';
+const APP_NAME = app.getName();
 
 export const enum NoteView {
     ReadMode = 1,

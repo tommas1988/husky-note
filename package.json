@@ -1,5 +1,6 @@
 {
   "name": "husky",
+  "productName": "Husky Note",
   "version": "1.2.0",
   "main": "src/main.js",
   "scripts": {

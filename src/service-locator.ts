@@ -27,6 +27,7 @@ const ServiceLocator = {
         checkRendererProcess();
 
         if (!editor) {
+            let Editor = require('./editor').Editor;
             editor = new Editor();
         }
         return editor;
@@ -43,6 +44,7 @@ const ServiceLocator = {
         checkRendererProcess();
 
         if (!noteRenderer) {
+            let NoteRenderer = require('./note-renderer').NoteRenderer;
             noteRenderer = new NoteRenderer();
         }
         return noteRenderer;
@@ -52,6 +54,7 @@ const ServiceLocator = {
         checkRendererProcess();
 
         if (!alerter) {
+            let Alerter = require('./alerter').Alerter;
             alerter = new Alerter();
         }
         return alerter;
@@ -68,8 +71,8 @@ const ServiceLocator = {
         checkMainProcess();
 
         if (!git) {
-            let GitClass: typeof Git = require('./git');
-            git = new GitClass(this.config.noteDir, this.config.git);
+            let Git = require('./git').Git;
+            git = new Git(this.config.noteDir, this.config.git);
         }
         return git;
     },
