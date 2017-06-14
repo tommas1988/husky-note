@@ -6,7 +6,6 @@ const Signature = nodegit.Signature;
 const Remote = nodegit.Remote;
 const Graph = nodegit.Graph;
 const Cred = nodegit.Cred;
-const Config = nodegit.Config;
 const defaultRemote = 'origin';
 const defaultBranch = 'master';
 
@@ -29,7 +28,9 @@ export class Git {
 
     setConfig(name, value) {
         this._repository.then((repo) => {
-            return Config.setString(name, value);
+            return repo.config().then(((config) => {
+                return config.setString(name, value);
+            }));
         });
     }
 

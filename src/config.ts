@@ -71,11 +71,11 @@ export class GitConfig extends SubConfig {
     }
 
     get username(): string {
-        return this._getConfig('userName');
+        return this._getConfig('username');
     }
 
     set username(name: string) {
-        this._setConfig('userName', name);
+        this._setConfig('username', name);
     }
 
     get userEmail(): string {
