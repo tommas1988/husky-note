@@ -11,8 +11,8 @@
     "fs-promise": "^2.0.2",
     "html-entities": "^1.2.1",
     "jquery": "^3.2.1",
-    "log4js": "^1.1.1",
     "marked": "^0.3.6",
+    "moment": "^2.18.1",
     "monaco-editor": "^0.8.3",
     "nodegit": "^0.18.3"
   },
