@@ -1,5 +1,7 @@
 import * as nodegit from 'nodegit';
 import { GitConfig } from './config';
+import ServiceLocator from './service-locator';
+import * as moment from 'moment';
 
 const Repository = nodegit.Repository;
 const Signature = nodegit.Signature;
@@ -8,6 +10,8 @@ const Graph = nodegit.Graph;
 const Cred = nodegit.Cred;
 const defaultRemote = 'origin';
 const defaultBranch = 'master';
+
+const logger = ServiceLocator.logger;
 
 /**
  * Could only be called in main process
@@ -22,25 +26,34 @@ export class Git {
     constructor(repoPath: string, config: GitConfig) {
         this._config = config;
         this._repository = Repository.open(repoPath).catch(() => {
+            logger.info(`Creating repository ${repoPath}`);
             return Repository.init(repoPath, 0);
         });
     }
 
     setConfig(name, value) {
+        logger.info(`Setting git config ${name} = ${value}`);
+
         this._repository.then((repo) => {
             return repo.config().then(((config) => {
                 return config.setString(name, value);
             }));
+        }).catch((e) => {
+            logger.error(e);
         });
     }
 
     status() {
         return this._repository.then((repo) => {
             return repo.getStatus();
+        }).catch((e) => {
+            logger.error(e);
         });
     }
 
     addAll() {
+        logger.info('Adding changes to stage');
+
         this._addResult = this._repository.then((repo) => {
             return repo.index().then((index) => {
                 return index.removeAll().then(() => {
@@ -59,6 +72,8 @@ export class Git {
             throw new Error('No changes added to stage yet!');
         }
 
+        logger.info('Creating a commit');
+
         this._commitResult = this._repository.then((repo) => {
             return this._addResult.then((oid) => {
                 return Promise.all<any, any>([
@@ -73,7 +88,7 @@ export class Git {
                     commit: result[1],
                     author: signature,
                     committer: signature,
-                    message: '' // TODO: read from config
+                    message: `Write notes at ${moment().format('YYYY-MM-DD HH:mm:ss')}` // TODO: read from config
                 };
             }).then((data) => {
                 // reset add result
@@ -88,10 +103,14 @@ export class Git {
                     [data.commit.id()]
                 );
             });
+        }).catch((e) => {
+            logger.error(e);
         });
     }
 
     pull() {
+        logger.info('Pulling from remote');
+
         this._repository.then((repo) => {
             let commit = this._commitResult ? this._commitResult : Promise.resolve();
 
@@ -115,6 +134,8 @@ export class Git {
         if (!this._pulled) {
             throw new Error('push action should be called after pull action');
         }
+
+        logger.info('Pushing to remote');
 
         this._repository.then((repo) => {
             return Promise.all<any, any>([
@@ -140,6 +161,8 @@ export class Git {
                     );
                 });
             });
+        }).catch((e) => {
+            logger.error(e);
         });
     }
 
