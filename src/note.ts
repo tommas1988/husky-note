@@ -162,8 +162,7 @@ export class Note {
             ServiceLocator.noteManager.emit(NoteManagerEvent.note_saved, this);
         }).catch((e) => {
             ServiceLocator.noteManager.emit(NoteManagerEvent.save_note_failed, this);
-            e.message = `__Reboot Needed!!!__ ${e.message}`;
-            ServiceLocator.alerter.fatal(e);
+            ServiceLocator.alerter.fatal(`__Reboot Needed!!!__ ${e.message}`);
         });
     }
 

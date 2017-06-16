@@ -233,8 +233,7 @@ export class NoteManager extends EventEmitter {
         this._save().catch((e) => {
             // TODO: do some clean work
             this.emit(Event.create_notebook_failed, notebook);
-            e.message = `__Reload Needed!!!__ ${e.message}`;
-            ServiceLocator.alerter.fatal(e);
+            ServiceLocator.alerter.fatal(`__Reload Needed!!!__ ${e.message}`);
         });
 
         return notebook;
@@ -268,8 +267,7 @@ export class NoteManager extends EventEmitter {
         this._save().catch((e) => {
             // TODO: do some clean work
             this.emit(Event.create_note_failed, note);
-            e.message = `__Reload Needed!!!__ ${e.message}`;
-            ServiceLocator.alerter.fatal(e);
+            ServiceLocator.alerter.fatal(`__Reload Needed!!!__ ${e.message}`);
         });
 
         return note;
@@ -290,8 +288,7 @@ export class NoteManager extends EventEmitter {
         }).catch((e) => {
             // TODO: do some clean work
             this.emit(Event.rename_notebook_failed, oldName, notebook);
-            e.message = `__Restore Manually Needed!!!__ ${e.message}`;
-            ServiceLocator.alerter.fatal(e);
+            ServiceLocator.alerter.fatal(`__Restore Manually Needed!!!__ ${e.message}`);
         });
 
         notebooks.set(newName, notebook);
@@ -317,8 +314,7 @@ export class NoteManager extends EventEmitter {
         }).catch((e) => {
             // TODO: do some clean work
             this.emit(Event.rename_note_failed, newName, note);
-            e.message = `__Restore Manually Needed!!!__ ${e.message}`;
-            ServiceLocator.alerter.fatal(e);
+            ServiceLocator.alerter.fatal(`__Restore Manually Needed!!!__ ${e.message}`);
         });
 
         notes.set(newName, note);
@@ -342,8 +338,7 @@ export class NoteManager extends EventEmitter {
         }).catch((e) => {
             // TODO: do some clean work
             this.emit(Event.delete_notebook_failed, notebook);
-            e.message = `__Restore Manually Needed!!!__ ${e.message}`;
-            ServiceLocator.alerter.fatal(e);
+            ServiceLocator.alerter.fatal(`__Restore Manually Needed!!!__ ${e.message}`);
         });
     }
 
@@ -359,8 +354,7 @@ export class NoteManager extends EventEmitter {
         }).catch((e) => {
             // TODO: do some clean work
             this.emit(Event.delete_note_failed, note);
-            e.message = `__Restore Manually Needed!!!__ ${e.message}`;
-            ServiceLocator.alerter.fatal(e);
+            ServiceLocator.alerter.fatal(`__Restore Manually Needed!!!__ ${e.message}`);
         });
     }
 

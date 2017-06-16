@@ -44,7 +44,7 @@ export class SettingsView extends AbstractView {
         let html = readFileSync(`${__dirname}${sep}templates${sep}settings.html`, { encoding: 'utf8' });
 
         if (!html) {
-            ServiceLocator.alerter.fatal(new Error('Cannot open setting template'));
+            ServiceLocator.alerter.fatal('Cannot open setting template');
             return;
         }
 

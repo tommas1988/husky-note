@@ -102,7 +102,14 @@ export class App {
     private _initAppHandlers() {
         // uncaught exceptions
         processOn('uncaughtException', (e) => {
-            ServiceLocator.alerter.fatal(e);
+            if (ServiceLocator.config.debug) {
+                ServiceLocator.alerter.fatal(e.message);
+                console.log(e.stack);
+            } else {
+                ServiceLocator.alerter.fatal(`_Unexpected error happens!_ Check the errors in ${ServiceLocator.logger.logfile}`);
+            }
+
+            ServiceLocator.logger.error(e);
         });
 
         // prevent close window if there are unsaved notes
@@ -240,7 +247,7 @@ export class App {
 
         if (parts.length > 1) {
             if (parts[0] !== 'editor') {
-                ServiceLocator.alerter.fatal(new Error(`Unkown command: ${command}`));
+                ServiceLocator.alerter.fatal(`Unkown command: ${command}`);
                 return;
             }
 
@@ -249,7 +256,7 @@ export class App {
         }
 
         if (!commonCommands[command]) {
-            ServiceLocator.alerter.fatal(new Error(`Unkown command: ${command}`));
+            ServiceLocator.alerter.fatal(`Unkown command: ${command}`);
             return;
         }
 

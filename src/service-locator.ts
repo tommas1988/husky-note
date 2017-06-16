@@ -5,6 +5,7 @@ import { Alerter } from './alerter';
 import { Config } from './config';
 import { Dialog } from './dialog';
 import { Git } from './git';
+import { Log } from './log';
 import { checkRendererProcess, checkMainProcess } from './utils';
 
 let config: Config;
@@ -14,6 +15,7 @@ let noteRenderer: NoteRenderer;
 let alerter: Alerter;
 let dialog: Dialog;
 let git: Git;
+let logger: Log;
 
 const ServiceLocator = {
     get config(): Config {
@@ -79,6 +81,13 @@ const ServiceLocator = {
             git = new Git(this.config.noteDir, this.config.git);
         }
         return git;
+    },
+
+    get logger(): Log {
+        if (!logger) {
+            logger = new Log();
+        }
+        return logger;
     },
 };
 
