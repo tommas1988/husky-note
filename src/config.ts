@@ -4,6 +4,8 @@ import { sep } from 'path';
 import { readJsonSync } from 'fs-extra';
 import { writeJson } from 'fs-promise';
 import { isMainProcess, checkMainProcess } from './utils';
+import ServiceLocator from './service-locator';
+import { inspect } from 'util';
 
 abstract class BaseConfig extends EventEmitter {
     protected _configs;
@@ -169,13 +171,14 @@ export class Config extends BaseConfig {
     constructor() {
         super();
 
+        let configs;
         try {
-            this._configs = readJsonSync(configFile);
+            configs = readJsonSync(configFile);
         } catch (e) {
-            this._configs = {};
+            configs = {};
         }
 
-        this._setConfigs(this._configs);
+        this._setConfigs(configs);
 
         if (isMainProcess) {
             ipcMain.on(IpcEvent.sync, (event, configs, name, newVal, oldVal) => {
@@ -189,6 +192,9 @@ export class Config extends BaseConfig {
      */
     update(configs, name: string, newVal: any, oldVal: any) {
         checkMainProcess();
+
+        ServiceLocator.logger.info('sync config changes: %s', inspect(configs));
+
         this._setConfigs(configs);
         this.emit(Event.change, name, newVal, oldVal);
     }
@@ -199,6 +205,8 @@ export class Config extends BaseConfig {
 
         configs.git = configs.git || {};
         this._git = new GitConfig(this, configs.git);
+
+        this._configs = configs;
     }
 
     save(name: string, newVal: any, oldVal: any) {

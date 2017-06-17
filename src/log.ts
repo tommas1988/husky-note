@@ -1,24 +1,28 @@
-import { remote, app} from 'electron';
+import { remote, app } from 'electron';
 import { sep } from 'path';
 import { Console } from 'console';
 import { createWriteStream } from 'fs';
 import ServiceLocator from './service-locator';
 import * as moment from 'moment';
 import { isRendererProcess } from './utils';
+import { inspect } from 'util';
 
 const LogType = {
     error: 'ERROR',
     info: 'INFO',
 };
 
+const logfile = app
+    ? `${app.getPath('temp')}${sep}husky-main.log`
+    : `${remote.app.getPath('temp')}${sep}husky-renderer.log`;
+
 export class Log extends Console {
-    readonly logfile: string;
+    get logfile(): string {
+        return logfile;
+    }
 
     constructor() {
-        let logfile = `${(app ? app : remote.app).getPath('temp')}${sep}husky.log`;
-
         super(createWriteStream(logfile));
-        this.logfile = logfile;
     }
 
     error(message?: any, ...optionalParams: any[]): void {
@@ -26,7 +30,7 @@ export class Log extends Console {
             super.log(this._formatMsg(message.message, LogType.error), ...optionalParams);
             super.log(message.stack);
         } else {
-            super.log(this._formatMsg(message.toString(), LogType.error), ...optionalParams);
+            super.log(this._formatMsg(inspect(message), LogType.error), ...optionalParams);
             super.trace();
         }
     }
@@ -35,7 +39,7 @@ export class Log extends Console {
         if (!ServiceLocator.config.debug) {
             return;
         }
-        super.log(this._formatMsg(message.toString, LogType.info), ...optionalParams);
+        super.log(this._formatMsg(inspect(message), LogType.info), ...optionalParams);
     }
 
     private _formatMsg(msg: string, type: string): string {

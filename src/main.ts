@@ -9,10 +9,9 @@ import ServiceLocator from './service-locator';
 let mainWindow;
 let config: Config;
 
-function init() {
+function initConfig() {
     config = ServiceLocator.config;
 
-    // config change handler
     config.on(ConfigEvent.change, (name, newVal, oldVal) => {
         switch (name) {
             case 'debug':
@@ -66,14 +65,9 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-    init();
-
+    initConfig();
     createWindow();
-
-    // if set remote repo, sync first
-    if (config.git.remote) {
-        ServiceLocator.noteManager.sync(mainWindow.webContents);
-    }
+    ServiceLocator.noteManager.sync(mainWindow.webContents);
 });
 
 // Quit when all windows are closed.

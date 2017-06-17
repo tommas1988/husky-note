@@ -130,6 +130,13 @@ export class NoteManager extends EventEmitter {
     }
 
     sync(sender?: Electron.WebContents) {
+        // no remote setted, return
+        if (!ServiceLocator.config.git.remote) {
+            return;
+        }
+
+        ServiceLocator.logger.info(`Sync notes`);
+
         if (isRendererProcess) {
             ipcRenderer.send(IpcEvent.sync);
             return;

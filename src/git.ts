@@ -135,7 +135,7 @@ export class Git {
             throw new Error('push action should be called after pull action');
         }
 
-        logger.info('Pushing to remote');
+        logger.info('push method called');
 
         this._repository.then((repo) => {
             return Promise.all<any, any>([
@@ -148,6 +148,8 @@ export class Git {
                     // local branch is not ahead of remote, no need to push
                     return;
                 }
+
+                logger.info('Pushing to remote');
 
                 return this._getRemote(repo).then((remote) => {
                     // reset pulled flag
@@ -187,6 +189,7 @@ export class Git {
                 let privateKey = config.sshPrivKey;
                 if (publicKey && privateKey) {
                     // user ssh key
+                    logger.info('git credentials: use ssh key');
                     return Cred.sshKeyNew(username, publicKey, privateKey, '');
                 }
 
@@ -194,9 +197,11 @@ export class Git {
                 let remotePassword = config.remotePassword;
                 if (remoteUsername) {
                     // user password
+                    logger.info('git credentials: use password');
                     return Cred.userpassPlaintextNew(remoteUsername, remotePassword);
                 }
 
+                logger.info('git credentials: use default');
                 return Cred.defaultNew();
             },
 
