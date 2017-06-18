@@ -1,20 +1,21 @@
 import { remote, app } from 'electron';
-import { sep } from 'path';
+import { sep, dirname } from 'path';
 import { Console } from 'console';
 import { createWriteStream } from 'fs';
 import ServiceLocator from './service-locator';
 import * as moment from 'moment';
 import { isRendererProcess } from './utils';
-import { inspect } from 'util';
+import { inspect, format } from 'util';
 
 const LogType = {
     error: 'ERROR',
     info: 'INFO',
 };
 
+// TODO: merge into a single file
 const logfile = app
-    ? `${app.getPath('temp')}${sep}husky-main.log`
-    : `${remote.app.getPath('temp')}${sep}husky-renderer.log`;
+    ? `${dirname(app.getPath('exe'))}${sep}husky-main.log`
+    : `${dirname(remote.app.getPath('exe'))}${sep}husky-renderer.log`;
 
 export class Log extends Console {
     get logfile(): string {
@@ -27,11 +28,12 @@ export class Log extends Console {
 
     error(message?: any, ...optionalParams: any[]): void {
         if (message instanceof Error) {
-            super.log(this._formatMsg(message.message, LogType.error), ...optionalParams);
-            super.log(message.stack);
+            this.log(this._formatMsg(message.message, LogType.error), ...optionalParams);
+            this.log(message.stack);
         } else {
-            super.log(this._formatMsg(inspect(message), LogType.error), ...optionalParams);
-            super.trace();
+            message = (typeof message === 'string') ? message : inspect(message);
+            this.log(this._formatMsg(message, LogType.error), ...optionalParams);
+            this.trace();
         }
     }
 
@@ -39,7 +41,18 @@ export class Log extends Console {
         if (!ServiceLocator.config.debug) {
             return;
         }
-        super.log(this._formatMsg(inspect(message), LogType.info), ...optionalParams);
+        this.log(this._formatMsg((typeof message === 'string') ? message : inspect(message), LogType.info), ...optionalParams);
+    }
+
+    /**
+     * Modified version of node to avoid recursive calls
+     */
+    trace(...args) {
+        let err = new Error();
+        err.name = 'Trace';
+        err.message = format.apply(null, args);
+        Error.captureStackTrace(err, this.trace);
+        this.log(err.stack);
     }
 
     private _formatMsg(msg: string, type: string): string {
