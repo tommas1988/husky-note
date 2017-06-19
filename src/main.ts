@@ -1,6 +1,7 @@
 import { app, screen, BrowserWindow } from 'electron';
 import { join as pathJoin } from 'path';
 import { format as urlFormat } from 'url';
+import { on as processOn } from 'process';
 import { Config, Event as ConfigEvent } from './config';
 import ServiceLocator from './service-locator';
 
@@ -65,7 +66,20 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+    let logger = ServiceLocator.logger;
+
+    // truncate log file
+    logger.clear();
+
     initConfig();
+
+    processOn('uncaughtException', (e) => {
+        logger.error(e);
+        if (config.debug) {
+            throw e;
+        }
+    });
+
     createWindow();
     ServiceLocator.noteManager.sync(mainWindow.webContents);
 });

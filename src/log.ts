@@ -1,7 +1,7 @@
 import { remote, app } from 'electron';
 import { sep, dirname } from 'path';
 import { Console } from 'console';
-import { createWriteStream } from 'fs';
+import { openSync, createWriteStream, WriteStream, truncateSync } from 'fs';
 import ServiceLocator from './service-locator';
 import * as moment from 'moment';
 import { isRendererProcess } from './utils';
@@ -12,18 +12,25 @@ const LogType = {
     info: 'INFO',
 };
 
-// TODO: merge into a single file
-const logfile = app
-    ? `${dirname(app.getPath('exe'))}${sep}husky-main.log`
-    : `${dirname(remote.app.getPath('exe'))}${sep}husky-renderer.log`;
-
 export class Log extends Console {
-    get logfile(): string {
-        return logfile;
-    }
+    readonly logfile;
 
     constructor() {
-        super(createWriteStream(logfile));
+        let logfile = `${dirname((app ? app : remote.app).getPath('exe'))}${sep}husky.log`
+
+        super(createWriteStream(logfile, {
+            flags: 'r+',
+            encoding: 'utf8',
+            fd: null,
+            mode: 0o666,
+            autoClose: true
+        }));
+
+        this.logfile = logfile;
+    }
+
+    clear() {
+        truncateSync(this.logfile);
     }
 
     error(message?: any, ...optionalParams: any[]): void {
