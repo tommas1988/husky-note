@@ -13,7 +13,8 @@ type NoteIndex = { [notebook: string]: string[] };
 
 const IpcEvent = {
     reload: 'ipc:note-manager:reload',
-    sync: 'ipc:note-manager:sync'
+    sync: 'ipc:note-manager:sync',
+    syncFailed: 'ipc:note-manager:sync-failed',
 };
 
 export const Event = {
@@ -129,7 +130,7 @@ export class NoteManager extends EventEmitter {
         });
     }
 
-    sync(sender?: Electron.WebContents) {
+    sync(sender?: Electron.WebContents): Promise<any> | void {
         // no remote setted, return
         if (!ServiceLocator.config.git.remote) {
             return;
@@ -142,29 +143,41 @@ export class NoteManager extends EventEmitter {
             return;
         }
 
-        this.archive();
-
         let git = ServiceLocator.git;
-        git.pull();
-        git.push();
+        return this.archive().then(() => {
+            return git.pull();
+        }).then(() => {
+            return git.push();
+        }).then(() => {
+            if (sender) {
+                sender.send(IpcEvent.reload);
+            }
+        }).catch((e) => {
+            if (sender) {
+                sender.send(IpcEvent.syncFailed);
+            }
+            ServiceLocator.logger.error(e);
 
-        if (sender) {
-            sender.send(IpcEvent.reload);
-        }
+            throw new Error('Sync notes error');
+        });
     }
 
     /**
      * Could only by called in main process
      */
-    archive() {
+    archive(): Promise<any> {
         checkMainProcess();
 
         let git = ServiceLocator.git;
-        git.status().then((files) => {
+        return git.status().then((files) => {
             if (files.length) {
-                git.addAll();
-                git.commit();
+                return git.addAll().then(git.commit.bind(git));
+            } else {
+                return Promise.resolve();
             }
+        }).catch((e) => {
+            ServiceLocator.logger.error(e);
+            throw new Error('commit notes error');
         });
     }
 

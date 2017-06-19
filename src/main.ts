@@ -1,4 +1,4 @@
-import { app, screen, BrowserWindow } from 'electron';
+import { app, screen, BrowserWindow, dialog } from 'electron';
 import { join as pathJoin } from 'path';
 import { format as urlFormat } from 'url';
 import { on as processOn } from 'process';
@@ -62,6 +62,14 @@ function createWindow() {
     });
 }
 
+function quit() {
+    // On OS X it is common for applications and their menu bar
+    // to stay active until the user quits explicitly with Cmd + Q
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -88,17 +96,22 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
     // commit note and/or push
     let noteManager = ServiceLocator.noteManager;
+    let result;
+    let errMsg;
     if (config.git.remote) {
-        noteManager.sync();
+        result = noteManager.sync();
+        errMsg = 'Sync Notes Error';
     } else {
-        noteManager.archive();
+        result = noteManager.archive();
+        errMsg = 'Commit Notes Error';
     }
 
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
+    result.then(() => {
+        quit();
+    }).catch(() => {
+        dialog.showErrorBox(errMsg, `Check log: ${ServiceLocator.logger.logfile} for details`);
+        quit();
+    });
 });
 
 app.on('activate', () => {

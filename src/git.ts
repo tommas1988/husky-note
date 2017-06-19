@@ -17,17 +17,18 @@ const logger = ServiceLocator.logger;
  * Could only be called in main process
  */
 export class Git {
-    private _config: GitConfig;
     private _repository;
-    private _addResult;
-    private _commitResult;
-    private _pulled: boolean;
 
-    constructor(repoPath: string, config: GitConfig) {
-        this._config = config;
-        this._repository = Repository.open(repoPath).catch(() => {
-            logger.info(`Creating repository ${repoPath}`);
-            return Repository.init(repoPath, 0);
+    constructor() {
+        let noteDir = ServiceLocator.config.noteDir;
+
+        if (!noteDir) {
+            throw new Error('Cannot initialize Git without note directory setted!');
+        }
+
+        this._repository = Repository.open(noteDir).catch(() => {
+            logger.info(`Creating repository ${noteDir}`);
+            return Repository.init(noteDir, 0);
         });
     }
 
@@ -46,15 +47,13 @@ export class Git {
     status() {
         return this._repository.then((repo) => {
             return repo.getStatus();
-        }).catch((e) => {
-            logger.error(e);
         });
     }
 
     addAll() {
         logger.info('Adding changes to stage');
 
-        this._addResult = this._repository.then((repo) => {
+        return this._repository.then((repo) => {
             return repo.index().then((index) => {
                 return index.removeAll().then(() => {
                     return index.addAll();
@@ -67,21 +66,15 @@ export class Git {
         });
     }
 
-    commit() {
-        if (!this._addResult) {
-            throw new Error('No changes added to stage yet!');
-        }
-
+    commit(oid) {
         logger.info('Creating a commit');
 
-        this._commitResult = this._repository.then((repo) => {
-            return this._addResult.then((oid) => {
-                return Promise.all<any, any>([
-                    repo.getTree(oid),
-                    repo.getHeadCommit()
-                ]);
-            }).then((result) => {
-                let config = this._config;
+        return this._repository.then((repo) => {
+            return Promise.all<any, any>([
+                repo.getTree(oid),
+                repo.getHeadCommit()
+            ]).then((result) => {
+                let config = ServiceLocator.config.git;
                 let signature = Signature.now(config.username, config.userEmail);
                 return {
                     tree: result[0],
@@ -91,32 +84,23 @@ export class Git {
                     message: `Write notes at ${moment().format('YYYY-MM-DD HH:mm:ss')}` // TODO: read from config
                 };
             }).then((data) => {
-                // reset add result
-                this._addResult = null;
-
                 return repo.createCommit(
                     'HEAD',
                     data.author,
                     data.committer,
                     data.message,
                     data.tree,
-                    [data.commit.id()]
+                    data.commit ? [data.commit.id()] : []
                 );
             });
-        }).catch((e) => {
-            logger.error(e);
         });
     }
 
     pull() {
         logger.info('Pulling from remote');
 
-        this._repository.then((repo) => {
-            let commit = this._commitResult ? this._commitResult : Promise.resolve();
-
-            return commit.then(() => {
-                return this._getRemote(repo);
-            }).then((remote) => {
+        return this._repository.then((repo) => {
+            return this._getRemote(repo).then((remote) => {
                 return remote.fetch(
                     [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
                     {
@@ -124,20 +108,15 @@ export class Git {
                     }
                 );
             }).then(() => {
-                this._pulled = true;
                 return repo.mergeBranches(defaultBranch, `${defaultRemote}/${defaultBranch}`);
             });
         });
     }
 
     push() {
-        if (!this._pulled) {
-            throw new Error('push action should be called after pull action');
-        }
-
         logger.info('push method called');
 
-        this._repository.then((repo) => {
+        return this._repository.then((repo) => {
             return Promise.all<any, any>([
                 repo.getBranchCommit(defaultBranch),
                 repo.getBranchCommit(`${defaultRemote}/${defaultBranch}`)
@@ -152,9 +131,6 @@ export class Git {
                 logger.info('Pushing to remote');
 
                 return this._getRemote(repo).then((remote) => {
-                    // reset pulled flag
-                    this._pulled = false;
-
                     return remote.push(
                         [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
                         {
@@ -163,15 +139,13 @@ export class Git {
                     );
                 });
             });
-        }).catch((e) => {
-            logger.error(e);
         });
     }
 
     private _getRemote(repo) {
         return repo.getRemote(defaultRemote).catch(() => {
             // not remote created yet
-            let url = this._config.remote;
+            let url = ServiceLocator.config.git.remote;
             if (!url) {
                 throw new Error('remote url is not setted');
             }

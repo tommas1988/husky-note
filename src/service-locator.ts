@@ -73,12 +73,8 @@ const ServiceLocator = {
         checkMainProcess();
 
         if (!git) {
-            if (!this.config.noteDir) {
-                throw new Error('Cannot initialize Git without note directory setted!');
-            }
-
             let Git = require('./git').Git;
-            git = new Git(this.config.noteDir, this.config.git);
+            git = new Git();
         }
         return git;
     },
