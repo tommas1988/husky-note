@@ -1,7 +1,7 @@
 import { remote, app } from 'electron';
 import { sep, dirname } from 'path';
 import { Console } from 'console';
-import { openSync, createWriteStream, WriteStream, truncateSync } from 'fs';
+import { ensureFileSync, createWriteStream, truncateSync } from 'fs-extra';
 import ServiceLocator from './service-locator';
 import * as moment from 'moment';
 import { isRendererProcess } from './utils';
@@ -18,6 +18,7 @@ export class Log extends Console {
     constructor() {
         let logfile = `${dirname((app ? app : remote.app).getPath('exe'))}${sep}husky.log`
 
+        ensureFileSync(logfile);
         super(createWriteStream(logfile, {
             flags: 'r+',
             encoding: 'utf8',
