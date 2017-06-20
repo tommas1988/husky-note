@@ -30,12 +30,12 @@
         <h5 class="setting-title">Debug</h5>
 
         <div class="form-check form-check-inline">
-            <label class="form-check-label">
+            <label class="form-check-label form-control-sm">
                 <input class="form-check-input" type="radio" name="debug-switch" value="on"> On
             </label>
         </div>
         <div class="form-check form-check-inline">
-            <label class="form-check-label">
+            <label class="form-check-label form-control-sm">
                 <input class="form-check-input" type="radio" name="debug-switch" value="off"> Off
             </label>
         </div>
@@ -44,7 +44,7 @@
     <section _data="editor">
         <h5 class="setting-title">Editor</h5>
 
-        <label class="mr-sm-2" for="setting-keybinding">Keybinding</label>
+        <label class="form-control-sm mr-sm-2" for="setting-keybinding">Keybinding</label>
         <select class="form-control-sm custom-select mb-2 mr-sm-2 mb-sm-0" id="setting-keybinding">
             <option value="default">Default</option>
             <option value="emacs">Emacs</option>
@@ -79,61 +79,8 @@
             </div>
         </div>
 
-        <div class="form-group row" _data="git.auth">
-            <label class="col-1 col-form-label col-form-label-sm">Auth: </label>
-            <div class="col-6">
-                <div class="form-check form-check-inline">
-                    <label class="form-check-label col-form-label-sm">
-                        <input class="form-check-input" type="radio" name="auth-type" value="ssh"> SSH
-                    </label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <label class="form-check-label col-form-label-sm">
-                        <input class="form-check-input" type="radio" name="auth-type" value="password"> Password
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row ssh">
-            <div class="form-group row" _data="git.sshPubKey">
-                <label class="col-4 col-form-label col-form-label-sm">Public Key:</label>
-                <div class="col-7">
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" placeholder="public key" readonly>
-                        <span class="input-group-btn">
-                        <button class="btn btn-secondary" type="button">Change</button>
-                    </span>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group row" _data="git.sshPrivKey">
-                <label class="col-4 col-form-label col-form-label-sm">Private Key:</label>
-                <div class="col-7">
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" placeholder="private key" readonly>
-                        <span class="input-group-btn">
-                        <button class="btn btn-secondary" type="button">Change</button>
-                    </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row password">
-            <div class="form-group row" _data="git.remoteUsername">
-                <label class="col-4 col-form-label col-form-label-sm">Remote Username:</label>
-                <div class="col-7">
-                    <input class="form-control form-control-sm" type="text">
-                </div>
-            </div>
-
-            <div class="form-group row" _data="git.remotePassword">
-                <label class="col-4 col-form-label col-form-label-sm">Remote Password:</label>
-                <div class="col-7">
-                    <input class="form-control form-control-sm" type="password">
-                </div>
-            </div>
+        <div _data="git.auth">
+            <button type="button" class="btn btn-secondary btn-sm">Chagne Authentication Information...</button>
         </div>
     </section>
 </div>

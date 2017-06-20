@@ -27,6 +27,8 @@ export class ModalView extends AbstractView {
                 this.close();
             });
 
+            handler(el, this);
+
             dialogEl.addClass(`animated ${FADE_IN_CLASS}`)
                 .removeClass(FADE_OUT_CLASS);
 
@@ -37,8 +39,6 @@ export class ModalView extends AbstractView {
             setTimeout(() => {
                 this._el.addClass('open');
             }, 0);
-
-            handler(el, this);
         }).catch((e) => {
             throw e;
         });

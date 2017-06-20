@@ -10,10 +10,7 @@ import { EditorKeybindingSetting } from './settings/editor-keybinding';
 import { GitUsernameSetting } from './settings/git-username';
 import { GitUserEmailSetting } from './settings/git-user-email';
 import { GitRemoteSetting } from './settings/git-remote';
-import { GitPublicKeySetting } from './settings/git-ssh-pub-key';
-import { GitPrivateKeySetting } from './settings/git-ssh-priv-key';
-import { GitRemoteUsernameSetting } from './settings/git-remote-username';
-import { GitRemotePasswordSetting } from './settings/git-remote-password';
+import { GitRemoteAuthSetting } from './settings/git-remote-auth';
 
 const FADE_IN_CLASS = 'fadeInRight';
 const FADE_OUT_CLASS = 'fadeOutRight';
@@ -25,10 +22,7 @@ const settings = [
     GitUsernameSetting,
     GitUserEmailSetting,
     GitRemoteSetting,
-    GitPublicKeySetting,
-    GitPrivateKeySetting,
-    GitRemoteUsernameSetting,
-    GitRemoteUsernameSetting,
+    GitRemoteAuthSetting,
 ];
 
 export class SettingsView extends AbstractView {

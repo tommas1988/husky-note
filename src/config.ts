@@ -66,6 +66,16 @@ export class EditorConfig extends SubConfig {
     }
 }
 
+interface IGitRemoteAuth {
+    type: 'ssh' | 'password',
+    
+    publicKey?: string,
+    privateKey?: string,
+
+    username?: string,
+    password?: string,
+}
+
 export class GitConfig extends SubConfig {
     constructor(parent, configs) {
         super(parent, configs);
@@ -96,36 +106,21 @@ export class GitConfig extends SubConfig {
         this._setConfig('remote', url);
     }
 
-    get sshPubKey(): string {
-        return this._getConfig('sshPubKey');
+    get remoteAuth(): IGitRemoteAuth {
+        return this._getConfig('remote-auth');
     }
 
-    set sshPubKey(filename: string) {
-        this._setConfig('sshPubKey', filename);
-    }
-
-    get sshPrivKey(): string {
-        return this._getConfig('sshPrivKey');
-    }
-
-    set sshPrivKey(filename: string) {
-        this._setConfig('sshPrivKey', filename);
-    }
-
-    get remoteUsername(): string {
-        return this._getConfig('remoteUsername');
-    }
-
-    set remoteUsername(username: string) {
-        this._setConfig('remoteUsername', username);
-    }
-
-    get remotePassword(): string {
-        return this._getConfig('remotePassword');
-    }
-
-    set remotePassword(password: string) {
-        this._setConfig('remotePassword', password);
+    set remoteAuth(auth: IGitRemoteAuth) {
+        this._setConfig('remote-auth', auth, (oldVal: IGitRemoteAuth, newVal: IGitRemoteAuth): boolean => {
+            if (oldVal.type === newVal.type) {
+                if (oldVal.type === 'ssh') {
+                    return oldVal.publicKey === newVal.publicKey && oldVal.privateKey === newVal.privateKey;
+                } else {
+                    return oldVal.username === newVal.username && oldVal.password === newVal.password;
+                }
+            }
+            return false;
+        });
     }
 }
 
