@@ -3,8 +3,11 @@
 #modal {
     display: none;
 
-    // transition: 200ms opacity;
-    // background-color: rgba(255, 255, 255, 0.75);
+    transition: 200ms background-color;
+
+    &.open {
+        background-color: rgba(255, 255, 255, 0.7);
+    }
 
     .modal-dialog {
         max-width: 450px;
@@ -13,6 +16,7 @@
             background-color: darken($color-bg, 0.5%);
             animation-duration: 0.3s;
             border-radius: 0.2rem;
+            box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);
         }
 
         .modal-header {

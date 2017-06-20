@@ -30,7 +30,7 @@ export function saveNote() {
 
     if (orphanNote === saveNote) {
         // Saving orphan note
-        ViewManager.modal.saveOrphanNote();
+        ViewManager.modal.open('save-orphan-note');
         return;
     }
 
