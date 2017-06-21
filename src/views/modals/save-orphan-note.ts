@@ -2,6 +2,7 @@ import { ModalView } from '../modal';
 import ServiceLoactor from '../../service-locator';
 
 const KEYCODE_ENTER = 13;
+const KEYCODE_ESC = 27;
 
 export default function (el: JQuery, modalView: ModalView) {
     const ERROR_CLASS = 'has-danger';
@@ -81,8 +82,9 @@ export default function (el: JQuery, modalView: ModalView) {
     notebookEl.parent().css({ width: '100%' });
 
     notebookEl.on('keyup', (event) => {
-        if (KEYCODE_ENTER === event.keyCode) {
+        if (KEYCODE_ENTER === event.keyCode || KEYCODE_ESC === event.keyCode) {
             notebookEl.typeahead('close');
+            return false;
         }
     });
 }

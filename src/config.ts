@@ -20,11 +20,11 @@ abstract class BaseConfig extends EventEmitter {
         return this._configs[name] || defaults;
     }
 
-    protected _setConfig(name: string, newVal: any, compare?: (oldVal: any, newVal: any) => boolean) {
+    protected _setConfig(name: string, newVal: any, equal?: (oldVal: any, newVal: any) => boolean) {
         let oldVal = this._configs[name];
 
-        if (compare) {
-            if (!compare(oldVal, newVal)) {
+        if (equal) {
+            if (equal(oldVal, newVal)) {
                 return;
             }
         } else if (oldVal === newVal) {
@@ -69,11 +69,11 @@ export class EditorConfig extends SubConfig {
 interface IGitRemoteAuth {
     type: 'ssh' | 'password',
     
-    publicKey?: string,
-    privateKey?: string,
+    publicKey: string,
+    privateKey: string,
 
-    username?: string,
-    password?: string,
+    username: string,
+    password: string,
 }
 
 export class GitConfig extends SubConfig {
@@ -107,11 +107,14 @@ export class GitConfig extends SubConfig {
     }
 
     get remoteAuth(): IGitRemoteAuth {
-        return this._getConfig('remote-auth');
+        return this._getConfig('remote-auth', null);
     }
 
     set remoteAuth(auth: IGitRemoteAuth) {
         this._setConfig('remote-auth', auth, (oldVal: IGitRemoteAuth, newVal: IGitRemoteAuth): boolean => {
+            if (!oldVal) {
+                return false;
+            }
             if (oldVal.type === newVal.type) {
                 if (oldVal.type === 'ssh') {
                     return oldVal.publicKey === newVal.publicKey && oldVal.privateKey === newVal.privateKey;
