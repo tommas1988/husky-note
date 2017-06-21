@@ -37,13 +37,20 @@ export default function (el: JQuery, modalView: ModalView) {
             return false;
         }
 
-        ServiceLoactor.config.git.remoteAuth = {
-            type,
-            publicKey,
-            privateKey,
-            username,
-            password
-        };
+        if (type === 'ssh') {
+            ServiceLoactor.config.git.remoteAuth = {
+                type,
+                publicKey,
+                privateKey,
+            };
+        } else {
+            ServiceLoactor.config.git.remoteAuth = {
+                type,
+                username,
+                password,
+            };
+        }
+
         return true;
     }
 

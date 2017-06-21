@@ -20,11 +20,11 @@ abstract class BaseConfig extends EventEmitter {
         return this._configs[name] || defaults;
     }
 
-    protected _setConfig(name: string, newVal: any, equal?: (oldVal: any, newVal: any) => boolean) {
+    protected _setConfig(name: string, newVal: any, compare?: (oldVal: any, newVal: any) => number) {
         let oldVal = this._configs[name];
 
-        if (equal) {
-            if (equal(oldVal, newVal)) {
+        if (compare) {
+            if (!compare(oldVal, newVal)) {
                 return;
             }
         } else if (oldVal === newVal) {
@@ -69,11 +69,11 @@ export class EditorConfig extends SubConfig {
 interface IGitRemoteAuth {
     type: 'ssh' | 'password',
     
-    publicKey: string,
-    privateKey: string,
+    publicKey?: string,
+    privateKey?: string,
 
-    username: string,
-    password: string,
+    username?: string,
+    password?: string,
 }
 
 export class GitConfig extends SubConfig {
@@ -111,18 +111,23 @@ export class GitConfig extends SubConfig {
     }
 
     set remoteAuth(auth: IGitRemoteAuth) {
-        this._setConfig('remote-auth', auth, (oldVal: IGitRemoteAuth, newVal: IGitRemoteAuth): boolean => {
+        this._setConfig('remote-auth', auth, (oldVal: IGitRemoteAuth, newVal: IGitRemoteAuth): number => {
             if (!oldVal) {
-                return false;
+                return 1;
             }
+
             if (oldVal.type === newVal.type) {
                 if (oldVal.type === 'ssh') {
-                    return oldVal.publicKey === newVal.publicKey && oldVal.privateKey === newVal.privateKey;
+                    if (oldVal.publicKey !== newVal.publicKey || oldVal.privateKey !== newVal.privateKey) {
+                        return 1;
+                    }
                 } else {
-                    return oldVal.username === newVal.username && oldVal.password === newVal.password;
+                    if (oldVal.username !== newVal.username || oldVal.password !== newVal.password) {
+                        return 1;
+                    }
                 }
             }
-            return false;
+            return 0;
         });
     }
 }
