@@ -20,13 +20,11 @@ function initConfig() {
                     mainWindow.webContents.toggleDevTools();
                 }
                 break;
-            case 'git.username':
-                // update git config
-                ServiceLocator.git.setConfig('user.name', newVal);
-                break;
-            case 'git.userEmail':
-                // update git config
-                ServiceLocator.git.setConfig('user.email', newVal);
+            case 'git.remote':
+                if (ServiceLocator.git.hasRepository()) {
+                    // only set remote if git repository is created
+                    ServiceLocator.git.setRemote(newVal);
+                }
                 break;
         }
     });

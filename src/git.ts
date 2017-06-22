@@ -1,8 +1,12 @@
+import { EventEmitter } from 'events';
+import { existsSync } from 'fs';
+import { sep } from 'path';
 import * as nodegit from 'nodegit';
 import { GitConfig } from './config';
 import ServiceLocator from './service-locator';
 import * as moment from 'moment';
 
+const Clone = nodegit.Clone;
 const Repository = nodegit.Repository;
 const Signature = nodegit.Signature;
 const Remote = nodegit.Remote;
@@ -13,39 +17,65 @@ const defaultBranch = 'master';
 
 const logger = ServiceLocator.logger;
 
+export const Event = {
+    setConfigFailed: 'git:set-config-failed',
+    setRemoteFailed: 'git:set-remote-failed',
+}
+
 /**
  * Could only be called in main process
  */
-export class Git {
+export class Git extends EventEmitter {
     private _repository;
+    private _remote;
 
     constructor() {
         let noteDir = ServiceLocator.config.noteDir;
-
         if (!noteDir) {
             throw new Error('Cannot initialize Git without note directory setted!');
         }
 
-        this._repository = Repository.open(noteDir).catch(() => {
-            logger.info(`Creating repository ${noteDir}`);
-            return Repository.init(noteDir, 0);
-        });
+        super();
+    }
+
+    hasRepository() {
+        return existsSync(`${ServiceLocator.config.noteDir}${sep}.git`);
     }
 
     setConfig(name, value) {
         logger.info(`Setting git config ${name} = ${value}`);
 
-        this._repository.then((repo) => {
+        this._getRepository().then((repo) => {
             return repo.config().then(((config) => {
                 return config.setString(name, value);
             }));
         }).catch((e) => {
+            this.emit(Event.setConfigFailed, name, value);
+            logger.error(e);
+        });
+    }
+
+    setRemote(url) {
+        this._getRepository().then((repo) => {
+            this._getRemote(repo).then((remote) => {
+                logger.info('set url with exists remote');
+
+                let ret = Remote.setUrl(repo, defaultRemote, url);
+                if (ret) {
+                    throw ret;
+                }
+            }, () => {
+                logger.info('create remote');
+                this._remote = Remote.create(repo, defaultRemote, url);
+            });
+        }).catch((e) => {
+            this.emit(Event.setRemoteFailed, url);
             logger.error(e);
         });
     }
 
     status() {
-        return this._repository.then((repo) => {
+        return this._getRepository().then((repo) => {
             return repo.getStatus();
         });
     }
@@ -53,7 +83,7 @@ export class Git {
     addAll() {
         logger.info('Adding changes to stage');
 
-        return this._repository.then((repo) => {
+        return this._getRepository().then((repo) => {
             return repo.index().then((index) => {
                 return index.removeAll().then(() => {
                     return index.addAll();
@@ -69,13 +99,12 @@ export class Git {
     commit(oid) {
         logger.info('Creating a commit');
 
-        return this._repository.then((repo) => {
+        return this._getRepository().then((repo) => {
             return Promise.all<any, any>([
                 repo.getTree(oid),
                 repo.getHeadCommit()
             ]).then((result) => {
-                let config = ServiceLocator.config.git;
-                let signature = Signature.now(config.username, config.userEmail);
+                let signature = this._getSignature();
                 return {
                     tree: result[0],
                     commit: result[1],
@@ -99,7 +128,7 @@ export class Git {
     pull() {
         logger.info('Pulling from remote');
 
-        return this._repository.then((repo) => {
+        return this._getRepository().then((repo) => {
             return this._getRemote(repo).then((remote) => {
                 return remote.fetch(
                     [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
@@ -108,7 +137,7 @@ export class Git {
                     }
                 );
             }).then(() => {
-                return repo.mergeBranches(defaultBranch, `${defaultRemote}/${defaultBranch}`);
+                return repo.mergeBranches(defaultBranch, `${defaultRemote}/${defaultBranch}`, this._getSignature());
             });
         });
     }
@@ -116,7 +145,7 @@ export class Git {
     push() {
         logger.info('push method called');
 
-        return this._repository.then((repo) => {
+        return this._getRepository().then((repo) => {
             return Promise.all<any, any>([
                 repo.getBranchCommit(defaultBranch),
                 repo.getBranchCommit(`${defaultRemote}/${defaultBranch}`)
@@ -142,37 +171,55 @@ export class Git {
         });
     }
 
-    private _getRemote(repo) {
-        return repo.getRemote(defaultRemote).catch(() => {
-            // not remote created yet
-            let url = ServiceLocator.config.git.remote;
-            if (!url) {
-                throw new Error('remote url is not setted');
-            }
+    private _getRepository() {
+        if (this._repository) {
+            return this._repository;
+        }
 
-            return Remote.create(repo, defaultRemote, url);
-        });
+        let noteDir = ServiceLocator.config.noteDir;
+        let config = ServiceLocator.config.git;
+        if (!this.hasRepository()) {
+            if (config.remote) {
+                logger.info(`cloning from remote: ${config.remote}...`);
+                this._repository = Clone(config.remote, {
+                    fetchOpts: this._getRemoteCallbacks()
+                });
+            } else {
+                logger.info(`Creating repository ${noteDir}`);
+                this._repository = Repository.init(noteDir, 0);
+            }
+        } else {
+            this._repository = Repository.open(noteDir)
+        }
+
+        return this._repository;
+    }
+
+    private _getSignature() {
+        let config = ServiceLocator.config.git;
+        return Signature.now(config.username, config.userEmail);
+    }
+
+    private _getRemote(repo) {
+        if (!this._remote) {
+            this._remote = repo.getRemote(defaultRemote);
+        }
+        return this._remote;
     }
 
     private _getRemoteCallbacks() {
         return {
             credentials(url, username) {
-                let config = this._config;
+                let config = ServiceLocator.config.git.remoteAuth;
 
-                let publicKey = config.sshPubKey;
-                let privateKey = config.sshPrivKey;
-                if (publicKey && privateKey) {
+                if (config.type === 'ssh') {
                     // user ssh key
                     logger.info('git credentials: use ssh key');
-                    return Cred.sshKeyNew(username, publicKey, privateKey, '');
-                }
-
-                let remoteUsername = config.remoteUsername;
-                let remotePassword = config.remotePassword;
-                if (remoteUsername) {
+                    return Cred.sshKeyNew(username, config.publicKey, config.privateKey, '');
+                } else if (config.type === 'password') {
                     // user password
                     logger.info('git credentials: use password');
-                    return Cred.userpassPlaintextNew(remoteUsername, remotePassword);
+                    return Cred.userpassPlaintextNew(config.username, config.password);
                 }
 
                 logger.info('git credentials: use default');
