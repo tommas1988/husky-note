@@ -87,6 +87,7 @@ app.on('ready', () => {
     });
 
     createWindow();
+    // TODO: calling sync action should after app loaded
     ServiceLocator.noteManager.sync(mainWindow.webContents);
 });
 
@@ -94,20 +95,21 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
     // commit note and/or push
     let noteManager = ServiceLocator.noteManager;
-    let result;
-    let errMsg;
+    let result = noteManager.archive();
+    let action = 'archive';
+
     if (config.git.remote) {
-        result = noteManager.sync();
-        errMsg = 'Sync Notes Error';
-    } else {
-        result = noteManager.archive();
-        errMsg = 'Commit Notes Error';
+        action = 'sync';
+        result = result.then(() => {
+            return noteManager.sync();
+        });
     }
 
     result.then(() => {
         quit();
-    }).catch(() => {
-        dialog.showErrorBox(errMsg, `Check log: ${ServiceLocator.logger.logfile} for details`);
+    }).catch((e) => {
+        ServiceLocator.logger.error(e);
+        dialog.showErrorBox('Error', `Error occurs during ${action} notes process.\nCheck log: ${ServiceLocator.logger.logfile} for details`);
         quit();
     });
 });

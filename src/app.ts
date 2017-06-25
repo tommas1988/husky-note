@@ -242,7 +242,7 @@ export class App {
         this._activeNote = note;
     }
 
-    execCommand(command: string) {
+    execCommand(command: string, ...args) {
         let parts = command.split('.');
 
         if (parts.length > 1) {
@@ -260,6 +260,6 @@ export class App {
             return;
         }
 
-        commonCommands[command]();
+        commonCommands[command](this, ...args);
     }
 }

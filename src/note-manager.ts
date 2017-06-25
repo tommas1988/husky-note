@@ -11,9 +11,9 @@ import { Git } from './git';
 
 type NoteIndex = { [notebook: string]: string[] };
 
-const IpcEvent = {
-    reload: 'ipc:note-manager:reload',
+export const IpcEvent = {
     sync: 'ipc:note-manager:sync',
+    syncComplete: 'ipc:note-manager:sync-complete',
     syncFailed: 'ipc:note-manager:sync-failed',
 };
 
@@ -102,7 +102,8 @@ export class NoteManager extends EventEmitter {
         let config = ServiceLocator.config;
         this._basedir = config.noteDir;
 
-        ipcRenderer.on(IpcEvent.reload, () => {
+        ipcRenderer.on(IpcEvent.syncComplete, () => {
+            ServiceLocator.alerter.info('Sync notes completed!');
             this.load();
         });
 
@@ -144,21 +145,12 @@ export class NoteManager extends EventEmitter {
         }
 
         let git = ServiceLocator.git;
-        return this.archive().then(() => {
-            return git.pull();
-        }).then(() => {
+        return git.pull().then(() => {
             return git.push();
         }).then(() => {
             if (sender) {
-                sender.send(IpcEvent.reload);
+                sender.send(IpcEvent.syncComplete);
             }
-        }).catch((e) => {
-            if (sender) {
-                sender.send(IpcEvent.syncFailed);
-            }
-            ServiceLocator.logger.error(e);
-
-            throw new Error('Sync notes error');
         });
     }
 
@@ -175,9 +167,6 @@ export class NoteManager extends EventEmitter {
             } else {
                 return Promise.resolve();
             }
-        }).catch((e) => {
-            ServiceLocator.logger.error(e);
-            throw new Error('commit notes error');
         });
     }
 
