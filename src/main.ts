@@ -1,8 +1,9 @@
-import { app, screen, BrowserWindow, dialog } from 'electron';
+import { app, screen, BrowserWindow, ipcMain, dialog } from 'electron';
 import { join as pathJoin } from 'path';
 import { format as urlFormat } from 'url';
 import { on as processOn } from 'process';
 import { Config, Event as ConfigEvent } from './config';
+import { IpcEvent as NoteManagerIpcEvent, archiveNotes, syncNotes } from './note-manager';
 import ServiceLocator from './service-locator';
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -87,22 +88,26 @@ app.on('ready', () => {
     });
 
     createWindow();
-    // TODO: calling sync action should after app loaded
-    ServiceLocator.noteManager.sync(mainWindow.webContents);
+
+    ipcMain.on(NoteManagerIpcEvent.sync, (event) => {
+        syncNotes(event.sender).catch((e) => {
+            logger.error(e);
+            event.sender.send(NoteManagerIpcEvent.syncFailed);
+        });
+    });
 });
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
-    // commit note and/or push
-    let noteManager = ServiceLocator.noteManager;
-    let result = noteManager.archive();
-    let action = 'archive';
+    let result: Promise<any>;
+    let action: string;
 
     if (config.git.remote) {
         action = 'sync';
-        result = result.then(() => {
-            return noteManager.sync();
-        });
+        result = syncNotes();
+    } else {
+        action = 'archive';
+        result = archiveNotes();
     }
 
     result.then(() => {
@@ -110,6 +115,7 @@ app.on('window-all-closed', () => {
     }).catch((e) => {
         ServiceLocator.logger.error(e);
         dialog.showErrorBox('Error', `Error occurs during ${action} notes process.\nCheck log: ${ServiceLocator.logger.logfile} for details`);
+
         quit();
     });
 });

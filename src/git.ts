@@ -1,5 +1,7 @@
 import { EventEmitter } from 'events';
 import { existsSync } from 'fs';
+import { move } from 'fs-promise';
+import { app } from 'electron';
 import { sep } from 'path';
 import * as nodegit from 'nodegit';
 import { GitConfig } from './config';
@@ -8,6 +10,7 @@ import * as moment from 'moment';
 
 const Clone = nodegit.Clone;
 const Repository = nodegit.Repository;
+const Index = nodegit.Index;
 const Signature = nodegit.Signature;
 const Remote = nodegit.Remote;
 const Graph = nodegit.Graph;
@@ -20,6 +23,15 @@ const logger = ServiceLocator.logger;
 export const Event = {
     setConfigFailed: 'git:set-config-failed',
     setRemoteFailed: 'git:set-remote-failed',
+}
+
+function clone(url, path, options): Promise<any> {
+    let tmpdir = `${app.getPath('temp')}${sep}_husk_notes`;
+    return Clone(url, tmpdir, options).then(() => {
+        return move(tmpdir, path);
+    }).then(() => {
+        return Repository.open(path);
+    });
 }
 
 /**
@@ -137,7 +149,29 @@ export class Git extends EventEmitter {
                     }
                 );
             }).then(() => {
-                return repo.mergeBranches(defaultBranch, `${defaultRemote}/${defaultBranch}`, this._getSignature());
+                return Promise.all<any, any>([
+                    repo.getBranchCommit(defaultBranch),
+                    repo.getBranchCommit(`${defaultRemote}/${defaultBranch}`)
+                ]);
+            }).then((commits) => {
+                return Graph.aheadBehind(repo, commits[0].id(), commits[1].id());
+            }).then((result) => {
+                let mergePromise = result.behind ? repo.mergeBranches(defaultBranch, `${defaultRemote}/${defaultBranch}`, this._getSignature()) : Promise.resolve();
+
+                return mergePromise.then((mergeResult) => {
+                    if (!mergeResult) {
+                        return;
+                    }
+
+                    if (mergeResult instanceof Index) {
+                        throw new Error(`Merge conflicts`);
+                    }
+                }).then(() => {
+                    return {
+                        localChanged: result.ahead === 1,
+                        localUpdated: result.behind === 1
+                    };
+                });
             });
         });
     }
@@ -146,27 +180,15 @@ export class Git extends EventEmitter {
         logger.info('push method called');
 
         return this._getRepository().then((repo) => {
-            return Promise.all<any, any>([
-                repo.getBranchCommit(defaultBranch),
-                repo.getBranchCommit(`${defaultRemote}/${defaultBranch}`)
-            ]).then((commits) => {
-                return Graph.aheadBehind(repo, commits[0].id(), commits[1].id());
-            }).then((result) => {
-                if (!result.ahead) {
-                    // local branch is not ahead of remote, no need to push
-                    return;
-                }
+            logger.info('Pushing to remote');
 
-                logger.info('Pushing to remote');
-
-                return this._getRemote(repo).then((remote) => {
-                    return remote.push(
-                        [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
-                        {
-                            callbacks: this._getRemoteCallbacks()
-                        }
-                    );
-                });
+            return this._getRemote(repo).then((remote) => {
+                return remote.push(
+                    [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
+                    {
+                        callbacks: this._getRemoteCallbacks()
+                    }
+                );
             });
         });
     }
@@ -181,15 +203,17 @@ export class Git extends EventEmitter {
         if (!this.hasRepository()) {
             if (config.remote) {
                 logger.info(`cloning from remote: ${config.remote}...`);
-                this._repository = Clone(config.remote, {
-                    fetchOpts: this._getRemoteCallbacks()
+                this._repository = clone(config.remote, noteDir, {
+                    fetchOpts: {
+                        callbacks: this._getRemoteCallbacks()
+                    }
                 });
             } else {
                 logger.info(`Creating repository ${noteDir}`);
                 this._repository = Repository.init(noteDir, 0);
             }
         } else {
-            this._repository = Repository.open(noteDir)
+            this._repository = Repository.open(noteDir);
         }
 
         return this._repository;

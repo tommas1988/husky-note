@@ -58,6 +58,43 @@ export const Event = {
     save_note_failed: 'note-manager:save-note-failed',
 };
 
+/**
+ * Could only by called in main process
+ */
+export function archiveNotes(): Promise<any> {
+    checkMainProcess();
+
+    let git = ServiceLocator.git;
+    return git.status().then((files) => {
+        if (files.length) {
+            return git.addAll().then(git.commit.bind(git));
+        } else {
+            return Promise.resolve();
+        }
+    });
+}
+
+/**
+ * Could only by called in main process
+ */
+export function syncNotes(sender?: Electron.WebContents): Promise<any> {
+    let git = ServiceLocator.git;
+    let isUpdated = false;
+
+    return archiveNotes().then(() => {
+        return git.pull();
+    }).then((result) => {
+        isUpdated = result.localUpdated;
+        if (result.localChanged) {
+            return git.push();
+        }
+    }).then(() => {
+        if (sender) {
+            sender.send(IpcEvent.syncComplete, isUpdated);
+        }
+    });
+}
+
 export class NoteManager extends EventEmitter {
     // Notes structure
     private _notebooks: Map<string, Notebook>;
@@ -91,23 +128,21 @@ export class NoteManager extends EventEmitter {
     constructor() {
         super();
 
-        if (isRendererProcess) {
-            this._initFromRenderer();
-        } else {
-            this._initFromMain();
-        }
-    }
-
-    private _initFromRenderer() {
         this._notebooks = new Map<string, Notebook>();
 
         let config = ServiceLocator.config;
         this._basedir = config.noteDir;
 
-        ipcRenderer.on(IpcEvent.syncComplete, () => {
+        ipcRenderer.on(IpcEvent.syncComplete, (isUpdated) => {
+            if (isUpdated) {
+                this.load();
+            }
             ServiceLocator.alerter.info('Sync notes completed!');
-            this.load();
         });
+
+        ipcRenderer.on(IpcEvent.syncFailed, () => {
+            ServiceLocator.alerter.fatal(`Sync notes failed! Check log: ${ServiceLocator.logger.logfile} for details`);
+        })
 
         config.on(ConfigEvent.change, (name, newVal, oldVal) => {
             if (name !== 'noteDir') {
@@ -127,13 +162,7 @@ export class NoteManager extends EventEmitter {
         });
     }
 
-    private _initFromMain() {
-        ipcMain.on(IpcEvent.sync, (event) => {
-            this.sync(event.sender);
-        });
-    }
-
-    sync(sender?: Electron.WebContents): Promise<any> | void {
+    sync() {
         // no remote setted, return
         if (!ServiceLocator.config.git.remote) {
             return;
@@ -141,36 +170,8 @@ export class NoteManager extends EventEmitter {
 
         ServiceLocator.logger.info(`Sync notes`);
 
-        if (isRendererProcess) {
-            this.emit(Event.sync);
-            ipcRenderer.send(IpcEvent.sync);
-            return;
-        }
-
-        let git = ServiceLocator.git;
-        return git.pull().then(() => {
-            return git.push();
-        }).then(() => {
-            if (sender) {
-                sender.send(IpcEvent.syncComplete);
-            }
-        });
-    }
-
-    /**
-     * Could only by called in main process
-     */
-    archive(): Promise<any> {
-        checkMainProcess();
-
-        let git = ServiceLocator.git;
-        return git.status().then((files) => {
-            if (files.length) {
-                return git.addAll().then(git.commit.bind(git));
-            } else {
-                return Promise.resolve();
-            }
-        });
+        this.emit(Event.sync);
+        ipcRenderer.send(IpcEvent.sync);
     }
 
     load() {

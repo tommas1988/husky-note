@@ -205,6 +205,11 @@ export class App {
 
         manager.load();
         this.openNote(orphanNote, NoteView.LivePreview);
+
+        // if git remote is set, sync notes
+        if (ServiceLocator.config.git.remote) {
+            manager.sync();
+        }
     }
 
     openNote(note: Note, view?: NoteView) {
