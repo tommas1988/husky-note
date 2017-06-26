@@ -18,6 +18,8 @@ export const IpcEvent = {
 };
 
 export const Event = {
+    sync: 'note-manager:sync',
+
     reload: 'note-manager:reload',
     loaded: 'note-manager:loaded',
 
@@ -140,6 +142,7 @@ export class NoteManager extends EventEmitter {
         ServiceLocator.logger.info(`Sync notes`);
 
         if (isRendererProcess) {
+            this.emit(Event.sync);
             ipcRenderer.send(IpcEvent.sync);
             return;
         }

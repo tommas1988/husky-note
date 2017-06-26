@@ -1,6 +1,7 @@
 import { AbstractView } from './view';
 import { App } from '../app';
-import { IpcEvent } from '../note-manager';
+import ServiceLocator from '../service-locator';
+import { IpcEvent as NoteManagerIpcEvent, Event as NoteManagerEvent } from '../note-manager';
 import { ipcRenderer } from 'electron';
 
 const CLASS_SPIN = 'fa-spin';
@@ -34,13 +35,12 @@ const quickAccessers = {
     syncNotes: {
         handler: (event) => {
             let el = $(event.currentTarget).find('i');
-
             if (el.hasClass(CLASS_SPIN)) {
+                // already in sync
                 return;
             }
 
             App.getInstance().execCommand('syncNotes');
-            el.addClass(CLASS_SPIN);
         },
         icon: 'fa fa-refresh',
         title: 'Sync notes',
@@ -87,12 +87,28 @@ export class HeaderView extends AbstractView {
             app.execCommand('openSettingPanel');
         });
 
-        // TODO: Should Refactor
-        ipcRenderer.on(IpcEvent.syncComplete, () => {
-            this._el.find('[_data=syncNotes]').find('i').removeClass(CLASS_SPIN);
+        // start sync icon spin when sync
+        ServiceLocator.noteManager.on(NoteManagerEvent.sync, () => {
+            this.startSyncSpin();
         });
-        ipcRenderer.on(IpcEvent.syncFailed, () => {
-            this._el.find('[_data=syncNotes]').find('i').removeClass(CLASS_SPIN);
+
+        // stop sync icon spin when sync stopped
+        ipcRenderer.on(NoteManagerIpcEvent.syncComplete, () => {
+            this.stopSyncSpin();
         });
+        ipcRenderer.on(NoteManagerIpcEvent.syncFailed, () => {
+            this.stopSyncSpin();
+        });
+    }
+
+    startSyncSpin() {
+        let el = this._el.find('[_data=syncNotes]').find('i');
+        if (!el.hasClass(CLASS_SPIN)) {
+            el.addClass(CLASS_SPIN);
+        }
+    }
+
+    stopSyncSpin() {
+        this._el.find('[_data=syncNotes]').find('i').removeClass(CLASS_SPIN);
     }
 }
