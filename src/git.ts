@@ -203,11 +203,13 @@ export class Git extends EventEmitter {
         if (!this.hasRepository()) {
             if (config.remote) {
                 logger.info(`cloning from remote: ${config.remote}...`);
-                this._repository = clone(config.remote, noteDir, {
-                    fetchOpts: {
-                        callbacks: this._getRemoteCallbacks()
-                    }
-                });
+
+                let options = Clone.CloneOptions;
+                options.checkoutOpts.disableFilters = 1;
+                options.fetchOpts = {
+                    callbacks: this._getRemoteCallbacks()
+                }
+                this._repository = clone(config.remote, noteDir, options);
             } else {
                 logger.info(`Creating repository ${noteDir}`);
                 this._repository = Repository.init(noteDir, 0);
