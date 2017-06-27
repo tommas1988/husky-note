@@ -92,11 +92,12 @@ export const Event = {
 
 export class NotebookListView extends AbstractView {
     private _container: JQuery;
-    private _notebooks: Map<Notebook, INotebookView> = new Map();
+    private _notebooks: Map<Notebook, INotebookView>;
 
     constructor() {
         super('#notebook-list');
         this._container = this._el.find('.notebooks-container');
+        this._notebooks = new Map();
     }
 
     init() {
@@ -109,7 +110,13 @@ export class NotebookListView extends AbstractView {
 
     private _initLoadNotesHandlers() {
         // render notebook list when note index is loaded
-        ServiceLocator.noteManager.on(NoteManagerEvent.loaded, () => {
+        let manager = ServiceLocator.noteManager;
+        manager.on(NoteManagerEvent.loaded, () => {
+            this.build();
+        });
+        // rerender notebook list when notes are reloaded
+        manager.on(NoteManagerEvent.reload, () => {
+            this._notebooks = new Map();
             this.build();
         });
     }
