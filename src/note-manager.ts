@@ -81,6 +81,7 @@ export function archiveNotes(): Promise<any> {
  */
 export function syncNotes(sender?: Electron.WebContents): Promise<any> {
     let git = ServiceLocator.git;
+    let cloneRepo = ServiceLocator.config.git.remote && !git.hasRepository();
     let isUpdated = false;
 
     return archiveNotes().then(() => {
@@ -92,6 +93,7 @@ export function syncNotes(sender?: Electron.WebContents): Promise<any> {
         }
     }).then(() => {
         if (sender) {
+            isUpdated = cloneRepo ? true : isUpdated;
             sender.send(IpcEvent.syncComplete, isUpdated);
         }
     });
