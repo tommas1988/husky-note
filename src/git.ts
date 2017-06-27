@@ -9,6 +9,7 @@ import ServiceLocator from './service-locator';
 import * as moment from 'moment';
 
 const Clone = nodegit.Clone;
+const CheckoutOptions = nodegit.CheckoutOptions;
 const Repository = nodegit.Repository;
 const Index = nodegit.Index;
 const Signature = nodegit.Signature;
@@ -204,12 +205,15 @@ export class Git extends EventEmitter {
             if (config.remote) {
                 logger.info(`cloning from remote: ${config.remote}...`);
 
-                let options = Clone.CloneOptions;
-                options.checkoutOpts.disableFilters = 1;
-                options.fetchOpts = {
+                let checkoutOpts = new CheckoutOptions();
+                checkoutOpts.disableFilters = 1;
+                checkoutOpts.checkoutStrategy = 1;
+
+                let fetchOpts = {
                     callbacks: this._getRemoteCallbacks()
-                }
-                this._repository = clone(config.remote, noteDir, options);
+                };
+
+                this._repository = clone(config.remote, noteDir, { checkoutOpts, fetchOpts });
             } else {
                 logger.info(`Creating repository ${noteDir}`);
                 this._repository = Repository.init(noteDir, 0);
