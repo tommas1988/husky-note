@@ -183,10 +183,7 @@ export class NoteManager extends EventEmitter {
         }
 
         exists(indexFile).then((exists: boolean) => {
-            if (!exists) {
-                throw new Error(`Index file: ${indexFile} not exists`);
-            }
-            return readJson(indexFile);
+            return exists ? readJson(indexFile) : Promise.resolve({});
         }).then((index: NoteIndex) => {
             let isReload = this._notebooks.size ? true : false;
             let notes = new Map<string, Notebook>();
