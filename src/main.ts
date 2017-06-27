@@ -1,5 +1,6 @@
 import { app, screen, BrowserWindow, ipcMain, dialog } from 'electron';
 import { join as pathJoin } from 'path';
+import { readdir } from 'fs-promise';
 import { format as urlFormat } from 'url';
 import { on as processOn } from 'process';
 import { Config, Event as ConfigEvent } from './config';
@@ -99,24 +100,25 @@ app.on('ready', () => {
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
-    let result: Promise<any>;
-    let action: string;
-
-    if (config.git.remote) {
-        action = 'sync';
-        result = syncNotes();
-    } else {
-        action = 'archive';
-        result = archiveNotes();
+    if (!config.noteDir) {
+        quit();
     }
 
-    result.then(() => {
+    readdir(config.noteDir).then((files) => {
+        if (!files.length) {
+            return Promise.resolve();
+        }
+
+        if (config.git.remote) {
+            return syncNotes();
+        } else {
+            return archiveNotes();
+        }
+    }).then(() => {
         quit();
     }).catch((e) => {
         ServiceLocator.logger.error(e);
-        dialog.showErrorBox('Error', `Error occurs during ${action} notes process.\nCheck log: ${ServiceLocator.logger.logfile} for details`);
-
-        quit();
+        dialog.showErrorBox('Error', `Error occurs during app close.\nCheck log: ${ServiceLocator.logger.logfile} for details`);
     });
 });
 
