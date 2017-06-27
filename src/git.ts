@@ -56,9 +56,8 @@ export class Git extends EventEmitter {
     }
 
     setConfig(name, value) {
-        logger.info(`Setting git config ${name} = ${value}`);
-
         this._getRepository().then((repo) => {
+            logger.info(`Setting git config ${name} = ${value}`);
             return repo.config().then(((config) => {
                 return config.setString(name, value);
             }));
@@ -69,6 +68,8 @@ export class Git extends EventEmitter {
     }
 
     setRemote(url) {
+        logger.info('setRemote method called');
+
         this._getRepository().then((repo) => {
             this._getRemote(repo).then((remote) => {
                 logger.info('set url with exists remote');
@@ -88,21 +89,27 @@ export class Git extends EventEmitter {
     }
 
     status() {
+        logger.info('status method called');
+
         return this._getRepository().then((repo) => {
             return repo.getStatus();
         });
     }
 
     addAll() {
-        logger.info('Adding changes to stage');
+        logger.info('addAll method called');
 
         return this._getRepository().then((repo) => {
             return repo.index().then((index) => {
+                logger.info('removing all...');
                 return index.removeAll().then(() => {
+                    logger.info('adding all...');
                     return index.addAll();
                 }).then(() => {
+                    logger.info('writing...');
                     return index.write();
                 }).then(() => {
+                    logger.info('writing tree...');
                     return index.writeTree();
                 })
             });
@@ -110,7 +117,7 @@ export class Git extends EventEmitter {
     }
 
     commit(oid) {
-        logger.info('Creating a commit');
+        logger.info('commit method called');
 
         return this._getRepository().then((repo) => {
             return Promise.all<any, any>([
@@ -126,6 +133,7 @@ export class Git extends EventEmitter {
                     message: `Write notes at ${moment().format('YYYY-MM-DD HH:mm:ss')}` // TODO: read from config
                 };
             }).then((data) => {
+                logger.info('Creating a commit');
                 return repo.createCommit(
                     'HEAD',
                     data.author,
@@ -139,10 +147,11 @@ export class Git extends EventEmitter {
     }
 
     pull() {
-        logger.info('Pulling from remote');
+        logger.info('pull method called');
 
         return this._getRepository().then((repo) => {
             return this._getRemote(repo).then((remote) => {
+                logger.info('Fetching from remote...');
                 return remote.fetch(
                     [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
                     {
@@ -167,6 +176,8 @@ export class Git extends EventEmitter {
                     if (mergeResult instanceof Index) {
                         throw new Error(`Merge conflicts`);
                     }
+
+                    logger.info('Merged remote to local branch');
                 }).then(() => {
                     return {
                         localChanged: result.ahead === 1,
@@ -181,7 +192,7 @@ export class Git extends EventEmitter {
         logger.info('push method called');
 
         return this._getRepository().then((repo) => {
-            logger.info('Pushing to remote');
+            logger.info('Pushing to remote...');
 
             return this._getRemote(repo).then((remote) => {
                 return remote.push(
