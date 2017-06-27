@@ -3,7 +3,7 @@ import ViewManager from './view-manager';
 
 export class Alerter {
     info(msg: string) {
-        ViewManager.message.show(msg, MessageType.Info, 5000);
+        ViewManager.message.show(msg, MessageType.Info, 3000);
     }
 
     warn(msg: string) {

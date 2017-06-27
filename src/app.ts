@@ -87,7 +87,26 @@ export class App {
     }
 
     private _initNoteHandlers() {
-        ServiceLocator.noteManager.on(NoteManagerEvent.delete_note, (note: Note) => {
+        let noteManager = ServiceLocator.noteManager;
+
+        noteManager.on(NoteManagerEvent.reload, () => {
+            let activeNote = this._activeNote;
+            let noteStatus = this._openNotes.get(activeNote);
+            let notebook = noteManager.notebooks.get(activeNote.notebook.name);
+            let note = notebook.notes.get(activeNote.name);
+
+            // TODO: remember the opened notes
+            // reset opened notes
+            this._openNotes = new Map();
+
+            if (notebook && note) {
+                this.openNote(note, noteStatus.view);
+            } else {
+                this.openNote(noteManager.orphanNote, NoteView.LivePreview);
+            }
+        });
+
+        noteManager.on(NoteManagerEvent.delete_note, (note: Note) => {
             if (this._openNotes.has(note)) {
                 this._openNotes.delete(note);
             }
