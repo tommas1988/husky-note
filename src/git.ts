@@ -120,27 +120,23 @@ export class Git extends EventEmitter {
         logger.info('commit method called');
 
         return this._getRepository().then((repo) => {
-            return Promise.all<any, any>([
-                repo.getTree(oid),
-                repo.getHeadCommit()
-            ]).then((result) => {
+            return repo.getHeadCommit().then((head) => {
                 let signature = this._getSignature();
                 return {
-                    tree: result[0],
-                    commit: result[1],
+                    parents: head ? [head] : [],
                     author: signature,
                     committer: signature,
                     message: `Write notes at ${moment().format('YYYY-MM-DD HH:mm:ss')}` // TODO: read from config
                 };
-            }).then((data) => {
+            }).then((result) => {
                 logger.info('Creating a commit');
                 return repo.createCommit(
                     'HEAD',
-                    data.author,
-                    data.committer,
-                    data.message,
-                    data.tree,
-                    data.commit ? [data.commit.id()] : []
+                    result.author,
+                    result.committer,
+                    result.message,
+                    oid,
+                    result.parents
                 );
             });
         });
@@ -150,15 +146,12 @@ export class Git extends EventEmitter {
         logger.info('pull method called');
 
         return this._getRepository().then((repo) => {
-            return this._getRemote(repo).then((remote) => {
-                logger.info('Fetching from remote...');
-                return remote.fetch(
-                    [`refs/heads/${defaultBranch}:refs/heads/${defaultBranch}`],
-                    {
-                        callbacks: this._getRemoteCallbacks()
-                    }
-                );
-            }).then(() => {
+            logger.info('Fetching from remote...');
+
+            let fetchOptions = {
+                callbacks: this._getRemoteCallbacks()
+            };
+            return repo.fetch(defaultRemote, fetchOptions).then(() => {
                 return Promise.all<any, any>([
                     repo.getBranchCommit(defaultBranch),
                     repo.getBranchCommit(`${defaultRemote}/${defaultBranch}`)

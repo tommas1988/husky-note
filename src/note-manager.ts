@@ -67,7 +67,9 @@ export function archiveNotes(): Promise<any> {
     let git = ServiceLocator.git;
     return git.status().then((files) => {
         if (files.length) {
-            return git.addAll().then(git.commit.bind(git));
+            return git.addAll().then((oid) => {
+                return git.commit(oid);
+            });
         } else {
             return Promise.resolve();
         }
@@ -133,7 +135,7 @@ export class NoteManager extends EventEmitter {
         let config = ServiceLocator.config;
         this._basedir = config.noteDir;
 
-        ipcRenderer.on(IpcEvent.syncComplete, (isUpdated) => {
+        ipcRenderer.on(IpcEvent.syncComplete, (event, isUpdated) => {
             if (isUpdated) {
                 this.load();
             }
