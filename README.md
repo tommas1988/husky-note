@@ -7,6 +7,10 @@ With Husky you can:
 * save and sync notes with git in backend
 * and going to be more...
 
+<p align="center">
+  <img alt="VS Code in action" src="resources/sample.PNG">
+</p>
+
 *Woof~~~*
 
 ## Installation
