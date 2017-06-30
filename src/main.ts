@@ -1,4 +1,4 @@
-import { app, screen, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, screen, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { join as pathJoin } from 'path';
 import { readdir } from 'fs-promise';
 import { format as urlFormat } from 'url';
@@ -89,6 +89,14 @@ app.on('ready', () => {
     });
 
     createWindow();
+
+    // open links
+    function openExternal(event, url) {
+        event.preventDefault();
+        shell.openExternal(url);
+    }
+    mainWindow.webContents.on('new-window', openExternal);
+    mainWindow.webContents.on('will-navigate', openExternal);
 
     ipcMain.on(NoteManagerIpcEvent.sync, (event) => {
         syncNotes(event.sender).catch((e) => {
