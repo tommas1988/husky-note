@@ -138,9 +138,11 @@ export class NoteManager extends EventEmitter {
         this._basedir = config.noteDir;
 
         ipcRenderer.on(IpcEvent.syncComplete, (event, isUpdated) => {
-            if (isUpdated) {
-                this.load();
+            if (!isUpdated) {
+                return;
             }
+
+            this.load();
             ServiceLocator.alerter.info('Sync notes completed!');
         });
 
