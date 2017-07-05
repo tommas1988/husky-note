@@ -18,7 +18,7 @@ export class Editor extends EventEmitter {
 
     private _editingNote: Note;
     // view state of last edition
-    private _viewStates: WeakMap<Note, monaco.editor.IEditorViewState>;
+    private _viewStates: WeakMap<Note, monaco.editor.ICodeEditorViewState>;
 
     constructor() {
         super();
@@ -27,14 +27,17 @@ export class Editor extends EventEmitter {
             theme: 'vs',
             model: null,
             renderLineHighlight: 'none',
-            wrappingColumn: 0,
+            wordWrap: 'on',
             quickSuggestions: false,
+            minimap: {
+                enabled: false
+            },
             scrollbar: {
                 horizontalScrollbarSize: 0,
                 verticalScrollbarSize: 0
             }
         });
-        this._viewStates = new WeakMap<Note, monaco.editor.IEditorViewState>();
+        this._viewStates = new WeakMap<Note, monaco.editor.ICodeEditorViewState>();
 
         this._init();
     }

@@ -6,52 +6,52 @@ const source = 'husky.editor.command';
 let markSetted = false;
 
 export function previousLine() {
-    let command = markSetted ? Monaco.editor.Handler.CursorUpSelect : Monaco.editor.Handler.CursorUp;
+    let command = markSetted ? 'cursorUpSelect' : 'cursorUp';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function nextLine() {
-    let command = markSetted ? Monaco.editor.Handler.CursorDownSelect : Monaco.editor.Handler.CursorDown;
+    let command = markSetted ? 'cursorDownSelect' : 'cursorDown';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function forwardChar() {
-    let command = markSetted ? Monaco.editor.Handler.CursorRightSelect : Monaco.editor.Handler.CursorRight;
+    let command = markSetted ? 'cursorRightSelect' : 'cursorRight';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function backwardChar() {
-    let command = markSetted ? Monaco.editor.Handler.CursorLeftSelect : Monaco.editor.Handler.CursorLeft;
+    let command = markSetted ? 'cursorLeftSelect' : 'cursorLeft';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function moveBeginningOfLine() {
-    let command = markSetted ? Monaco.editor.Handler.CursorHomeSelect : Monaco.editor.Handler.CursorHome;
+    let command = markSetted ? 'cursorHomeSelect' : 'cursorHome';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function moveEndOfLine() {
-    let command = markSetted ? Monaco.editor.Handler.CursorEndSelect : Monaco.editor.Handler.CursorEnd;
+    let command = markSetted ? 'cursorEndSelect' : 'cursorEnd';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function scrollUp() {
-    let command = markSetted ? Monaco.editor.Handler.CursorPageUpSelect : Monaco.editor.Handler.CursorPageUp;
+    let command = markSetted ? 'cursorPageUpSelect' : 'cursorPageUp';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function scrollDown() {
-    let command = markSetted ? Monaco.editor.Handler.CursorPageDownSelect : Monaco.editor.Handler.CursorPageDown;
+    let command = markSetted ? 'cursorPageDownSelect' : 'cursorPageDown';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function beginningOfText() {
-    let command = markSetted ? Monaco.editor.Handler.CursorTopSelect : Monaco.editor.Handler.CursorTop
+    let command = markSetted ? 'cursorTopSelect' : 'cursorTop';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
 export function endOfText() {
-    let command = markSetted ? Monaco.editor.Handler.CursorBottomSelect : Monaco.editor.Handler.CursorBottom;
+    let command = markSetted ? 'cursorBottomSelect' : 'cursorBottom';
     ServiceLocator.editor.kernel.trigger(source, command, null);
 }
 
@@ -90,14 +90,14 @@ export function paste() {
 }
 
 export function undo() {
-    ServiceLocator.editor.kernel.trigger(source, Monaco.editor.Handler.Undo, null);
+    ServiceLocator.editor.kernel.trigger(source, 'undo', null);
     if (markSetted) {
         toggleMark();
     }
 }
 
 export function redo() {
-    ServiceLocator.editor.kernel.trigger(source, Monaco.editor.Handler.Redo, null);
+    ServiceLocator.editor.kernel.trigger(source, 'redo', null);
     if (markSetted) {
         toggleMark();
     }
@@ -117,13 +117,12 @@ export function gotoLine() {
 
 export function killLine() {
     let kernel = ServiceLocator.editor.kernel;
-    let Handler = Monaco.editor.Handler;
-    kernel.trigger(source, Handler.CursorEndSelect, null);
-    kernel.trigger(source, Handler.DeleteRight, null);
+    kernel.trigger(source, 'cursorEndSelect', null);
+    kernel.trigger(source, 'deleteRight', null);
 }
 
 export function deleteChar() {
-    ServiceLocator.editor.kernel.trigger(source, Monaco.editor.Handler.DeleteRight, null);
+    ServiceLocator.editor.kernel.trigger(source, 'deleteRight', null);
 }
 
 // workaround to check findWidget visable
