@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { remote, app, ipcMain, ipcRenderer } from 'electron';
 import { sep } from 'path';
+import { env } from 'process';
 import { readJsonSync } from 'fs-extra';
 import { writeJson } from 'fs-promise';
 import { isMainProcess, checkMainProcess } from './utils';
@@ -141,7 +142,8 @@ export const Event = {
     change_failed: 'config:config-change-failed',
 };
 
-const configFile = `${isMainProcess ? app.getPath('home') : remote.app.getPath('home')}${sep}.husky-note.json`;
+const pathName = env.test ? 'temp' : 'home';
+const configFile = `${isMainProcess ? app.getPath(pathName) : remote.app.getPath(pathName)}${sep}.husky-note.json`;
 
 export class Config extends BaseConfig {
     private _editor: EditorConfig;

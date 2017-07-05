@@ -1,4 +1,5 @@
 import { app, screen, BrowserWindow, shell, ipcMain, dialog } from 'electron';
+import { argv, env } from 'process';
 import { join as pathJoin } from 'path';
 import { readdir } from 'fs-promise';
 import { format as urlFormat } from 'url';
@@ -85,6 +86,15 @@ app.on('ready', () => {
         logger.error(e);
         if (config.debug) {
             throw e;
+        }
+    });
+
+    // set env
+    argv.forEach((value) => {
+        switch (value) {
+            case 'test':
+                // test env
+                env.test = true;
         }
     });
 
