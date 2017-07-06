@@ -37,6 +37,8 @@ gulp.task('vendor-css', function () {
         paths: rootDir
     });
 
+    cssFiles.push(path.resolve(npmDir + path.sep + 'highlight.js' + path.sep + 'styles' + path.sep + 'github-gist.css'));
+
     console.log(cssFiles);
 
     return gulp.src(cssFiles)
