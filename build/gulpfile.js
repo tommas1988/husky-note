@@ -63,22 +63,40 @@ gulp.task('vendor-fonts', function () {
 
 gulp.task('build-css', ['app-css', 'vendor-css', 'vendor-fonts']);
 
-const ts = require('gulp-typescript');
-const babel = require('gulp-babel');
-// convert ts to es5
-gulp.task('app-js', function () {
+gulp.task('install-deps', ['package.json'], function () {
+    return gulp.src(electronSrc + '/' + 'package.json')
+        .pipe(gulp.dest(electronSrc))
+        .pipe(plugins.install({
+            production:  true,
+            npm: {
+                "runtime": "electron",
+                "target": electronVersion,
+                "target_arch": "x64",
+                "disturl": "https://atom.io/download/atom-shell"
+            }
+        }));
+});
+
+// compile ts codes
+function compileCodes() {
+    const ts = require('gulp-typescript');
+    const babel = require('gulp-babel');
+
     // remove this declaration file to avoid ts compile errors
     rimraf.sync(npmDir + '/fs-promise/index.d.ts');
 
     let tsProject = ts.createProject('../tsconfig.json');
-    let result = gulp.src('../src/**/*.ts')
+    gulp.src('../src/**/*.ts')
         .pipe(tsProject())
         .js
         .pipe(babel({
             presets: ['env']
         }))
         .pipe(gulp.dest('../dist/electron/resources/app/src'));
-});
+}
+
+gulp.task('app-js', ['install-deps'], compileCodes);
+gulp.task('complie-js', compileCodes);
 
 // merge vendor js into one file
 gulp.task('vendor-js', function () {
@@ -115,26 +133,11 @@ gulp.task('package.json', function () {
         .pipe(gulp.dest(electronSrc));
 });
 
-gulp.task('install-deps', ['package.json'], function () {
-    return gulp.src(electronSrc + '/' + 'package.json')
-        .pipe(gulp.dest(electronSrc))
-        .pipe(plugins.install({
-            production: true,
-            npm: {
-                "runtime": "electron",
-                "target": electronVersion,
-                "target_arch": "x64",
-                "disturl": "https://atom.io/download/atom-shell"
-            }
-        }));
-});
-
 gulp.task('build', [
     'build-css',
     'build-js',
     'templates',
     'main-page',
-    'install-deps',
 ], function () {
     //TODO: rename electron to app name
 });
