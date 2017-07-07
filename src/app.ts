@@ -92,15 +92,14 @@ export class App {
         noteManager.on(NoteManagerEvent.reload, () => {
             let activeNote = this._activeNote;
             let noteStatus = this._openNotes.get(activeNote);
-            let notebook = noteManager.notebooks.get(activeNote.notebook.name);
-            let note = notebook.notes.get(activeNote.name);
+            let notebook = activeNote.notebook ? noteManager.notebooks.get(activeNote.notebook.name) : null;
 
             // TODO: remember the opened notes
             // reset opened notes
             this._openNotes = new Map();
 
-            if (notebook && note) {
-                this.openNote(note, noteStatus.view);
+            if (notebook) {
+                this.openNote(notebook.notes.get(activeNote.name), noteStatus.view);
             } else {
                 this.openNote(noteManager.orphanNote, NoteView.LivePreview);
             }

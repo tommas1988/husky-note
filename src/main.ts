@@ -75,6 +75,15 @@ function quit() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+    // set env first
+    argv.forEach((value) => {
+        switch (value) {
+            case 'test':
+                // test env
+                env.test = true;
+        }
+    });
+
     let logger = ServiceLocator.logger;
 
     // truncate log file
@@ -86,15 +95,6 @@ app.on('ready', () => {
         logger.error(e);
         if (config.debug) {
             throw e;
-        }
-    });
-
-    // set env
-    argv.forEach((value) => {
-        switch (value) {
-            case 'test':
-                // test env
-                env.test = true;
         }
     });
 

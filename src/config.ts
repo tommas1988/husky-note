@@ -142,10 +142,10 @@ export const Event = {
     change_failed: 'config:config-change-failed',
 };
 
-const pathName = env.test ? 'temp' : 'home';
-const configFile = `${isMainProcess ? app.getPath(pathName) : remote.app.getPath(pathName)}${sep}.husky-note.json`;
 
 export class Config extends BaseConfig {
+    private _filename: string;
+
     private _editor: EditorConfig;
     private _git: GitConfig;
 
@@ -176,9 +176,12 @@ export class Config extends BaseConfig {
     constructor() {
         super();
 
+        let pathName: 'temp' | 'home' = env.test ? 'temp' : 'home';
+        this._filename = `${isMainProcess ? app.getPath(pathName) : remote.app.getPath(pathName)}${sep}.husky-note.json`;
+
         let configs;
         try {
-            configs = readJsonSync(configFile);
+            configs = readJsonSync(this._filename);
         } catch (e) {
             configs = {};
         }
@@ -215,7 +218,7 @@ export class Config extends BaseConfig {
     }
 
     save(name: string, newVal: any, oldVal: any) {
-        writeJson(configFile, this._configs).then(() => {
+        writeJson(this._filename, this._configs).then(() => {
             ipcRenderer.send(IpcEvent.sync, this._configs, name, newVal, oldVal);
             this.emit(Event.change, name, newVal, oldVal);
         }).catch(() => {
