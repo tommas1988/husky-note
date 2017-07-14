@@ -33,6 +33,7 @@
         right: 0;
         width: $outline-width;
         background-color: darken($color-reader-bg, 5%);
+        overflow-x: hidden;
         display: none;
     }
 

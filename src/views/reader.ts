@@ -1,7 +1,7 @@
 import { AbstractView } from './view';
 import { Note, Notebook } from '../note';
 import { Event as NoteManagerEvent } from '../note-manager';
-import { NoteRenderer } from '../note-renderer';
+import { NoteRenderer, IOutlineHeader, IRenderResult } from '../note-renderer';
 import { Event as EditorEvent } from '../editor';
 import ServiceLocator from '../service-locator';
 
@@ -52,25 +52,31 @@ export class ReaderView extends AbstractView {
     }
 
     setHeight(height: number) {
-        this._container.height(height - 20 /* exclude margin-bottom */);
+        this._container.height(height - 40 /* exclude margin */);
     }
 
     openNote(note: Note, showOutline: boolean = true) {
         let el = this._notes.get(note);
         if (!el) {
-            el = $(noteHtml(ServiceLocator.noteRenderer.render(note.content)));
+            let renderResult: IRenderResult = ServiceLocator.noteRenderer.render(note);
+
+            el = $(noteHtml(renderResult.content));
             el.hide();
             el.appendTo(this._container);
 
             this._notes.set(note, el);
+            this._outline.setHeaders(note, renderResult.outlineHeaders);
         }
 
         this._container.children().hide();
 
         if (!showOutline) {
             this._el.removeClass(SHOW_OUTLINE_CLASS);
-        } else if (!this._el.hasClass(SHOW_OUTLINE_CLASS)) {
-            this._el.addClass(SHOW_OUTLINE_CLASS);
+        } else {
+            if (!this._el.hasClass(SHOW_OUTLINE_CLASS)) {
+                this._el.addClass(SHOW_OUTLINE_CLASS);
+            }
+            this._outline.render(note);
         }
 
         el.show();
@@ -85,17 +91,40 @@ export class ReaderView extends AbstractView {
             return;
         }
 
+        let renderResult: IRenderResult = ServiceLocator.noteRenderer.render(note);
+
         el.empty();
-        el.append(ServiceLocator.noteRenderer.render(note.content));
+        el.append(renderResult.content);
+
+        this._outline.setHeaders(note, renderResult.outlineHeaders);
     }
 }
 
 class OutlineView extends AbstractView {
+    private _headers: WeakMap<Note, IOutlineHeader[]>;
+
     constructor(el: JQuery) {
         super(el);
+        this._headers = new WeakMap<Note, IOutlineHeader[]>();
     }
 
-    init() {
-        // no-op
+    setHeaders(note: Note, headers: IOutlineHeader[]) {
+        this._headers.set(note, headers);
+    }
+
+    render(note: Note) {
+        let headers = this._headers.get(note);
+
+        if (!headers) {
+            throw new Error('Can not find out outline headers');
+        }
+
+        let html = '<nav class="nav flex-column">';
+        headers.forEach((val: IOutlineHeader) => {
+            html += `<a class="nav-link" href="#${val.id}">${val.content}</a>`;
+        });
+        html += '</nav>';
+
+        this._el.empty().append(html);
     }
 }
