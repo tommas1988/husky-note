@@ -245,7 +245,7 @@ export class App {
                 ServiceLocator.editor.edit(note);
                 break;
             case NoteView.LivePreview:
-                mainView.reader.openNote(note);
+                mainView.reader.openNote(note, false);
                 mainView.splitView();
                 ServiceLocator.editor.edit(note);
                 break;

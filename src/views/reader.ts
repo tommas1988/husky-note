@@ -7,6 +7,11 @@ import ServiceLocator from '../service-locator';
 
 let containerKey = 0;
 
+const CONTAINER_HTML = '<div></div>';
+const OUTLINE_HTML = '<div class="outline"></div>';
+
+const SHOW_OUTLINE_CLASS = 'show-outline';
+
 function noteHtml(content: string = ''): string {
     return `<div class="markdown-body ${containerKey++}">${content}</div>`;
 }
@@ -20,8 +25,8 @@ export class ReaderView extends AbstractView {
     constructor(el: JQuery) {
         super(el);
 
-        this._container = $('<div></div>').appendTo(this._el);
-        this._outline = new OutlineView(this._el.find('.outline'));
+        this._container = $(CONTAINER_HTML).appendTo(this._el);
+        this._outline = new OutlineView($(OUTLINE_HTML).appendTo(el));
     }
 
     init() {
@@ -50,7 +55,7 @@ export class ReaderView extends AbstractView {
         this._container.height(height - 20 /* exclude margin-bottom */);
     }
 
-    openNote(note: Note) {
+    openNote(note: Note, showOutline: boolean = true) {
         let el = this._notes.get(note);
         if (!el) {
             el = $(noteHtml(ServiceLocator.noteRenderer.render(note.content)));
@@ -61,6 +66,12 @@ export class ReaderView extends AbstractView {
         }
 
         this._container.children().hide();
+
+        if (!showOutline) {
+            this._el.removeClass(SHOW_OUTLINE_CLASS);
+        } else if (!this._el.hasClass(SHOW_OUTLINE_CLASS)) {
+            this._el.addClass(SHOW_OUTLINE_CLASS);
+        }
 
         el.show();
     }
