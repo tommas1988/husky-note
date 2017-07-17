@@ -5,15 +5,13 @@ import { NoteRenderer, IOutlineHeader, IRenderResult } from '../note-renderer';
 import { Event as EditorEvent } from '../editor';
 import ServiceLocator from '../service-locator';
 
-let containerKey = 0;
-
 const CONTAINER_HTML = '<div></div>';
 const OUTLINE_HTML = '<div class="outline"></div>';
 
 const SHOW_OUTLINE_CLASS = 'show-outline';
 
 function noteHtml(content: string = ''): string {
-    return `<div class="markdown-body ${containerKey++}">${content}</div>`;
+    return `<div class="markdown-body">${content}</div>`;
 }
 
 export class ReaderView extends AbstractView {
@@ -30,9 +28,14 @@ export class ReaderView extends AbstractView {
     }
 
     init() {
+        let editor = ServiceLocator.editor;
         // update note reader view when note changes
-        ServiceLocator.editor.on(EditorEvent.change, (note: Note) => {
+        editor.on(EditorEvent.change, (note: Note) => {
             this.updateNote(note);
+        });
+
+        editor.on(EditorEvent.changeLineNumber, (note: Note, lineNumber) => {
+            this.revealLine(note, lineNumber);
         });
 
         let manager = ServiceLocator.noteManager;
@@ -82,7 +85,6 @@ export class ReaderView extends AbstractView {
         el.show();
     }
 
-    // TODO: need to only update the changes of the note
     updateNote(note: Note) {
         let el = this._notes.get(note);
 
@@ -97,6 +99,14 @@ export class ReaderView extends AbstractView {
         el.append(renderResult.content);
 
         this._outline.setHeaders(note, renderResult.outlineHeaders);
+    }
+
+    revealLine(note: Note, line: number) {
+        let el: HTMLElement = this._notes.get(note).find(`[data-line=${line}]`).get(0);
+
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 }
 
@@ -121,7 +131,7 @@ class OutlineView extends AbstractView {
 
         let html = '<nav class="nav flex-column">';
         headers.forEach((val: IOutlineHeader) => {
-            html += `<a class="nav-link" href="#${val.id}">${val.content}</a>`;
+            html += `<a class="nav-link" data-line="${val.line}">${val.title}</a>`;
         });
         html += '</nav>';
 

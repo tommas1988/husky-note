@@ -1,11 +1,11 @@
-import * as marked from 'marked';
-import { highlightAuto } from 'highlight.js';
+import { MarkdownIt, Ruler } from 'markdown-it';
+import { getLanguage, highlight } from 'highlight.js';
 import { Note } from './note';
 
 export interface IOutlineHeader {
-    id: string;
     level: number;
-    content: string;
+    line: number;
+    title: string;
 }
 
 export interface IRenderResult {
@@ -14,54 +14,83 @@ export interface IRenderResult {
 }
 
 export class NoteRenderer {
+    private _engine: MarkdownIt;
+
     private _outlineHeaders: IOutlineHeader[];
-    private _outlineHeaderPrefix: string;
 
     constructor() {
-        let renderer = new marked.Renderer();
-        renderer.heading = this._renderHeader.bind(this);
+        this._initMarkdownEngine();
+    }
 
-        marked.setOptions({
-            renderer: renderer,
-            gfm: true,
-            tables: true,
-            breaks: false,
-            pedantic: false,
-            sanitize: false,
-            smartLists: true,
-            smartypants: false,
-            highlight: this._codeHighlight.bind(this),
+    private _initMarkdownEngine() {
+        const MarkdownIt = require('markdown-it');
+        let engine = new MarkdownIt('commonmark');
+
+        function addLineNumberRenderer(ruleName: string): void {
+            const original = engine.renderer.rules[ruleName];
+            engine.renderer.rules[ruleName] = (tokens: any, idx: number, options: any, env: any, self: any) => {
+                const token = tokens[idx];
+                if (token.map && token.map.length) {
+                    token.attrSet('data-line', token.map[0]);
+                }
+
+                if (original) {
+                    return original(tokens, idx, options, env, self);
+                } else {
+                    return self.renderToken(tokens, idx, options, env, self);
+                }
+            };
+        };
+
+        engine.set({
+            highlight: (str: string, lang: string) => {
+                if (lang && getLanguage(lang)) {
+                    try {
+                        return highlight(lang, str).value;
+                    } catch (error) { }
+                }
+                return '';
+            }
         });
+
+        engine.renderer.rules.heading_open = (tokens: any, idx: number, options: any, env: any, self: any) => {
+            let headingOpenToken = tokens[idx];
+            let headingInlineToken = tokens[idx + 1];
+
+            this._parseOutlineHeader(headingInlineToken.content,
+                headingOpenToken.markup.length,
+                headingOpenToken.attrGet('data-line'));
+
+            return self.renderToken(tokens, idx, options, env, self);
+        };
+
+        for (const ruleName of ['paragraph_open',
+            'heading_open',
+            'image',
+            'code_block',
+            'blockquote_open',
+            'list_item_open'
+        ]) {
+            addLineNumberRenderer(ruleName);
+        }
+
+        this._engine = engine;
     }
 
     render(note: Note): IRenderResult {
-        // reset outline header prefix and containers
-        this._outlineHeaderPrefix = note.notebook ? `${note.notebook.name}-${note.name}-` : 'orphan-note-';
+        // reset outline header containers
         this._outlineHeaders = [];
 
         return {
-            content: marked(note.content),
+            content: this._engine.render(note.content),
             outlineHeaders: this._outlineHeaders
         };
     }
 
-    private _renderHeader(text: string, level: number, raw: string): string {
+    private _parseOutlineHeader(title: string, level: number, line: number) {
         const START_OUTLINE_HEADER_LEVEL = 2;
-
-        let html = `<h${level}`;
-
         if (level <= START_OUTLINE_HEADER_LEVEL) {
-            let id = this._outlineHeaderPrefix + text;
-            this._outlineHeaders.push({ id, level, content: text });
-            html += ` id="${id}"`;
+            this._outlineHeaders.push({ level, line, title });
         }
-
-        html += `>${text}</h${level}>`;
-
-        return html;
-    }
-
-    private _codeHighlight(code: string, lang: string): string {
-        return highlightAuto(code, [lang]).value;
     }
 }

@@ -4,13 +4,14 @@ import { EditorView } from './views/editor';
 import { Note } from './note';
 import ViewManager from './view-manager';
 import * as editorCommands from './commands/editor';
-import { noop } from './utils';
+import { noop, throttle } from './utils';
 import ServiceLocator from './service-locator';
 
 const TEXT_MODE = 'markdown';
 
 export const Event = {
     change: 'editor:change',
+    changeLineNumber: 'editor:change-line-number',
 };
 
 export class Editor extends EventEmitter {
@@ -44,19 +45,13 @@ export class Editor extends EventEmitter {
 
     private _init() {
         // emit change event when note content change
-        let timmer = null;
-        this.kernel.onDidChangeModelContent(() => {
-            let note = this._editingNote;
+        this.kernel.onDidChangeModelContent(throttle(() => {
+            this.emit(Event.change, this._editingNote);
+        }, 100, this));
 
-            if (timmer) {
-                clearTimeout(timmer);
-            }
-
-            timmer = setTimeout(() => {
-                this.emit(Event.change, note);
-                timmer = null;
-            }, 100);
-        });
+        this.kernel.onDidChangeCursorSelection(throttle((e: monaco.editor.ICursorSelectionChangedEvent) => {
+            this.emit(Event.changeLineNumber, this._editingNote, e.selection.startLineNumber);
+        }, 100, this));
 
         // set keybindings
         this._setKeyBindings();
