@@ -1,5 +1,5 @@
 import { AbstractView } from './view';
-import * as marked from 'marked';
+import * as MarkdownIt from 'markdown-it';
 
 function messageBarHtml(msg: string): string {
     return `
@@ -22,15 +22,11 @@ export const enum MessageType {
 };
 
 export class MessageView extends AbstractView {
+    private _md: MarkdownIt.MarkdownIt;
+
     constructor() {
         super('#message');
-
-        marked.setOptions({
-            breaks: false,
-            pedantic: false,
-            sanitize: false,
-            smartypants: false
-        });
+        this._md = new MarkdownIt('zero');
     }
 
     show(msg: string, type: MessageType, liveTime: number = 0) {
@@ -52,7 +48,7 @@ export class MessageView extends AbstractView {
                 break;
         }
 
-        let el = $(messageBarHtml(marked(msg)))
+        let el = $(messageBarHtml(this._md.renderInline(msg)))
             .addClass(`alert-${classStr} ${classStr} ${FADE_IN_CLASS}`)
             .appendTo(this._el);
 
