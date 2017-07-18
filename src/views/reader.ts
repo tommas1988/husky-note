@@ -18,7 +18,7 @@ export class ReaderView extends AbstractView {
     private _outline: OutlineView;
 
     private _container: JQuery;
-    private _notes: WeakMap<Note, { el: JQuery, codeLines: number[] }> = new WeakMap();
+    private _notes: WeakMap<Note, { el: JQuery, codeLines: number[], revealLine: number }> = new WeakMap();
 
     constructor(el: JQuery) {
         super(el);
@@ -68,7 +68,7 @@ export class ReaderView extends AbstractView {
             el.hide();
             el.appendTo(this._container);
 
-            this._notes.set(note, { el, codeLines: renderResult.blockCodeLines });
+            this._notes.set(note, { el, codeLines: renderResult.blockCodeLines, revealLine: 0 });
             this._outline.setHeaders(note, renderResult.outlineHeaders);
         } else {
             el = this._notes.get(note).el;
@@ -102,10 +102,18 @@ export class ReaderView extends AbstractView {
         entry.el.empty().append(renderResult.content);
 
         this._outline.setHeaders(note, renderResult.outlineHeaders);
+
+        // reset reveal line
+        entry.revealLine = 0;
     }
 
     revealLine(note: Note, targetLine: number) {
         let entry = this._notes.get(note);
+
+        // already on the target line
+        if (entry.revealLine === targetLine) {
+            return;
+        }
 
         let prevBlockLine = 0, nextBlockLine;
         for (const codeLine of entry.codeLines) {
@@ -144,6 +152,9 @@ export class ReaderView extends AbstractView {
         }
 
         this._container.scrollTop(this._container.scrollTop() + scrollTo - 40); // exclude header height
+
+        // remember current line
+        entry.revealLine = targetLine;
     }
 }
 
