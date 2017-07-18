@@ -11,12 +11,14 @@ export interface IOutlineHeader {
 export interface IRenderResult {
     content: string;
     outlineHeaders: IOutlineHeader[];
+    blockCodeLines: number[];
 }
 
 export class NoteRenderer {
     private _engine: MarkdownIt;
 
     private _outlineHeaders: IOutlineHeader[];
+    private _blockCodeLines: number[];
 
     constructor() {
         this._initMarkdownEngine();
@@ -24,23 +26,9 @@ export class NoteRenderer {
 
     private _initMarkdownEngine() {
         const MarkdownIt = require('markdown-it');
-        let engine = new MarkdownIt('commonmark');
+        let engine: MarkdownIt;
 
-        function addLineNumberRenderer(ruleName: string): void {
-            const original = engine.renderer.rules[ruleName];
-            engine.renderer.rules[ruleName] = (tokens: any, idx: number, options: any, env: any, self: any) => {
-                const token = tokens[idx];
-                if (token.map && token.map.length) {
-                    token.attrSet('data-line', token.map[0]);
-                }
-
-                if (original) {
-                    return original(tokens, idx, options, env, self);
-                } else {
-                    return self.renderToken(tokens, idx, options, env, self);
-                }
-            };
-        };
+        this._engine = engine = new MarkdownIt('commonmark');
 
         engine.set({
             highlight: (str: string, lang: string) => {
@@ -71,19 +59,19 @@ export class NoteRenderer {
             'blockquote_open',
             'list_item_open'
         ]) {
-            addLineNumberRenderer(ruleName);
+            this._addLineNumberRenderer(ruleName);
         }
-
-        this._engine = engine;
     }
 
     render(note: Note): IRenderResult {
-        // reset outline header containers
+        // reset outline header containers and block code lines
         this._outlineHeaders = [];
+        this._blockCodeLines = [];
 
         return {
             content: this._engine.render(note.content),
-            outlineHeaders: this._outlineHeaders
+            outlineHeaders: this._outlineHeaders,
+            blockCodeLines: this._blockCodeLines,
         };
     }
 
@@ -93,4 +81,24 @@ export class NoteRenderer {
             this._outlineHeaders.push({ level, line, title });
         }
     }
+
+    private _addLineNumberRenderer(ruleName: string): void {
+        const engine = this._engine;
+        const original = engine.renderer.rules[ruleName];
+
+        engine.renderer.rules[ruleName] = (tokens: any, idx: number, options: any, env: any, self: any) => {
+            const token = tokens[idx];
+            if (token.map && token.map.length) {
+                let codeLine = token.map[0] + 1;
+                token.attrSet('data-line', codeLine);
+                this._blockCodeLines.push(codeLine);
+            }
+
+            if (original) {
+                return original(tokens, idx, options, env, self);
+            } else {
+                return self.renderToken(tokens, idx, options, env, self);
+            }
+        };
+    };
 }

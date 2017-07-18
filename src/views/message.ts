@@ -26,7 +26,7 @@ export class MessageView extends AbstractView {
 
     constructor() {
         super('#message');
-        this._md = new MarkdownIt('zero');
+        this._md = new MarkdownIt('commonmark');
     }
 
     show(msg: string, type: MessageType, liveTime: number = 0) {

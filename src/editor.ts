@@ -49,8 +49,16 @@ export class Editor extends EventEmitter {
             this.emit(Event.change, this._editingNote);
         }, 100, this));
 
+        let lastLineNumber: number;
         this.kernel.onDidChangeCursorSelection(throttle((e: monaco.editor.ICursorSelectionChangedEvent) => {
-            this.emit(Event.changeLineNumber, this._editingNote, e.selection.startLineNumber);
+            let newLineNumber = e.selection.startLineNumber;
+
+            if (newLineNumber === lastLineNumber) {
+                return;
+            }
+
+            lastLineNumber = newLineNumber;
+            this.emit(Event.changeLineNumber, this._editingNote, newLineNumber);
         }, 100, this));
 
         // set keybindings

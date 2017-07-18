@@ -18,7 +18,7 @@ export class ReaderView extends AbstractView {
     private _outline: OutlineView;
 
     private _container: JQuery;
-    private _notes: WeakMap<Note, JQuery> = new WeakMap();
+    private _notes: WeakMap<Note, { el: JQuery, codeLines: number[] }> = new WeakMap();
 
     constructor(el: JQuery) {
         super(el);
@@ -43,13 +43,13 @@ export class ReaderView extends AbstractView {
         manager.on(NoteManagerEvent.delete_notebook, (notebook: Notebook) => {
             for (let note of notebook.notes.values()) {
                 if (this._notes.has(note)) {
-                    this._notes.get(note).remove();
+                    this._notes.get(note).el.remove();
                 }
             }
         });
         manager.on(NoteManagerEvent.delete_note, (note: Note) => {
             if (this._notes.has(note)) {
-                this._notes.get(note).remove();
+                this._notes.get(note).el.remove();
             }
         });
     }
@@ -59,16 +59,19 @@ export class ReaderView extends AbstractView {
     }
 
     openNote(note: Note, showOutline: boolean = true) {
-        let el = this._notes.get(note);
-        if (!el) {
+        let el: JQuery;
+
+        if (!this._notes.has(note)) {
             let renderResult: IRenderResult = ServiceLocator.noteRenderer.render(note);
 
             el = $(noteHtml(renderResult.content));
             el.hide();
             el.appendTo(this._container);
 
-            this._notes.set(note, el);
+            this._notes.set(note, { el, codeLines: renderResult.blockCodeLines });
             this._outline.setHeaders(note, renderResult.outlineHeaders);
+        } else {
+            el = this._notes.get(note).el;
         }
 
         this._container.children().hide();
@@ -86,27 +89,61 @@ export class ReaderView extends AbstractView {
     }
 
     updateNote(note: Note) {
-        let el = this._notes.get(note);
+        let entry = this._notes.get(note);
 
         // not rendered yet
-        if (!el) {
+        if (!entry.el) {
             return;
         }
 
         let renderResult: IRenderResult = ServiceLocator.noteRenderer.render(note);
 
-        el.empty();
-        el.append(renderResult.content);
+        entry.codeLines = renderResult.blockCodeLines;
+        entry.el.empty().append(renderResult.content);
 
         this._outline.setHeaders(note, renderResult.outlineHeaders);
     }
 
-    revealLine(note: Note, line: number) {
-        let el: HTMLElement = this._notes.get(note).find(`[data-line=${line}]`).get(0);
+    revealLine(note: Note, targetLine: number) {
+        let entry = this._notes.get(note);
 
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        let prevBlockLine = 0, nextBlockLine;
+        for (const codeLine of entry.codeLines) {
+            if (codeLine === targetLine) {
+                break;
+            }
+
+            if (codeLine < targetLine) {
+                prevBlockLine = codeLine;
+            } else {
+                nextBlockLine = codeLine;
+                break;
+            }
         }
+
+        let scrollTo;
+        if (nextBlockLine) {
+            // between two blocks
+            let $prevBlock = entry.el.find(`[data-line=${prevBlockLine}]`).get(0);
+            let $nextBlock = entry.el.find(`[data-line=${nextBlockLine}]`).get(0);
+            if (!$prevBlock || !$nextBlock) {
+                return;
+            }
+
+            let betweenProgress = (targetLine - prevBlockLine) / (nextBlockLine - prevBlockLine);
+            let elementOffset = $nextBlock.getBoundingClientRect().top - $prevBlock.getBoundingClientRect().top;
+
+            scrollTo = $prevBlock.getBoundingClientRect().top + betweenProgress * elementOffset;
+        } else {
+            let el = entry.el.find(`[data-line=${targetLine}]`).get(0);
+            if (!el) {
+                return;
+            }
+
+            scrollTo = el.getBoundingClientRect().top;
+        }
+
+        this._container.scrollTop(this._container.scrollTop() + scrollTo - 40); // exclude header height
     }
 }
 
