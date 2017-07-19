@@ -58,10 +58,12 @@ export class ReaderView extends AbstractView {
         this._outline.init();
     }
 
+    // TODO: reset all notes padding bottom when container height changes
     setHeight(height: number) {
         this._container.height(height - 40 /* exclude margin */);
     }
 
+    // TODO: set padding bottom to this._container.innerHeight * 2 / 5
     openNote(note: Note, showOutline: boolean = true) {
         let el: JQuery;
 

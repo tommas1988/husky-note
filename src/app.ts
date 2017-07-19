@@ -230,6 +230,9 @@ export class App {
         }
     }
 
+    // TODO: use state machine to manage operations in view transfer of a note
+    // e.g. like note1 reader view -> any view of note2, have to remember reader
+    // view of note1`s scroll position
     openNote(note: Note, view?: NoteView) {
         let mainView = ViewManager.main;
         let openNotes = this._openNotes;
