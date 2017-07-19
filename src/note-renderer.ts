@@ -90,7 +90,10 @@ export class NoteRenderer {
             const token = tokens[idx];
             if (token.map && token.map.length) {
                 let codeLine = token.map[0] + 1;
+
                 token.attrSet('data-line', codeLine);
+                token.attrJoin('class', 'code-line');
+
                 this._blockCodeLines.push(codeLine);
             }
 

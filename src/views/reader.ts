@@ -4,6 +4,7 @@ import { Event as NoteManagerEvent } from '../note-manager';
 import { NoteRenderer, IOutlineHeader, IRenderResult } from '../note-renderer';
 import { Event as EditorEvent } from '../editor';
 import ServiceLocator from '../service-locator';
+import { App } from '../app';
 
 const CONTAINER_HTML = '<div></div>';
 const OUTLINE_HTML = '<div class="outline"></div>';
@@ -24,7 +25,7 @@ export class ReaderView extends AbstractView {
         super(el);
 
         this._container = $(CONTAINER_HTML).appendTo(this._el);
-        this._outline = new OutlineView($(OUTLINE_HTML).appendTo(el));
+        this._outline = new OutlineView($(OUTLINE_HTML).appendTo(el), this);
     }
 
     init() {
@@ -35,7 +36,7 @@ export class ReaderView extends AbstractView {
         });
 
         editor.on(EditorEvent.changeLineNumber, (note: Note, lineNumber) => {
-            this.revealLine(note, lineNumber);
+            this.revealLine(note, lineNumber, false);
         });
 
         let manager = ServiceLocator.noteManager;
@@ -52,6 +53,9 @@ export class ReaderView extends AbstractView {
                 this._notes.get(note).el.remove();
             }
         });
+
+        // init outline
+        this._outline.init();
     }
 
     setHeight(height: number) {
@@ -102,12 +106,9 @@ export class ReaderView extends AbstractView {
         entry.el.empty().append(renderResult.content);
 
         this._outline.setHeaders(note, renderResult.outlineHeaders);
-
-        // reset reveal line
-        entry.revealLine = 0;
     }
 
-    revealLine(note: Note, targetLine: number) {
+    revealLine(note: Note, targetLine: number, alignTop: boolean = true) {
         let entry = this._notes.get(note);
 
         // already on the target line
@@ -132,16 +133,16 @@ export class ReaderView extends AbstractView {
         let scrollTo;
         if (nextBlockLine) {
             // between two blocks
-            let $prevBlock = entry.el.find(`[data-line=${prevBlockLine}]`).get(0);
-            let $nextBlock = entry.el.find(`[data-line=${nextBlockLine}]`).get(0);
-            if (!$prevBlock || !$nextBlock) {
+            let prevBlockEl = entry.el.find(`[data-line=${prevBlockLine}]`).get(0);
+            let nextBlockEl = entry.el.find(`[data-line=${nextBlockLine}]`).get(0);
+            if (!prevBlockEl || !nextBlockEl) {
                 return;
             }
 
             let betweenProgress = (targetLine - prevBlockLine) / (nextBlockLine - prevBlockLine);
-            let elementOffset = $nextBlock.getBoundingClientRect().top - $prevBlock.getBoundingClientRect().top;
+            let elementOffset = nextBlockEl.getBoundingClientRect().top - prevBlockEl.getBoundingClientRect().top;
 
-            scrollTo = $prevBlock.getBoundingClientRect().top + betweenProgress * elementOffset;
+            scrollTo = prevBlockEl.getBoundingClientRect().top + betweenProgress * elementOffset;
         } else {
             let el = entry.el.find(`[data-line=${targetLine}]`).get(0);
             if (!el) {
@@ -151,19 +152,70 @@ export class ReaderView extends AbstractView {
             scrollTo = el.getBoundingClientRect().top;
         }
 
-        this._container.scrollTop(this._container.scrollTop() + scrollTo - 40); // exclude header height
+        let container = this._container;
+        if (!alignTop) {
+            scrollTo -= container.innerHeight() * 1 / 5;
+        }
+
+        container.scrollTop(container.scrollTop() + scrollTo - 40); // exclude header height
 
         // remember current line
         entry.revealLine = targetLine;
     }
+
+    getLineNumberFromCurrentPostion(note: Note): number {
+        let blockEls = this._notes.get(note).el.get();
+        let scrollTop = this._container.scrollTop();
+        let prevBlockEl, nextBlockEl;
+        let prevBounds, nextBounds;
+
+        for (const blockEl of blockEls) {
+            const bounds = blockEl.getBoundingClientRect();
+			if (bounds.top > 0) {
+                if (!prevBlockEl) {
+                    prevBlockEl = blockEl;
+                    prevBounds = bounds;
+                    break;
+                } else if (Math.abs(prevBounds.top) < prevBounds.height) {
+                    break;
+                }
+
+                nextBlockEl = blockEl;
+                nextBounds = bounds;
+                break;
+            }
+            prevBlockEl = blockEl;
+            prevBounds = bounds;
+        }
+
+        if (nextBlockEl) {
+            const betweenProgress = Math.abs(prevBounds.top) / (nextBounds.top - prevBounds.top);
+            const prevLine = prevBlockEl.getAttribute('data-line');
+            const nextLine = nextBlockEl.getAttribute('data-line');
+
+            return prevLine + betweenProgress * (nextLine - prevLine);
+        } else {
+            return +prevBlockEl.getAttribute('data-line');
+        }
+    }
 }
 
 class OutlineView extends AbstractView {
+    private _readerView: ReaderView;
     private _headers: WeakMap<Note, IOutlineHeader[]>;
 
-    constructor(el: JQuery) {
+    constructor(el: JQuery, readerView: ReaderView) {
         super(el);
+        this._readerView = readerView;
         this._headers = new WeakMap<Note, IOutlineHeader[]>();
+    }
+
+    init() {
+        const app = App.getInstance();
+        this._el.on('click', 'a', event => {
+            let gotoLine = +$(event.currentTarget).attr('data-line');
+            this._readerView.revealLine(app.activeNote, gotoLine);
+        });
     }
 
     setHeaders(note: Note, headers: IOutlineHeader[]) {

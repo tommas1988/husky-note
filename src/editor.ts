@@ -30,6 +30,7 @@ export class Editor extends EventEmitter {
             renderLineHighlight: 'none',
             wordWrap: 'on',
             quickSuggestions: false,
+            selectionHighlight: false,
             minimap: {
                 enabled: false
             },

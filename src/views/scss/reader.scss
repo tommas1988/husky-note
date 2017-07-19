@@ -35,6 +35,13 @@
         background-color: darken($color-reader-bg, 5%);
         overflow-x: hidden;
         display: none;
+
+        a {
+            cursor: pointer;
+            &:hover {
+                text-decoration: none;
+            }
+        }
     }
 
     &.show-outline {
