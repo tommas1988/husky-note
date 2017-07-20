@@ -81,22 +81,24 @@ gulp.task('install-deps', ['package.json'], function () {
 function compileCodes() {
     const ts = require('gulp-typescript');
     const babel = require('gulp-babel');
+    const sourceMaps = require('gulp-sourcemaps');
 
     // remove this declaration file to avoid ts compile errors
     rimraf.sync(npmDir + '/fs-promise/index.d.ts');
 
     let tsProject = ts.createProject('../tsconfig.json');
     gulp.src('../src/**/*.ts')
+        .pipe(sourceMaps.init())
         .pipe(tsProject())
-        .js
         .pipe(babel({
             presets: ['env']
         }))
+        .pipe(sourceMaps.write())
         .pipe(gulp.dest('../dist/electron/resources/app/src'));
 }
 
 gulp.task('app-js', ['install-deps'], compileCodes);
-gulp.task('complie-js', compileCodes);
+gulp.task('compile-js', compileCodes);
 
 // merge vendor js into one file
 gulp.task('vendor-js', function () {
