@@ -1,2 +1,0 @@
-### Notebook: Typescript
-#### Note: Syntax

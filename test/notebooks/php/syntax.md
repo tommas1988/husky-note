@@ -1,2 +1,0 @@
-### Notebook: PHP
-#### Note: Syntax

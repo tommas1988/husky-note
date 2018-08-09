@@ -1,13 +1,3 @@
 {
-	"compilerOptions": {
-		"target": "es6",
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"typeRoots": [
-			"src/typings",
-			"typings",
-			"typings/globals",
-			"node_modules/@types"
-		]
-	}
+  "extends": "./node_modules/electron-webpack/tsconfig-base.json"
 }
