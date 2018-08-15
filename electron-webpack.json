@@ -1,0 +1,7 @@
+{
+    "title": "Husk Note",
+    
+    "renderer": {
+        "webpackConfig": "config/webpack.renderer.additions.js"
+    }
+}
