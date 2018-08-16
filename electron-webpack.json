@@ -1,5 +1,7 @@
 {
     "title": "Husk Note",
+
+    "whiteListedModules": [ "monaco-editor" ],
     
     "renderer": {
         "webpackConfig": "config/webpack.renderer.additions.js"
