@@ -1,0 +1,12 @@
+.header-wrapper {
+    width: 100%;
+}
+
+.main {
+    display: flex;
+    width: 100%;
+
+    .editor-wrapper, .reader-wrapper {
+        flex: 1;
+    }
+}
