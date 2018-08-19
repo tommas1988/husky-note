@@ -17,6 +17,7 @@
     "sass-loader": "^7.1.0",
     "typescript": "^3.0.1",
     "vue": "^2.5.17",
+    "vue-property-decorator": "^7.0.0",
     "webpack": "^4.16.5"
   },
   "dependencies": {

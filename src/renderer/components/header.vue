@@ -2,21 +2,26 @@
 @import "./styles/variables";
 
 .header {
-    height: 20px;
     width: 100%;
     background-color: $color-header;
 }
 </style>
 
 <template>
-    <div class="header">
+    <div class="header" :style="{ height: headerHeight }">
         This is Header
     </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-export default Vue.extend({
-    
-});
+import { Vue, Component, Prop } from 'vue-property-decorator';
+
+@Component
+export default class extends Vue {
+    @Prop() height: number;
+
+    get headerHeight(): string {
+        return this.height + 'px';
+    }
+}
 </script>
