@@ -8,6 +8,9 @@
             <Header :height="headerHeight" />
         </div>
         <div class="main">
+            <div class="notebook-list-wrapper" :style="{ width: `${notebookListWidth}px` }">
+                <NotebookList />
+            </div>
             <div class="editor-wrapper">
                 <Editor :height="editorHeight" :width="editorWidth" />
             </div>
@@ -23,14 +26,16 @@ import { Vue, Component } from 'vue-property-decorator';
 import Header from '@/components/header.vue';
 import Editor from '@/components/editor.vue';
 import Reader from '@/components/reader.vue';
+import NotebookList from '@/components/notebook-list.vue';
 
 @Component({
     components: {
-        Header, Editor, Reader
+        Header, Editor, Reader, NotebookList
     }
 })
 export default class extends Vue {
     headerHeight: number = 40;
+    notebookListWidth: number = 300;
     windowHeight: number = window.innerHeight;
     windowWidth: number = window.innerWidth;
 
@@ -39,7 +44,7 @@ export default class extends Vue {
     }
 
     get editorWidth(): number {
-        return this.windowWidth / 2;
+        return (this.windowWidth - this.notebookListWidth) / 2;
     }
 
     created() {
