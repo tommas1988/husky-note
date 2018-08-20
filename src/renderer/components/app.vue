@@ -35,7 +35,8 @@ import NotebookList from '@/components/notebook-list.vue';
 })
 export default class extends Vue {
     headerHeight: number = 40;
-    notebookListWidth: number = 300;
+    // must be same with iview Menu width
+    notebookListWidth: number = 240;
     windowHeight: number = window.innerHeight;
     windowWidth: number = window.innerWidth;
 
