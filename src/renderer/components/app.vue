@@ -8,8 +8,8 @@
             <Header :height="headerHeight" />
         </div>
         <div class="main">
-            <div class="notebook-list-wrapper" :style="{ width: `${notebookListWidth}px` }">
-                <NotebookList />
+            <div class="notebook-list-wrapper" :style="{ width: notebookListWidthPx }">
+                <NotebookList :width="notebookListWidthPx" />
             </div>
             <div class="editor-wrapper">
                 <Editor :height="editorHeight" :width="editorWidth" />
@@ -35,8 +35,7 @@ import NotebookList from '@/components/notebook-list.vue';
 })
 export default class extends Vue {
     headerHeight: number = 40;
-    // must be same with iview Menu width
-    notebookListWidth: number = 240;
+    notebookListWidth: number = 200;
     windowHeight: number = window.innerHeight;
     windowWidth: number = window.innerWidth;
 
@@ -46,6 +45,10 @@ export default class extends Vue {
 
     get editorWidth(): number {
         return (this.windowWidth - this.notebookListWidth) / 2;
+    }
+
+    get notebookListWidthPx() {
+        return `${this.notebookListWidth}px`;
     }
 
     created() {

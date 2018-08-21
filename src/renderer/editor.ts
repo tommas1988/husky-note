@@ -3,6 +3,7 @@ import * as monaco from 'monaco-editor';
 export class Editor {
     public static create(element: HTMLElement): Editor {
         return new Editor(monaco.editor.create(element, {
+            language: 'markdown',
             theme: 'vs',
             renderLineHighlight: 'none',
             wordWrap: 'on',

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Menu v-for="(notes, notebook) in noteIndex" :key="notebook">
+        <Menu :width="width" v-for="(notes, notebook) in noteIndex" :key="notebook">
             <Submenu :name="notebook">
                 <template slot="title">
                     <Icon type="md-bookmarks" />
@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+import { Vue, Component, Prop } from 'vue-property-decorator';
 
 const noteIndex = {
   "C/C++": [
@@ -50,6 +50,8 @@ const noteIndex = {
 
 @Component
 export default class extends Vue {
+    @Prop() width:string;
+
     noteIndex = noteIndex;
 }
 </script>

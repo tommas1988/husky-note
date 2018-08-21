@@ -1,3 +1,9 @@
+@media screen and (max-width: 900px) {
+    .notebook-list-wrapper {
+        display: none;
+    }
+}
+
 .header-wrapper {
     width: 100%;
 }
@@ -5,6 +11,10 @@
 .main {
     display: flex;
     width: 100%;
+
+    .notebook-list-wrapper {
+        border-right: 1px solid #dcdee2;
+    }
 
     .editor-wrapper, .reader-wrapper {
         flex: 1;
