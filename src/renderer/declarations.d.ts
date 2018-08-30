@@ -1,4 +1,4 @@
-/// <reference path="../../node_modules/monaco-editor/monaco.d.ts" />
+/// <reference path="./editor/monaco/vs/monaco.d.ts" />
 
 declare const Monaco: typeof monaco;
 

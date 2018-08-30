@@ -1,4 +1,4 @@
-import * as monaco from 'monaco-editor';
+import './monaco/vs/editor/editor.main';
 
 export class Editor {
     public static create(element: HTMLElement): Editor {

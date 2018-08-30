@@ -1,3 +1,16 @@
 {
+  "compilerOptions": {
+		"module": "es6",
+		"noImplicitAny": false,
+		"removeComments": false,
+		"preserveConstEnums": false,
+		"target": "es5",
+		"experimentalDecorators": true,
+		"declaration": false,
+		"noImplicitReturns": true,
+		"noUnusedLocals": false,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+	},
   "extends": "./node_modules/electron-webpack/tsconfig-base.json"
 }

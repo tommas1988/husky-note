@@ -1,0 +1,125 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+'use strict';
+
+import './checkbox.css';
+import * as DOM from '../../dom';
+import { IKeyboardEvent } from '../../keyboardEvent';
+import { Widget } from '../widget';
+import { Color } from '../../../common/color';
+import { Emitter, Event } from '../../../common/event';
+import { KeyCode } from '../../../common/keyCodes';
+import * as objects from '../../../common/objects';
+
+export interface ICheckboxOpts extends ICheckboxStyles {
+	readonly actionClassName: string;
+	readonly title: string;
+	readonly isChecked: boolean;
+}
+
+export interface ICheckboxStyles {
+	inputActiveOptionBorder?: Color;
+}
+
+const defaultOpts = {
+	inputActiveOptionBorder: Color.fromHex('#007ACC')
+};
+
+export class Checkbox extends Widget {
+
+	private readonly _onChange = this._register(new Emitter<boolean>());
+	get onChange(): Event<boolean /* via keyboard */> { return this._onChange.event; }
+
+	private readonly _onKeyDown = this._register(new Emitter<IKeyboardEvent>());
+	get onKeyDown(): Event<IKeyboardEvent> { return this._onKeyDown.event; }
+
+	private readonly _opts: ICheckboxOpts;
+	readonly domNode: HTMLElement;
+
+	private _checked: boolean;
+
+	constructor(opts: ICheckboxOpts) {
+		super();
+
+		this._opts = objects.deepClone(opts);
+		objects.mixin(this._opts, defaultOpts, false);
+		this._checked = this._opts.isChecked;
+
+		this.domNode = document.createElement('div');
+		this.domNode.title = this._opts.title;
+		this.domNode.className = 'monaco-custom-checkbox ' + this._opts.actionClassName + ' ' + (this._checked ? 'checked' : 'unchecked');
+		this.domNode.tabIndex = 0;
+		this.domNode.setAttribute('role', 'checkbox');
+		this.domNode.setAttribute('aria-checked', String(this._checked));
+		this.domNode.setAttribute('aria-label', this._opts.title);
+
+		this.applyStyles();
+
+		this.onclick(this.domNode, (ev) => {
+			this.checked = !this._checked;
+			this._onChange.fire(false);
+			ev.preventDefault();
+		});
+
+		this.onkeydown(this.domNode, (keyboardEvent) => {
+			if (keyboardEvent.keyCode === KeyCode.Space || keyboardEvent.keyCode === KeyCode.Enter) {
+				this.checked = !this._checked;
+				this._onChange.fire(true);
+				keyboardEvent.preventDefault();
+				return;
+			}
+
+			this._onKeyDown.fire(keyboardEvent);
+		});
+	}
+
+	focus(): void {
+		this.domNode.focus();
+	}
+
+	get checked(): boolean {
+		return this._checked;
+	}
+
+	set checked(newIsChecked: boolean) {
+		this._checked = newIsChecked;
+		this.domNode.setAttribute('aria-checked', String(this._checked));
+		if (this._checked) {
+			this.domNode.classList.add('checked');
+		} else {
+			this.domNode.classList.remove('checked');
+		}
+
+		this.applyStyles();
+	}
+
+	width(): number {
+		return 2 /*marginleft*/ + 2 /*border*/ + 2 /*padding*/ + 16 /* icon width */;
+	}
+
+	style(styles: ICheckboxStyles): void {
+		if (styles.inputActiveOptionBorder) {
+			this._opts.inputActiveOptionBorder = styles.inputActiveOptionBorder;
+		}
+		this.applyStyles();
+	}
+
+	protected applyStyles(): void {
+		if (this.domNode) {
+			this.domNode.style.borderColor = this._checked && this._opts.inputActiveOptionBorder ? this._opts.inputActiveOptionBorder.toString() : 'transparent';
+		}
+	}
+
+	enable(): void {
+		this.domNode.tabIndex = 0;
+		this.domNode.setAttribute('aria-disabled', String(false));
+	}
+
+	disable(): void {
+		DOM.removeTabIndexAndUpdateFocus(this.domNode);
+		this.domNode.setAttribute('aria-disabled', String(true));
+	}
+}
