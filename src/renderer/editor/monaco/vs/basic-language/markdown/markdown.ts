@@ -75,65 +75,137 @@ export const language = <ILanguage>{
 		root: [
 
 			// headers (with #)
-			[/^(\s{0,3})(#+)((?:[^\\#]|@escapes)+)((?:#+)?)/, ['white', TOKEN_HEADER_LEAD, TOKEN_HEADER, TOKEN_HEADER]],
+			{
+				regex: /^(\s{0,3})(#+)((?:[^\\#]|@escapes)+)((?:#+)?)/,
+				action: ['white', TOKEN_HEADER_LEAD, TOKEN_HEADER, TOKEN_HEADER]
+			},
 
 			// headers (with =)
-			[/^\s*(=+|\-+)\s*$/, TOKEN_EXT_HEADER],
+			{
+				regex: /^\s*(=+|\-+)\s*$/,
+				action: TOKEN_EXT_HEADER
+			},
 
 			// headers (with ***)
-			[/^\s*((\*[ ]?)+)\s*$/, TOKEN_SEPARATOR],
+			{
+				regex: /^\s*((\*[ ]?)+)\s*$/,
+				action: TOKEN_SEPARATOR
+			},
 
 			// quote
-			[/^\s*>+/, TOKEN_QUOTE],
+			{
+				regex: /^\s*>+/,
+				action: TOKEN_QUOTE
+			},
 
 			// list (starting with * or number)
-			[/^\s*([\*\-+:]|\d+\.)\s/, TOKEN_LIST],
+			{
+				regex: /^\s*([\*\-+:]|\d+\.)\s/,
+				action: TOKEN_LIST
+			},
 
 			// code block (4 spaces indent)
-			[/^(\t|[ ]{4})[^ ].*$/, TOKEN_BLOCK],
+			{
+				regex: /^(\t|[ ]{4})[^ ].*$/,
+				action: TOKEN_BLOCK
+			},
 
 			// code block (3 tilde)
-			[/^\s*~~~\s*((?:\w|[\/\-#])+)?\s*$/, { token: TOKEN_BLOCK, next: '@codeblock' }],
+			{
+				regex: /^\s*~~~\s*((?:\w|[\/\-#])+)?\s*$/,
+				action: { token: TOKEN_BLOCK, next: '@codeblock' }
+			},
 
 			// github style code blocks (with backticks and language)
-			[/^\s*```\s*((?:\w|[\/\-#])+)\s*$/, { token: TOKEN_BLOCK, next: '@codeblockgh', nextEmbedded: '$1' }],
+			{
+				regex: /^\s*```\s*((?:\w|[\/\-#])+)\s*$/,
+				action: { token: TOKEN_BLOCK, next: '@codeblockgh', nextEmbedded: '$1' }
+			},
 
 			// github style code blocks (with backticks but no language)
-			[/^\s*```\s*$/, { token: TOKEN_BLOCK, next: '@codeblock' }],
+			{
+				regex: /^\s*```\s*$/,
+				action: { token: TOKEN_BLOCK, next: '@codeblock' }
+			},
 
 			// markup within lines
 			{ include: '@linecontent' },
 		],
 
 		codeblock: [
-			[/^\s*~~~\s*$/, { token: TOKEN_BLOCK, next: '@pop' }],
-			[/^\s*```\s*$/, { token: TOKEN_BLOCK, next: '@pop' }],
-			[/.*$/, TOKEN_BLOCK_CODE],
+			{
+				regex: /^\s*~~~\s*$/,
+				action: { token: TOKEN_BLOCK, next: '@pop' }
+			},
+			{
+				regex: /^\s*```\s*$/,
+				action: { token: TOKEN_BLOCK, next: '@pop' }
+			},
+			{
+				regex: /.*$/,
+				action: TOKEN_BLOCK_CODE
+			},
 		],
 
 		// github style code blocks
 		codeblockgh: [
-			[/```\s*$/, { token: TOKEN_BLOCK_CODE, next: '@pop', nextEmbedded: '@pop' }],
-			[/[^`]+/, TOKEN_BLOCK_CODE],
+			{
+				regex: /```\s*$/,
+				action: { token: TOKEN_BLOCK_CODE, next: '@pop', nextEmbedded: '@pop' }
+			},
+			{
+				regex: /[^`]+/,
+				action: TOKEN_BLOCK_CODE
+			}
 		],
 
 		linecontent: [
 
 			// escapes
-			[/&\w+;/, 'string.escape'],
-			[/@escapes/, 'escape'],
+			{
+				regex: /&\w+;/,
+				action: 'string.escape'
+			},
+			{
+				regex: /@escapes/,
+				action: 'escape'
+			},
 
 			// various markup
-			[/\b__([^\\_]|@escapes|_(?!_))+__\b/, 'strong'],
-			[/\*\*([^\\*]|@escapes|\*(?!\*))+\*\*/, 'strong'],
-			[/\b_[^_]+_\b/, 'emphasis'],
-			[/\*([^\\*]|@escapes)+\*/, 'emphasis'],
-			[/`([^\\`]|@escapes)+`/, 'variable'],
+			{
+				regex: /\b__([^\\_]|@escapes|_(?!_))+__\b/,
+				action: 'strong'
+			},
+			{
+				regex: /\*\*([^\\*]|@escapes|\*(?!\*))+\*\*/,
+				action: 'strong'
+			},
+			{
+				regex: /\b_[^_]+_\b/,
+				action: 'emphasis'
+			},
+			{
+				regex: /\*([^\\*]|@escapes)+\*/,
+				action: 'emphasis'
+			},
+			{
+				regex: /`([^\\`]|@escapes)+`/,
+				action: 'variable'
+			},
 
 			// links
-			[/\{[^}]+\}/, 'string.target'],
-			[/(!?\[)((?:[^\]\\]|@escapes)*)(\]\([^\)]+\))/, ['string.link', '', 'string.link']],
-			[/(!?\[)((?:[^\]\\]|@escapes)*)(\])/, 'string.link'],
+			{
+				regex: /\{[^}]+\}/,
+				action: 'string.target'
+			},
+			{
+				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\]\([^\)]+\))/,
+				action: ['string.link', '', 'string.link']
+			},
+			{
+				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\])/,
+				action: 'string.link'
+			},
 
 			// or html
 			{ include: 'html' },
@@ -146,61 +218,124 @@ export const language = <ILanguage>{
 		// we cannot correctly tokenize it in that mode yet.
 		html: [
 			// html tags
-			[/<(\w+)\/>/, getTag('$1')],
-			[/<(\w+)/, {
-				cases: {
-					'@empty': { token: getTag('$1'), next: '@tag.$1' },
-					'@default': { token: getTag('$1'), next: '@tag.$1' }
+			{
+				regex: /<(\w+)\/>/,
+				action: getTag('$1')
+			},
+			{
+				regex: /<(\w+)/,
+				action: {
+					cases: {
+						'@empty': { token: getTag('$1'), next: '@tag.$1' },
+						'@default': { token: getTag('$1'), next: '@tag.$1' }
+					}
 				}
-			}],
-			[/<\/(\w+)\s*>/, { token: getTag('$1') }],
+			},
+			{
+				regex: /<\/(\w+)\s*>/,
+				action: { token: getTag('$1') }
+			},
 
-			[/<!--/, 'comment', '@comment']
+			{
+				regex: /<!--/,
+				action: { token: 'comment', next: '@comment' }
+			},
 		],
 
 		comment: [
-			[/[^<\-]+/, 'comment.content'],
-			[/-->/, 'comment', '@pop'],
-			[/<!--/, 'comment.content.invalid'],
-			[/[<\-]/, 'comment.content']
+			{
+				regex: /[^<\-]+/,
+				action: 'comment.content'
+			},
+			{
+				regex: /-->/,
+				action: { token: 'comment', next: '@pop' }
+			},
+			{
+				regex: /<!--/,
+				action: 'comment.content.invalid'
+			},
+			{
+				regex: /[<\-]/,
+				action: 'comment.content'
+			},
 		],
 
 		// Almost full HTML tag matching, complete with embedded scripts & styles
 		tag: [
-			[/[ \t\r\n]+/, 'white'],
-			[/(type)(\s*=\s*)(")([^"]+)(")/, [ATTRIB_NAME, DELIM_ASSIGN, ATTRIB_VALUE,
-				{ token: ATTRIB_VALUE, switchTo: '@tag.$S2.$4' },
-				ATTRIB_VALUE]],
-			[/(type)(\s*=\s*)(')([^']+)(')/, [ATTRIB_NAME, DELIM_ASSIGN, ATTRIB_VALUE,
-				{ token: ATTRIB_VALUE, switchTo: '@tag.$S2.$4' },
-				ATTRIB_VALUE]],
-			[/(\w+)(\s*=\s*)("[^"]*"|'[^']*')/, [ATTRIB_NAME, DELIM_ASSIGN, ATTRIB_VALUE]],
-			[/\w+/, ATTRIB_NAME],
-			[/\/>/, getTag('$S2'), '@pop'],
-			[/>/, {
-				cases: {
-					'$S2==style': { token: getTag('$S2'), switchTo: 'embeddedStyle', nextEmbedded: 'text/css' },
-					'$S2==script': {
-						cases: {
-							'$S3': { token: getTag('$S2'), switchTo: 'embeddedScript', nextEmbedded: '$S3' },
-							'@default': { token: getTag('$S2'), switchTo: 'embeddedScript', nextEmbedded: 'text/javascript' }
-						}
-					},
-					'@default': { token: getTag('$S2'), next: '@pop' }
+			{
+				regex: /[ \t\r\n]+/,
+				action: 'white'
+			},
+			{
+				regex: /(type)(\s*=\s*)(")([^"]+)(")/,
+				action: [ATTRIB_NAME, DELIM_ASSIGN, ATTRIB_VALUE,
+					{ token: ATTRIB_VALUE, switchTo: '@tag.$S2.$4' },
+					ATTRIB_VALUE]
+			},
+			{
+				regex: /(type)(\s*=\s*)(')([^']+)(')/,
+				action: [ATTRIB_NAME, DELIM_ASSIGN, ATTRIB_VALUE,
+					{ token: ATTRIB_VALUE, switchTo: '@tag.$S2.$4' },
+					ATTRIB_VALUE]
+			},
+			{
+				regex: /(\w+)(\s*=\s*)("[^"]*"|'[^']*')/,
+				action: [ATTRIB_NAME, DELIM_ASSIGN, ATTRIB_VALUE]
+			},
+			{
+				regex: /\w+/,
+				action: ATTRIB_NAME
+			},
+			{
+				regex: /\/>/,
+				action: { token: getTag('$S2'), next: '@pop' }
+			},
+			{
+				regex: />/,
+				action: {
+					cases: {
+						'$S2==style': { token: getTag('$S2'), switchTo: 'embeddedStyle', nextEmbedded: 'text/css' },
+						'$S2==script': {
+							cases: {
+								'$S3': { token: getTag('$S2'), switchTo: 'embeddedScript', nextEmbedded: '$S3' },
+								'@default': { token: getTag('$S2'), switchTo: 'embeddedScript', nextEmbedded: 'text/javascript' }
+							}
+						},
+						'@default': { token: getTag('$S2'), next: '@pop' }
+					}
 				}
-			}],
+			},
 		],
 
 		embeddedStyle: [
-			[/[^<]+/, ''],
-			[/<\/style\s*>/, { token: '@rematch', next: '@pop', nextEmbedded: '@pop' }],
-			[/</, '']
+			{
+				regex: /[^<]+/,
+				action: ''
+			},
+			{
+				regex: /<\/style\s*>/,
+				action: { token: '@rematch', next: '@pop', nextEmbedded: '@pop' }
+			},
+			{
+				regex: /</,
+				action: ''
+			}
 		],
 
 		embeddedScript: [
-			[/[^<]+/, ''],
-			[/<\/script\s*>/, { token: '@rematch', next: '@pop', nextEmbedded: '@pop' }],
-			[/</, '']
+			{
+				regex: /[^<]+/,
+				action: ''
+			},
+			{
+				regex: /<\/script\s*>/,
+				action: { token: '@rematch', next: '@pop', nextEmbedded: '@pop' }
+			},
+			{
+				regex: /</,
+				action: ''
+			},
 		],
 	}
 };
