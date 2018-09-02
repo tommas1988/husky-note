@@ -8,6 +8,70 @@
 import IRichLanguageConfiguration = monaco.languages.LanguageConfiguration;
 import ILanguage = monaco.languages.IMonarchLanguage;
 
+const headerListeners: ((content: string) => void)[] = [];
+const quoteListeners = [];
+const listListeners = [];
+const codeBlockListeners = [];
+const codeInlineListeners = [];
+const emphasisListeners = [];
+const strongListeners = [];
+const linkListeners = [];
+const imageListeners = [];
+const horizontalListeners = [];
+const escapeListeners = [];
+
+export enum TokenType {
+	Header,
+	Quote,
+	List,
+	CodeBlock,
+	CodeInline,
+	Emphasis,
+	Strong,
+	Link,
+	Image,
+	Horizontal,
+	Escape,
+}
+
+export function addTokenListener(type: TokenType, listener: (...arg: any[]) => void) {
+	switch (type) {
+		case TokenType.Header:
+			headerListeners.push(listener);
+			break;
+		case TokenType.Quote:
+			quoteListeners.push(listener);
+			break;
+		case TokenType.List:
+			listListeners.push(listener);
+			break;
+		case TokenType.CodeBlock:
+			codeBlockListeners.push(listener);
+			break;
+		case TokenType.CodeInline:
+			codeInlineListeners.push(listener);
+			break;
+		case TokenType.Emphasis:
+			emphasisListeners.push(listener);
+			break;
+		case TokenType.Strong:
+			strongListeners.push(listener);
+			break;
+		case TokenType.Link:
+			linkListeners.push(listener);
+			break;
+		case TokenType.Image:
+			imageListeners.push(listener);
+			break;
+		case TokenType.Horizontal:
+			horizontalListeners.push(listener);
+			break;
+		case TokenType.Escape:
+			escapeListeners.push(listener);
+			break;
+	}
+}
+
 const TOKEN_HEADER_LEAD = 'keyword';
 const TOKEN_HEADER = 'keyword';
 const TOKEN_EXT_HEADER = 'keyword';
