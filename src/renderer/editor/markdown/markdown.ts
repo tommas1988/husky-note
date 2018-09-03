@@ -8,18 +8,6 @@
 import IRichLanguageConfiguration = monaco.languages.LanguageConfiguration;
 import ILanguage = monaco.languages.IMonarchLanguage;
 
-const headerListeners: ((content: string) => void)[] = [];
-const quoteListeners = [];
-const listListeners = [];
-const codeBlockListeners = [];
-const codeInlineListeners = [];
-const emphasisListeners = [];
-const strongListeners = [];
-const linkListeners = [];
-const imageListeners = [];
-const horizontalListeners = [];
-const escapeListeners = [];
-
 export enum TokenType {
 	Header,
 	Quote,
@@ -32,45 +20,105 @@ export enum TokenType {
 	Image,
 	Horizontal,
 	Escape,
+	Html,
+}
+
+type ContentOnlyListenter = (content: string) => void;
+
+const tokenTypeListenerMap = [];
+
+const headerListeners: ((content: string, level: 1|2|3|4|5|6) => void)[] = [];
+tokenTypeListenerMap[TokenType.Header] = headerListeners;
+
+function headerListener(matches: string[]) {
+	console.log(`Header: ${matches[0]}`);
+}
+
+const quoteListeners: ContentOnlyListenter[] = [];
+tokenTypeListenerMap[TokenType.Quote] = quoteListeners;
+
+function quoteListener(matches: string[]) {
+	console.log(`Qoute: ${matches[0]}`);
+}
+
+const listListeners: ContentOnlyListenter[] = [];
+tokenTypeListenerMap[TokenType.List] = listListeners;
+
+function listListener(matches: string[]) {
+	console.log(`List: ${matches[0]}`);
+}
+
+const codeBlockListeners = [];
+tokenTypeListenerMap[TokenType.CodeBlock] = codeBlockListeners;
+
+function codeBlockListener(matches: string[]) {
+	console.log(`Code Block: ${matches[0]}`);
+}
+
+const codeInlineListeners = [];
+tokenTypeListenerMap[TokenType.CodeInline] = codeInlineListeners;
+
+function codeInlineListener(matches: string[]) {
+	console.log(`Code Inline: ${matches[0]}`);
+}
+
+const emphasisListeners = [];
+tokenTypeListenerMap[TokenType.Emphasis] = emphasisListeners;
+
+function emphasisListener(matches: string[]) {
+	console.log(`Emphasis: ${matches[0]}`);
+}
+
+const strongListeners = [];
+tokenTypeListenerMap[TokenType.Strong] = strongListeners;
+
+function strongListener(matches: string[]) {
+	console.log(`Strong: ${matches[0]}`);
+}
+
+const linkListeners = [];
+tokenTypeListenerMap[TokenType.Link] = linkListeners;
+
+function linkListener(matches: string[]) {
+	console.log(`Link: ${matches[0]}`);
+}
+
+const imageListeners = [];
+tokenTypeListenerMap[TokenType.Image] = imageListeners;
+
+function imageListener(matches: string[]) {
+	console.log(`Image: ${matches[0]}`);
+}
+
+const horizontalListeners = [];
+tokenTypeListenerMap[TokenType.Horizontal] = horizontalListeners;
+
+function horizontalListener(matches: string[]) {
+	console.log(`Horizontal: ${matches[0]}`);
+}
+
+const escapeListeners = [];
+tokenTypeListenerMap[TokenType.Escape] = escapeListeners
+
+function escapeListener(matches: string[]) {
+	console.log(`Escape: ${matches[0]}`);
+}
+
+const htmlListeners = [];
+tokenTypeListenerMap[TokenType.Html] = htmlListeners;
+
+function htmlListener(matches: string[]) {
+	console.log(`Html: ${matches[0]}`);
+}
+
+function defaultTokenListener(matches: string[]) {
+	console.log(`***: ${matches[0]}`);
 }
 
 export function addTokenListener(type: TokenType, listener: (...arg: any[]) => void) {
-	switch (type) {
-		case TokenType.Header:
-			headerListeners.push(listener);
-			break;
-		case TokenType.Quote:
-			quoteListeners.push(listener);
-			break;
-		case TokenType.List:
-			listListeners.push(listener);
-			break;
-		case TokenType.CodeBlock:
-			codeBlockListeners.push(listener);
-			break;
-		case TokenType.CodeInline:
-			codeInlineListeners.push(listener);
-			break;
-		case TokenType.Emphasis:
-			emphasisListeners.push(listener);
-			break;
-		case TokenType.Strong:
-			strongListeners.push(listener);
-			break;
-		case TokenType.Link:
-			linkListeners.push(listener);
-			break;
-		case TokenType.Image:
-			imageListeners.push(listener);
-			break;
-		case TokenType.Horizontal:
-			horizontalListeners.push(listener);
-			break;
-		case TokenType.Escape:
-			escapeListeners.push(listener);
-			break;
-	}
+	tokenTypeListenerMap[type].push(listener);
 }
+
 
 const TOKEN_HEADER_LEAD = 'keyword';
 const TOKEN_HEADER = 'keyword';
@@ -119,6 +167,7 @@ export const conf: IRichLanguageConfiguration = {
 
 export const language = <ILanguage>{
 	defaultToken: '',
+	defaultTokenListener: defaultTokenListener,
 	tokenPostfix: '.md',
 
 	// escape codes
@@ -141,55 +190,64 @@ export const language = <ILanguage>{
 			// headers (with #)
 			{
 				regex: /^(\s{0,3})(#+)((?:[^\\#]|@escapes)+)((?:#+)?)/,
-				action: ['white', TOKEN_HEADER_LEAD, TOKEN_HEADER, TOKEN_HEADER]
+				action: ['white', TOKEN_HEADER_LEAD, TOKEN_HEADER, TOKEN_HEADER],
+				listener: headerListener
 			},
 
 			// headers (with =)
 			{
 				regex: /^\s*(=+|\-+)\s*$/,
-				action: TOKEN_EXT_HEADER
+				action: TOKEN_EXT_HEADER,
+				listener: headerListener
 			},
 
 			// headers (with ***)
 			{
 				regex: /^\s*((\*[ ]?)+)\s*$/,
-				action: TOKEN_SEPARATOR
+				action: TOKEN_SEPARATOR,
+				listener: headerListener
 			},
 
 			// quote
 			{
 				regex: /^\s*>+/,
-				action: TOKEN_QUOTE
+				action: TOKEN_QUOTE,
+				listener: quoteListener
 			},
 
 			// list (starting with * or number)
 			{
 				regex: /^\s*([\*\-+:]|\d+\.)\s/,
-				action: TOKEN_LIST
+				action: TOKEN_LIST,
+				listener: listListener
 			},
 
 			// code block (4 spaces indent)
 			{
 				regex: /^(\t|[ ]{4})[^ ].*$/,
-				action: TOKEN_BLOCK
+				action: TOKEN_BLOCK,
+				listener: codeBlockListener
 			},
 
 			// code block (3 tilde)
 			{
 				regex: /^\s*~~~\s*((?:\w|[\/\-#])+)?\s*$/,
-				action: { token: TOKEN_BLOCK, next: '@codeblock' }
+				action: { token: TOKEN_BLOCK, next: '@codeblock' },
+				listener: codeBlockListener
 			},
 
 			// github style code blocks (with backticks and language)
 			{
 				regex: /^\s*```\s*((?:\w|[\/\-#])+)\s*$/,
-				action: { token: TOKEN_BLOCK, next: '@codeblockgh', nextEmbedded: '$1' }
+				action: { token: TOKEN_BLOCK, next: '@codeblockgh', nextEmbedded: '$1' },
+				listener: codeBlockListener
 			},
 
 			// github style code blocks (with backticks but no language)
 			{
 				regex: /^\s*```\s*$/,
-				action: { token: TOKEN_BLOCK, next: '@codeblock' }
+				action: { token: TOKEN_BLOCK, next: '@codeblock' },
+				listener: codeBlockListener
 			},
 
 			// markup within lines
@@ -232,43 +290,52 @@ export const language = <ILanguage>{
 			},
 			{
 				regex: /@escapes/,
-				action: 'escape'
+				action: 'escape',
+				listener: escapeListener
 			},
 
 			// various markup
 			{
 				regex: /\b__([^\\_]|@escapes|_(?!_))+__\b/,
-				action: 'strong'
+				action: 'strong',
+				listener: strongListener
 			},
 			{
 				regex: /\*\*([^\\*]|@escapes|\*(?!\*))+\*\*/,
-				action: 'strong'
+				action: 'strong',
+				listener: strongListener
 			},
 			{
 				regex: /\b_[^_]+_\b/,
-				action: 'emphasis'
+				action: 'emphasis',
+				listener: emphasisListener
 			},
 			{
 				regex: /\*([^\\*]|@escapes)+\*/,
-				action: 'emphasis'
+				action: 'emphasis',
+				listener: emphasisListener
 			},
 			{
 				regex: /`([^\\`]|@escapes)+`/,
-				action: 'variable'
+				action: 'variable',
+				listener: codeInlineListener
 			},
 
 			// links
 			{
 				regex: /\{[^}]+\}/,
-				action: 'string.target'
+				action: 'string.target',
+				listener: linkListener
 			},
 			{
 				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\]\([^\)]+\))/,
-				action: ['string.link', '', 'string.link']
+				action: ['string.link', '', 'string.link'],
+				listener: imageListener
 			},
 			{
 				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\])/,
-				action: 'string.link'
+				action: 'string.link',
+				listener: imageListener
 			},
 
 			// or html
@@ -284,7 +351,8 @@ export const language = <ILanguage>{
 			// html tags
 			{
 				regex: /<(\w+)\/>/,
-				action: getTag('$1')
+				action: getTag('$1'),
+				listener: htmlListener
 			},
 			{
 				regex: /<(\w+)/,
@@ -293,16 +361,18 @@ export const language = <ILanguage>{
 						'@empty': { token: getTag('$1'), next: '@tag.$1' },
 						'@default': { token: getTag('$1'), next: '@tag.$1' }
 					}
-				}
+				},
+				listener: htmlListener
 			},
 			{
 				regex: /<\/(\w+)\s*>/,
-				action: { token: getTag('$1') }
+				action: { token: getTag('$1') },
+				listener: htmlListener
 			},
 
 			{
 				regex: /<!--/,
-				action: { token: 'comment', next: '@comment' }
+				action: { token: 'comment', next: '@comment' }				
 			},
 		],
 

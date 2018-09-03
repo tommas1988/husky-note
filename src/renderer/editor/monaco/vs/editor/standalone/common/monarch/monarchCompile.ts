@@ -344,6 +344,7 @@ class Rule implements monarchCommon.IRule {
 	public action: monarchCommon.FuzzyAction = { token: '' };
 	public matchOnlyAtLineStart: boolean = false;
 	public name: string = '';
+	public listener = null;
 
 	constructor(name: string) {
 		this.name = name;
@@ -399,6 +400,8 @@ export function compile(languageId: string, json: IMonarchLanguage): monarchComm
 	lexer.defaultToken = string(json.defaultToken, 'source', function () { monarchCommon.throwError(lexer, 'the \'defaultToken\' must be a string'); });
 
 	lexer.usesEmbedded = false; // becomes true if we find a nextEmbedded action
+
+	lexer.defaultTokenListener = json.defaultTokenListener;
 
 	// For calling compileAction later on
 	let lexerMin: monarchCommon.ILexerMin = <any>json;
@@ -464,6 +467,10 @@ export function compile(languageId: string, json: IMonarchLanguage): monarchComm
 						}
 						newrule.setRegex(lexerMin, rule.regex);
 						newrule.setAction(lexerMin, rule.action);
+					}
+
+					if (rule.listener) {
+						newrule.listener = rule.listener;
 					}
 
 					newrules.push(newrule);

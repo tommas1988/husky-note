@@ -29,6 +29,7 @@ export interface ILexerMin {
 	defaultToken: string;
 	stateNames: { [stateName: string]: any; };
 	[attr: string]: any;
+	defaultTokenListener: (matches: string[]) => void;
 }
 
 export interface ILexer extends ILexerMin {
@@ -70,6 +71,7 @@ export interface IRule {
 	action: FuzzyAction;
 	matchOnlyAtLineStart: boolean;
 	name: string;
+	listener: (matches: string[]) => void;
 }
 
 export interface IAction {

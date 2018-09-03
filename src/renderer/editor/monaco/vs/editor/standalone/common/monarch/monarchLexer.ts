@@ -577,10 +577,18 @@ class MonarchTokenizer implements modes.ITokenizationSupport {
 							if (matches) {
 								matched = matches[0];
 								action = rule.action;
+
+								if (rule.listener) {
+									setTimeout(() => rule.listener.call(null, matches), 0)
+								}
 								break;
 							}
 						}
 					}
+				}
+
+				if (!matched && this._lexer.defaultTokenListener) {
+					setTimeout(() => this._lexer.defaultTokenListener.call(null, restOfLine), 0);
 				}
 			}
 

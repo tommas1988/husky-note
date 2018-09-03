@@ -38,6 +38,8 @@ export interface IMonarchLanguage {
 	 * attach this to every token class (by default '.' + name)
 	 */
 	tokenPostfix?: string;
+
+	defaultTokenListener?: (matches: string[]) => void;
 }
 
 export type IShortMonarchLanguageRule1 = [RegExp, string | IMonarchLanguageAction];
