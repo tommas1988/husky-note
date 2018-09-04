@@ -413,6 +413,7 @@ export class ModelLinesTokens {
 			try {
 				// Tokenize only the first X characters
 				let freshState = this._getState(lineIndex).clone();
+				freshState.lineIndex = lineIndex;
 				r = this.tokenizationSupport.tokenize2(text, freshState, 0);
 			} catch (e) {
 				onUnexpectedError(e);

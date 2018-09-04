@@ -8,117 +8,40 @@
 import IRichLanguageConfiguration = monaco.languages.LanguageConfiguration;
 import ILanguage = monaco.languages.IMonarchLanguage;
 
-export enum TokenType {
-	Header,
-	Quote,
-	List,
-	CodeBlock,
-	CodeInline,
-	Emphasis,
-	Strong,
-	Link,
-	Image,
-	Horizontal,
-	Escape,
-	Html,
+import { EventEmitter } from 'events';
+
+export const LexingEvent = {
+    processHeaderToken: 'markdown_header_token',
+    processQouteToken: 'markdown_qoute_token',
+    processListToken: 'markdown_list_token',
+	processEnterCodeBlockToken: 'markdown_enter_code_block_token',
+	processCodeBlockToken: 'mardown_code_block_token',
+	processExitCodeBlockToken: 'markdown_exit_code_block_token',
+	processCodeInlineToken: 'markdown_code_inline_token',
+	processEmphasisToken: 'markdown_emphasis_token',
+	processStrongToken: 'markdonw_strong_token',
+	processLinkToken: 'markdown_link_token',
+	processImageToken: 'markdown_image_token',
+	processHorizontalToken: 'markdown_horizontal_token',
+	processEscapeToken: 'markdown_escape_token',
+	processHtmlBeginTagToken: 'markdown_html_begin_tag_token',
+	processHtmlEmdTagToken: 'markdown_html_end_tag_token',
+	processHtmlSelfCloseToken: 'markdown_html_self_close_token',
+	processParagraphToken: 'markdown_paragraph_token',
+};
+
+class LexingListener extends EventEmitter {
+    private event = new EventEmitter();
+
+    public on(event: string | symbol, callback: (...args: any[]) => void): this {
+        super.on(event, (...args: any[]) => {
+            setImmediate(callback, args);
+        });
+        return this;
+    }
 }
 
-type ContentOnlyListenter = (content: string) => void;
-
-const tokenTypeListenerMap = [];
-
-const headerListeners: ((content: string, level: 1|2|3|4|5|6) => void)[] = [];
-tokenTypeListenerMap[TokenType.Header] = headerListeners;
-
-function headerListener(matches: string[]) {
-	console.log(`Header: ${matches[0]}`);
-}
-
-const quoteListeners: ContentOnlyListenter[] = [];
-tokenTypeListenerMap[TokenType.Quote] = quoteListeners;
-
-function quoteListener(matches: string[]) {
-	console.log(`Qoute: ${matches[0]}`);
-}
-
-const listListeners: ContentOnlyListenter[] = [];
-tokenTypeListenerMap[TokenType.List] = listListeners;
-
-function listListener(matches: string[]) {
-	console.log(`List: ${matches[0]}`);
-}
-
-const codeBlockListeners = [];
-tokenTypeListenerMap[TokenType.CodeBlock] = codeBlockListeners;
-
-function codeBlockListener(matches: string[]) {
-	console.log(`Code Block: ${matches[0]}`);
-}
-
-const codeInlineListeners = [];
-tokenTypeListenerMap[TokenType.CodeInline] = codeInlineListeners;
-
-function codeInlineListener(matches: string[]) {
-	console.log(`Code Inline: ${matches[0]}`);
-}
-
-const emphasisListeners = [];
-tokenTypeListenerMap[TokenType.Emphasis] = emphasisListeners;
-
-function emphasisListener(matches: string[]) {
-	console.log(`Emphasis: ${matches[0]}`);
-}
-
-const strongListeners = [];
-tokenTypeListenerMap[TokenType.Strong] = strongListeners;
-
-function strongListener(matches: string[]) {
-	console.log(`Strong: ${matches[0]}`);
-}
-
-const linkListeners = [];
-tokenTypeListenerMap[TokenType.Link] = linkListeners;
-
-function linkListener(matches: string[]) {
-	console.log(`Link: ${matches[0]}`);
-}
-
-const imageListeners = [];
-tokenTypeListenerMap[TokenType.Image] = imageListeners;
-
-function imageListener(matches: string[]) {
-	console.log(`Image: ${matches[0]}`);
-}
-
-const horizontalListeners = [];
-tokenTypeListenerMap[TokenType.Horizontal] = horizontalListeners;
-
-function horizontalListener(matches: string[]) {
-	console.log(`Horizontal: ${matches[0]}`);
-}
-
-const escapeListeners = [];
-tokenTypeListenerMap[TokenType.Escape] = escapeListeners
-
-function escapeListener(matches: string[]) {
-	console.log(`Escape: ${matches[0]}`);
-}
-
-const htmlListeners = [];
-tokenTypeListenerMap[TokenType.Html] = htmlListeners;
-
-function htmlListener(matches: string[]) {
-	console.log(`Html: ${matches[0]}`);
-}
-
-function defaultTokenListener(matches: string[]) {
-	console.log(`***: ${matches[0]}`);
-}
-
-export function addTokenListener(type: TokenType, listener: (...arg: any[]) => void) {
-	tokenTypeListenerMap[type].push(listener);
-}
-
+export const lexingListener = new LexingListener();
 
 const TOKEN_HEADER_LEAD = 'keyword';
 const TOKEN_HEADER = 'keyword';
@@ -167,7 +90,9 @@ export const conf: IRichLanguageConfiguration = {
 
 export const language = <ILanguage>{
 	defaultToken: '',
-	defaultTokenListener: defaultTokenListener,
+	defaultTokenListener: function(lineIndex: number, line: string) {
+		lexingListener.emit(LexingEvent.processParagraphToken, line);
+	},
 	tokenPostfix: '.md',
 
 	// escape codes
@@ -191,93 +116,58 @@ export const language = <ILanguage>{
 			{
 				regex: /^(\s{0,3})(#+)((?:[^\\#]|@escapes)+)((?:#+)?)/,
 				action: ['white', TOKEN_HEADER_LEAD, TOKEN_HEADER, TOKEN_HEADER],
-				listener: headerListener
-			},
-
-			// headers (with =)
-			{
-				regex: /^\s*(=+|\-+)\s*$/,
-				action: TOKEN_EXT_HEADER,
-				listener: headerListener
-			},
-
-			// headers (with ***)
-			{
-				regex: /^\s*((\*[ ]?)+)\s*$/,
-				action: TOKEN_SEPARATOR,
-				listener: headerListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processHeaderToken, lineIndex, matches[2].length, matches[3]);
+				}
 			},
 
 			// quote
 			{
-				regex: /^\s*>+/,
+				regex: /^>+/,
 				action: TOKEN_QUOTE,
-				listener: quoteListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					let depth = matches[0].length;
+					lexingListener.emit(LexingEvent.processQouteToken, lineIndex, depth, line.substr(depth));
+				}
 			},
 
 			// list (starting with * or number)
 			{
 				regex: /^\s*([\*\-+:]|\d+\.)\s/,
 				action: TOKEN_LIST,
-				listener: listListener
-			},
-
-			// code block (4 spaces indent)
-			{
-				regex: /^(\t|[ ]{4})[^ ].*$/,
-				action: TOKEN_BLOCK,
-				listener: codeBlockListener
-			},
-
-			// code block (3 tilde)
-			{
-				regex: /^\s*~~~\s*((?:\w|[\/\-#])+)?\s*$/,
-				action: { token: TOKEN_BLOCK, next: '@codeblock' },
-				listener: codeBlockListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processListToken, lineIndex, line.substr(matches[0].length));
+				}
 			},
 
 			// github style code blocks (with backticks and language)
 			{
 				regex: /^\s*```\s*((?:\w|[\/\-#])+)\s*$/,
 				action: { token: TOKEN_BLOCK, next: '@codeblockgh', nextEmbedded: '$1' },
-				listener: codeBlockListener
-			},
-
-			// github style code blocks (with backticks but no language)
-			{
-				regex: /^\s*```\s*$/,
-				action: { token: TOKEN_BLOCK, next: '@codeblock' },
-				listener: codeBlockListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processEnterCodeBlockToken, lineIndex, matches[1]);
+				}
 			},
 
 			// markup within lines
 			{ include: '@linecontent' },
 		],
 
-		codeblock: [
-			{
-				regex: /^\s*~~~\s*$/,
-				action: { token: TOKEN_BLOCK, next: '@pop' }
-			},
-			{
-				regex: /^\s*```\s*$/,
-				action: { token: TOKEN_BLOCK, next: '@pop' }
-			},
-			{
-				regex: /.*$/,
-				action: TOKEN_BLOCK_CODE
-			},
-		],
-
 		// github style code blocks
 		codeblockgh: [
 			{
 				regex: /```\s*$/,
-				action: { token: TOKEN_BLOCK_CODE, next: '@pop', nextEmbedded: '@pop' }
+				action: { token: TOKEN_BLOCK_CODE, next: '@pop', nextEmbedded: '@pop' },
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processExitCodeBlockToken, lineIndex);
+				}
 			},
 			{
 				regex: /[^`]+/,
-				action: TOKEN_BLOCK_CODE
+				action: TOKEN_BLOCK_CODE,
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processCodeBlockToken, lineIndex, line);
+				}
 			}
 		],
 
@@ -291,51 +181,69 @@ export const language = <ILanguage>{
 			{
 				regex: /@escapes/,
 				action: 'escape',
-				listener: escapeListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processEscapeToken, lineIndex, matches[0].substr(1));
+				}
 			},
 
 			// various markup
 			{
 				regex: /\b__([^\\_]|@escapes|_(?!_))+__\b/,
 				action: 'strong',
-				listener: strongListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processStrongToken, lineIndex, matches[1]);
+				}
 			},
 			{
 				regex: /\*\*([^\\*]|@escapes|\*(?!\*))+\*\*/,
 				action: 'strong',
-				listener: strongListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processStrongToken, lineIndex, matches[1]);
+				}
 			},
 			{
-				regex: /\b_[^_]+_\b/,
+				regex: /\b_([^_]+)_\b/,
 				action: 'emphasis',
-				listener: emphasisListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processEmphasisToken, lineIndex, matches[1]);
+				}
 			},
 			{
 				regex: /\*([^\\*]|@escapes)+\*/,
 				action: 'emphasis',
-				listener: emphasisListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processEmphasisToken, lineIndex, matches[1]);
+				}
 			},
 			{
 				regex: /`([^\\`]|@escapes)+`/,
 				action: 'variable',
-				listener: codeInlineListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processCodeInlineToken, lineIndex, matches[1]);
+				}
 			},
 
 			// links
 			{
 				regex: /\{[^}]+\}/,
 				action: 'string.target',
-				listener: linkListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+
+				}
 			},
 			{
 				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\]\([^\)]+\))/,
 				action: ['string.link', '', 'string.link'],
-				listener: imageListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+
+				}
 			},
 			{
 				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\])/,
 				action: 'string.link',
-				listener: imageListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+
+				}
 			},
 
 			// or html
@@ -352,7 +260,9 @@ export const language = <ILanguage>{
 			{
 				regex: /<(\w+)\/>/,
 				action: getTag('$1'),
-				listener: htmlListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+
+				}
 			},
 			{
 				regex: /<(\w+)/,
@@ -362,12 +272,16 @@ export const language = <ILanguage>{
 						'@default': { token: getTag('$1'), next: '@tag.$1' }
 					}
 				},
-				listener: htmlListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+
+				}
 			},
 			{
 				regex: /<\/(\w+)\s*>/,
 				action: { token: getTag('$1') },
-				listener: htmlListener
+				listener: function(lineIndex: number, matches: string[], line: string) {
+
+				}
 			},
 
 			{

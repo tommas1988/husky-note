@@ -5313,6 +5313,8 @@ declare namespace monaco.languages {
 		 * or an include rule. include all rules from the included state
 		 */
 		include?: string;
+
+		listener?: (lineIndex: number, matches: string[], line: string) => void
 	}
 
 	export type IMonarchLanguageRule = IShortMonarchLanguageRule1 | IShortMonarchLanguageRule2 | IExpandedMonarchLanguageRule;

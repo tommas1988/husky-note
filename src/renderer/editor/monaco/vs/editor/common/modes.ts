@@ -210,6 +210,7 @@ export interface ITokenizationSupport {
  * The model will clone the previous line's state and pass it in to tokenize the next line.
  */
 export interface IState {
+	lineIndex: number;
 	clone(): IState;
 	equals(other: IState): boolean;
 }

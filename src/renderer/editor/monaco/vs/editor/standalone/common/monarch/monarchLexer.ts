@@ -191,6 +191,7 @@ class MonarchLineStateFactory {
 }
 
 class MonarchLineState implements modes.IState {
+	public lineIndex: number;
 
 	public readonly stack: MonarchStackElement;
 	public readonly embeddedModeData: EmbeddedModeData;
@@ -579,7 +580,7 @@ class MonarchTokenizer implements modes.ITokenizationSupport {
 								action = rule.action;
 
 								if (rule.listener) {
-									setTimeout(() => rule.listener.call(null, matches), 0)
+									rule.listener.call(null, lineState.lineIndex, matches, line);
 								}
 								break;
 							}
@@ -588,7 +589,7 @@ class MonarchTokenizer implements modes.ITokenizationSupport {
 				}
 
 				if (!matched && this._lexer.defaultTokenListener) {
-					setTimeout(() => this._lexer.defaultTokenListener.call(null, restOfLine), 0);
+					this._lexer.defaultTokenListener.call(null, lineState.lineIndex, line);
 				}
 			}
 
