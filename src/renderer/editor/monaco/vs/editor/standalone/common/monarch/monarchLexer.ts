@@ -580,7 +580,7 @@ class MonarchTokenizer implements modes.ITokenizationSupport {
 								action = rule.action;
 
 								if (rule.listener) {
-									rule.listener.call(null, lineState.lineIndex, matches, line);
+									rule.listener.call(null, lineState.lineIndex, pos, matches, line);
 								}
 								break;
 							}

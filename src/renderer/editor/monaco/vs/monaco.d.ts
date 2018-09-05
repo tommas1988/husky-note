@@ -5314,7 +5314,7 @@ declare namespace monaco.languages {
 		 */
 		include?: string;
 
-		listener?: (lineIndex: number, matches: string[], line: string) => void
+		listener?: (lineIndex: number, offset: number, matches: string[], line: string) => void
 	}
 
 	export type IMonarchLanguageRule = IShortMonarchLanguageRule1 | IShortMonarchLanguageRule2 | IExpandedMonarchLanguageRule;

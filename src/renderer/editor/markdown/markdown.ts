@@ -116,7 +116,7 @@ export const language = <ILanguage>{
 			{
 				regex: /^(\s{0,3})(#+)((?:[^\\#]|@escapes)+)((?:#+)?)/,
 				action: ['white', TOKEN_HEADER_LEAD, TOKEN_HEADER, TOKEN_HEADER],
-				listener: function(lineIndex: number, matches: string[], line: string) {
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
 					lexingListener.emit(LexingEvent.processHeaderToken, lineIndex, matches[2].length, matches[3]);
 				}
 			},
@@ -125,7 +125,7 @@ export const language = <ILanguage>{
 			{
 				regex: /^>+/,
 				action: TOKEN_QUOTE,
-				listener: function(lineIndex: number, matches: string[], line: string) {
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
 					let depth = matches[0].length;
 					lexingListener.emit(LexingEvent.processQouteToken, lineIndex, depth, line.substr(depth));
 				}
@@ -135,7 +135,7 @@ export const language = <ILanguage>{
 			{
 				regex: /^\s*([\*\-+:]|\d+\.)\s/,
 				action: TOKEN_LIST,
-				listener: function(lineIndex: number, matches: string[], line: string) {
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
 					lexingListener.emit(LexingEvent.processListToken, lineIndex, line.substr(matches[0].length));
 				}
 			},
@@ -144,7 +144,7 @@ export const language = <ILanguage>{
 			{
 				regex: /^\s*```\s*((?:\w|[\/\-#])+)\s*$/,
 				action: { token: TOKEN_BLOCK, next: '@codeblockgh', nextEmbedded: '$1' },
-				listener: function(lineIndex: number, matches: string[], line: string) {
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
 					lexingListener.emit(LexingEvent.processEnterCodeBlockToken, lineIndex, matches[1]);
 				}
 			},
@@ -158,14 +158,14 @@ export const language = <ILanguage>{
 			{
 				regex: /```\s*$/,
 				action: { token: TOKEN_BLOCK_CODE, next: '@pop', nextEmbedded: '@pop' },
-				listener: function(lineIndex: number, matches: string[], line: string) {
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
 					lexingListener.emit(LexingEvent.processExitCodeBlockToken, lineIndex);
 				}
 			},
 			{
 				regex: /[^`]+/,
 				action: TOKEN_BLOCK_CODE,
-				listener: function(lineIndex: number, matches: string[], line: string) {
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
 					lexingListener.emit(LexingEvent.processCodeBlockToken, lineIndex, line);
 				}
 			}
@@ -181,8 +181,8 @@ export const language = <ILanguage>{
 			{
 				regex: /@escapes/,
 				action: 'escape',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-					lexingListener.emit(LexingEvent.processEscapeToken, lineIndex, matches[0].substr(1));
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processEscapeToken, lineIndex, offset, matches[0].substr(1));
 				}
 			},
 
@@ -190,59 +190,53 @@ export const language = <ILanguage>{
 			{
 				regex: /\b__([^\\_]|@escapes|_(?!_))+__\b/,
 				action: 'strong',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-					lexingListener.emit(LexingEvent.processStrongToken, lineIndex, matches[1]);
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processStrongToken, lineIndex, offset, matches[1]);
 				}
 			},
 			{
 				regex: /\*\*([^\\*]|@escapes|\*(?!\*))+\*\*/,
 				action: 'strong',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-					lexingListener.emit(LexingEvent.processStrongToken, lineIndex, matches[1]);
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processStrongToken, lineIndex, offset, matches[1]);
 				}
 			},
 			{
 				regex: /\b_([^_]+)_\b/,
 				action: 'emphasis',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-					lexingListener.emit(LexingEvent.processEmphasisToken, lineIndex, matches[1]);
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processEmphasisToken, lineIndex, offset, matches[1]);
 				}
 			},
 			{
 				regex: /\*([^\\*]|@escapes)+\*/,
 				action: 'emphasis',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-					lexingListener.emit(LexingEvent.processEmphasisToken, lineIndex, matches[1]);
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processEmphasisToken, lineIndex, offset, matches[1]);
 				}
 			},
 			{
 				regex: /`([^\\`]|@escapes)+`/,
 				action: 'variable',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-					lexingListener.emit(LexingEvent.processCodeInlineToken, lineIndex, matches[1]);
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processCodeInlineToken, lineIndex, offset, matches[1]);
 				}
 			},
 
-			// links
 			{
-				regex: /\{[^}]+\}/,
-				action: 'string.target',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-
-				}
-			},
-			{
-				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\]\([^\)]+\))/,
+				regex: /(\[)((?:[^\]\\]|@escapes)*)(\]\([^\)]+\))/,
 				action: ['string.link', '', 'string.link'],
-				listener: function(lineIndex: number, matches: string[], line: string) {
-
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					let url = matches[3].substring(2, matches[3].length - 2);
+					lexingListener.emit(LexingEvent.processLinkToken, lineIndex, offset, matches[2], url);
 				}
 			},
 			{
-				regex: /(!?\[)((?:[^\]\\]|@escapes)*)(\])/,
-				action: 'string.link',
-				listener: function(lineIndex: number, matches: string[], line: string) {
-
+				regex: /(!\[)((?:[^\]\\]|@escapes)*)(\]\([^\)]+\))/,
+				action: ['string.link', '', 'string.link'],
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					let url = matches[3].substring(2, matches[3].length - 2);
+					lexingListener.emit(LexingEvent.processImageToken, lineIndex, offset, matches[2], url);
 				}
 			},
 
@@ -260,8 +254,8 @@ export const language = <ILanguage>{
 			{
 				regex: /<(\w+)\/>/,
 				action: getTag('$1'),
-				listener: function(lineIndex: number, matches: string[], line: string) {
-
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processHtmlSelfCloseToken, lineIndex, line);
 				}
 			},
 			{
@@ -272,15 +266,15 @@ export const language = <ILanguage>{
 						'@default': { token: getTag('$1'), next: '@tag.$1' }
 					}
 				},
-				listener: function(lineIndex: number, matches: string[], line: string) {
-
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processHtmlBeginTagToken, lineIndex, line);
 				}
 			},
 			{
 				regex: /<\/(\w+)\s*>/,
 				action: { token: getTag('$1') },
-				listener: function(lineIndex: number, matches: string[], line: string) {
-
+				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
+					lexingListener.emit(LexingEvent.processHtmlEmdTagToken, lineIndex, matches[0]);
 				}
 			},
 
