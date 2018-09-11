@@ -25,7 +25,7 @@ export const LexingEvent = {
 	processHorizontalToken: 'markdown_horizontal_token',
 	processEscapeToken: 'markdown_escape_token',
 	processHtmlBeginTagToken: 'markdown_html_begin_tag_token',
-	processHtmlEmdTagToken: 'markdown_html_end_tag_token',
+	processHtmlEndTagToken: 'markdown_html_end_tag_token',
 	processHtmlSelfCloseToken: 'markdown_html_self_close_token',
 	processParagraphToken: 'markdown_paragraph_token',
 };
@@ -274,7 +274,7 @@ export const language = <ILanguage>{
 				regex: /<\/(\w+)\s*>/,
 				action: { token: getTag('$1') },
 				listener: function(lineIndex: number, offset: number, matches: string[], line: string) {
-					lexingListener.emit(LexingEvent.processHtmlEmdTagToken, lineIndex, matches[0]);
+					lexingListener.emit(LexingEvent.processHtmlEndTagToken, lineIndex, matches[0]);
 				}
 			},
 
