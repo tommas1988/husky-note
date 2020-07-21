@@ -1,2 +1,0 @@
-### Notebook: Emacs
-#### Note: Modes
