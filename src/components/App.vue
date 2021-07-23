@@ -38,19 +38,19 @@
     </v-app-bar>
 
     <v-main>
-      <HelloWorld/>
+      <Editor/>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld';
+import EditorComp from './Editor';
 
 export default {
-  name: 'App',
+  name: 'husky-note',
 
   components: {
-    HelloWorld,
+    Editor: EditorComp,
   },
 
   data: () => ({
