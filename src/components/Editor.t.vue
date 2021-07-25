@@ -1,9 +1,21 @@
 <template>
-<div style="height: 100%; width: 100%"></div>
+<div id="editor" style="height: 100%; width: 100%">
+  <MonacoEditor
+    v-model="getValue"
+    theme="vs-dark"
+    language="json"
+    :options="options"
+    @change="onChange"
+    ></MonacoEditor>
+</div>
 </template>
 
 <script>
-import editor from '../editor';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
+function noop() { }
+
+export { monaco };
 
 export default {
   name: 'Editor',
@@ -30,6 +42,16 @@ export default {
 
     value() {
       this.editor && this.value !== this._getValue() && this._setValue(this.value);
+    },
+
+    language() {
+      if(!this.editor) return;
+      if(this.diffEditor){      //diff模式下更新language
+        const { original, modified } = this.editor.getModel();
+        monaco.editor.setModelLanguage(original, this.language);
+        monaco.editor.setModelLanguage(modified, this.language);
+      }else
+        monaco.editor.setModelLanguage(this.editor.getModel(), this.language);
     },
 
     theme() {
@@ -129,6 +151,61 @@ export default {
     _emitChange(value, event) {
       this.$emit('change', value, event);
       this.$emit('input', value);
+    }
+  }
+}
+
+export default {
+  name: 'Editor',
+  components: {
+    MonacoEditor
+  },
+  data() {
+    return {
+      defaultValue: [
+        '{',
+        '\t"type": "form",',
+        '\t"title": "表单",',
+        '\t"controls": [',
+        '\t\t{',
+        '\t\t\t"label": "文本框",',
+        '\t\t\t"type": "text",',
+        '\t\t\t"name": "text"',
+        '\t\t},',
+        '\t\t{',
+        '\t\t\t"type": "select",',
+        '\t\t\t"label": "选项",',
+        '\t\t\t"name": "select",',
+        '\t\t\t"options": [',
+        '\t\t\t\t{',
+        '\t\t\t\t\t"label": "选项A",',
+        '\t\t\t\t\t"value": "A"',
+        '\t\t\t\t},',
+        '\t\t\t\t{',
+        '\t\t\t\t\t"label": "选项B",',
+        '\t\t\t\t\t"value": "B"',
+        '\t\t\t\t}',
+        '\t\t\t]',
+        '\t\t}',
+        '\t]',
+        '}'
+      ],
+      options: {
+        //Monaco Editor Options
+        minimap: {
+          enabled: false
+        }
+      }
+    }
+  },
+  computed: {
+    getValue() {
+      return this.defaultValue.join('\n')
+    }
+  },
+  methods: {
+    onChange(value) {
+      console.log(value);
     }
   }
 }

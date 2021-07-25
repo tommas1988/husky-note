@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "monaco-editor": "^0.26.1",
-    "monaco-editor-vue": "^1.0.10",
     "vue": "^2.6.12",
     "vuetify": "^2.4.3"
   },
