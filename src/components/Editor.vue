@@ -1,19 +1,17 @@
 <template>
-<div style="height: 100%; width: 100%"></div>
+  <div ref="editor" style="height: 100%; width: 100%"></div>
 </template>
 
 <script>
 import editor from '../editor';
 
+function noop() {}
+
 export default {
   name: 'Editor',
   props: {
-    diffEditor: { type: Boolean, default: false },      //是否使用diff模式
     width: {type: [String, Number], default: '100%'},
     height: {type: [String, Number], default: '100%'},
-    original: String,       //只有在diff模式下有效
-    value: String,
-    language: {type: String, default: 'javascript'},
     theme: {type: String, default: 'vs'},
     options: {type: Object, default() {return {};}},
     editorMounted: {type: Function, default: noop},
@@ -30,10 +28,6 @@ export default {
 
     value() {
       this.editor && this.value !== this._getValue() && this._setValue(this.value);
-    },
-
-    theme() {
-      this.editor && monaco.editor.setTheme(this.theme);
     },
 
     style() {
@@ -53,77 +47,48 @@ export default {
   },
 
   mounted () {
-    this.initMonaco();
+    this.initEditor();
   },
 
   beforeDestroy() {
     this.editor && this.editor.dispose();
   },
 
-  render (h) {
-    return (
-        <div class="monaco_editor_container" style={this.style}></div>
-    );
-  },
-
   methods: {
-    initMonaco() {
-      const { value, language, theme, options } = this;
-      Object.assign(options, this._editorBeforeMount());      //编辑器初始化前
-      this.editor = monaco.editor[this.diffEditor ? 'createDiffEditor' : 'create'](this.$el, {
-        value: value,
-        language: language,
+    initEditor() {
+      const { theme, options } = this;
+      Object.assign(options, this._editorBeforeMount());
+      editor.attatchOnDom(this.$el, {
         theme: theme,
         ...options
       });
-      this.diffEditor && this._setModel(this.value, this.original);
-      this._editorMounted(this.editor);      //编辑器初始化后
+      this.editor = editor.getEngine();
+      this._editorMounted(this.editor);
+
+      let self = this;
+      window.onresize = function() {
+        console.log(window.getComputedStyle(self.$refs.editor).height);
+        //console.log(self.$refs.editor.offsetHeight);
+        //self.editor.layout();
+      };
     },
 
     _getEditor() {
       if(!this.editor) return null;
-      return this.diffEditor ? this.editor.modifiedEditor : this.editor;
-    },
-
-    _setModel(value, original) {     //diff模式下设置model
-      const { language } = this;
-      const originalModel = monaco.editor.createModel(original, language);
-      const modifiedModel = monaco.editor.createModel(value, language);
-      this.editor.setModel({
-        original: originalModel,
-        modified: modifiedModel
-      });
-    },
-
-    _setValue(value) {
-      let editor = this._getEditor();
-      if(editor) return editor.setValue(value);
-    },
-
-    _getValue() {
-      let editor = this._getEditor();
-      if(!editor) return '';
-      return editor.getValue();
+      return this.editor;
     },
 
     _editorBeforeMount() {
-      const options = this.editorBeforeMount(monaco);
+      const options = this.editorBeforeMount();
       return options || {};
     },
 
     _editorMounted(editor) {
-      this.editorMounted(editor, monaco);
-      if(this.diffEditor){
-        editor.onDidUpdateDiff((event) => {
+      this.editorMounted(editor);
+      editor.onDidChangeModelContent(event => {
           const value = this._getValue();
           this._emitChange(value, event);
         });
-      }else{
-        editor.onDidChangeModelContent(event => {
-          const value = this._getValue();
-          this._emitChange(value, event);
-        });
-      }
     },
 
     _emitChange(value, event) {

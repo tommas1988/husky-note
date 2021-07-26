@@ -1,19 +1,25 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-interface EdtiorOptions {
+interface EditorOptions {
 
 }
 
 interface EditorInterface {
-    attatchOnDom(dom: HTMLElement, options: EditorOptions);
+    attatchOnDom(dom: HTMLElement, options: EditorOptions): void;
     getEngine(): any;
 }
 
 class MonacoEditorImp implements EditorInterface {
-    private engine: monaco.editor.IStandaloneCodeEditor = null;
+    private engine: monaco.editor.IStandaloneCodeEditor|null = null;
 
-    attatchOnDom(dom: HTMLElement, options: monaco.editor.IStandaloneEditorConstructionOptions) {
-        engine = monaco.editor.create(dom, options);
+    attatchOnDom(dom: HTMLElement, options: EditorOptions): void {
+        let monacoOptions = {
+            minimap: {
+                enabled: false
+            },
+            automaticLayout: false
+        };
+        this.engine = monaco.editor.create(dom, monacoOptions);
     }
 
     getEngine(): any {

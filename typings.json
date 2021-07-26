@@ -1,7 +1,5 @@
 {
   "dependencies": {},
   "globalDependencies": {
-    "electron": "registry:dt/electron#1.4.8+20170316233216",
-    "moment": "registry:dt/moment#2.11.1+20161010105546"
   }
 }

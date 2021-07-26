@@ -11,5 +11,11 @@ module.exports = {
   },
   transpileDependencies: [
     'vuetify'
-  ]
+  ],
+  pluginOptions: {
+    electronBuilder: {
+      mainProcessFile: 'src/background.js',
+      rendererProcessFile: 'src/main.js'
+    }
+  }
 }
