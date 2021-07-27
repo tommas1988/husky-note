@@ -1,4 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
 
 export interface EditorOptions {
 
@@ -21,6 +22,15 @@ class MonacoEditorImp implements EditorInterface {
     constructor() {
         // TODO: find a way to get EditorContributionRegistry.INSTANCE
         // to remove unwanted Contributions
+
+        let editorContributions = Registry.as('editor.contributions').editorContributions;
+        for (let i = 0, len = editorContributions.length; i < len; i++) {
+            let contribId = editorContributions[i].id;
+            if ("editor.contrib.renameController" == contribId) {
+                editorContributions.splice(i, 1);
+                len--;
+            }
+        }
     }
 
     attatchOnDom(dom: HTMLElement, options: EditorOptions): void {

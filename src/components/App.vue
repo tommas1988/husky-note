@@ -64,7 +64,7 @@ export default {
     },
 
     editorHeight: function() {
-      return window.innerHeight - 56 - 27;
+      return window.innerHeight - 56;
     },
   },
 
