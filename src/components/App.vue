@@ -40,7 +40,8 @@
     <v-main>
       <Editor
         theme="vs-dark"
-        :options="options"
+        v-bind:width="editorWidth"
+        v-bind:height="editorHeight"
         ></Editor>
     </v-main>
   </v-app>
@@ -57,13 +58,22 @@ export default {
     Editor: EditorCom,
   },
 
+  computed: {
+    editorWidth: function() {
+      return window.innerWidth;
+    },
+
+    editorHeight: function() {
+      return window.innerHeight - 56 - 27;
+    },
+  },
+
   data: () => ({
-    options: {
-        //Monaco Editor Options
-        minimap: {
-          enabled: false
-        }
-      }
   }),
+
+  mounted: function() {
+    window.onresize = () => {
+    };
+  }
 };
 </script>
