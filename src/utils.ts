@@ -1,32 +1,15 @@
-import { type as processType } from 'process';
-
-export const isRendererProcess: boolean = processType === 'renderer';
-export const isMainProcess: boolean = processType === 'browser';
-
-export function noop(...args): any { }
-
-export function checkRendererProcess() {
-    if (!isRendererProcess) {
-        throw new Error('Run in main process');
-    }
-}
-
-export function checkMainProcess() {
-    if (!isMainProcess) {
-        throw new Error('Run in renderer process');
-    }
-}
-
-// From https://remysharp.com/2010/07/21/throttling-function-calls
-export function throttle(fn, threshhold, scope) {
+/**
+ * From https://remysharp.com/2010/07/21/throttling-function-calls
+ * Use to avoid a function to invoke too frequently.
+ * This can be happen for a function as event callback.
+ */
+export function throttle(fn: (...args: any) => void, threshhold: number, scope: any): () => void {
     threshhold || (threshhold = 250);
-    var last,
-        deferTimer;
-    return function () {
-        var context = scope || this;
+    let last: number, deferTimer: number;
+    return function (this:any, ...args: any) {
+        let context = scope || this;
 
-        var now = +new Date,
-            args = arguments;
+        let now = +new Date;
         if (last && now < last + threshhold) {
             // hold on to it
             clearTimeout(deferTimer);

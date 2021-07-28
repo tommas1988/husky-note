@@ -27,7 +27,9 @@
     ]
   },
   "include": [
-    "src/editor.ts"
+    "@types",
+    "src/editor.ts",
+    "src/utils.ts"
   ],
   "exclude": [
     "node_modules"

@@ -1,9 +1,20 @@
+<style>
+html {
+    overflow: hidden;
+}
+
+body {
+    overflow: hidden
+}
+</style>
+
 <template>
 <v-app>
   <v-app-bar
     app
     color="primary"
     dark
+    v-bind:height="headerHeight"
     >
     <div class="d-flex align-center">
       <v-img
@@ -33,23 +44,26 @@
       text
       >
       <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </v-app-bar>
+      <v-icon>mdi-open-in-new</v-icon>
+    </v-btn>
+  </v-app-bar>
 
-    <v-main>
-      <Editor
-        theme="vs-dark"
-        v-bind:width="editorWidth"
-        v-bind:height="editorHeight"
-        ></Editor>
-    </v-main>
-  </v-app>
+  <v-main>
+    <Editor
+      theme="vs-dark"
+      v-bind:width="editorWidth"
+      v-bind:height="editorHeight"
+      ></Editor>
+  </v-main>
+</v-app>
 </template>
 
 <script>
 import editorService from '../editor';
 import EditorCom from './Editor';
+import { throttle } from '../utils.ts';
+
+const headerHeight = 40;
 
 export default {
   name: 'husky-note',
@@ -60,20 +74,25 @@ export default {
 
   computed: {
     editorWidth: function() {
-      return window.innerWidth;
+      return this.width;
     },
 
     editorHeight: function() {
-      return window.innerHeight - 56;
+      return this.height - headerHeight;
     },
   },
 
   data: () => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    headerHeight: headerHeight
   }),
 
   mounted: function() {
-    window.onresize = () => {
-    };
+    window.onresize = throttle(function() {
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+    }, 100, this);
   }
 };
 </script>

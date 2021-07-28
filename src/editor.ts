@@ -2,7 +2,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
 
 export interface EditorOptions {
-
+    theme: string;
 }
 
 export interface Dimension {
@@ -20,13 +20,15 @@ class MonacoEditorImp implements EditorInterface {
     private engine: monaco.editor.IStandaloneCodeEditor|null = null;
 
     constructor() {
-        // TODO: find a way to get EditorContributionRegistry.INSTANCE
-        // to remove unwanted Contributions
+        // remove unwanted editor contributions
+        let unwantedContribs = new Set();
+        let editorContributions = (<any>Registry.as('editor.contributions')).editorContributions;
 
-        let editorContributions = Registry.as('editor.contributions').editorContributions;
+        unwantedContribs.add('editor.contrib.renameController');
+        unwantedContribs.add('editor.contrib.hover');
         for (let i = 0, len = editorContributions.length; i < len; i++) {
             let contribId = editorContributions[i].id;
-            if ("editor.contrib.renameController" == contribId) {
+            if (unwantedContribs.has(contribId)) {
                 editorContributions.splice(i, 1);
                 len--;
             }
@@ -38,7 +40,8 @@ class MonacoEditorImp implements EditorInterface {
             minimap: {
                 enabled: false
             },
-            automaticLayout: false
+            automaticLayout: false,
+            theme: options.theme
         };
         this.engine = monaco.editor.create(dom, monacoOptions);
     }

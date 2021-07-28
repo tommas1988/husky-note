@@ -15,7 +15,7 @@ export default {
 
   watch: {
     size: function() {
-      editor.resize(size);
+      editor.resize(this.size);
     }
   },
 
