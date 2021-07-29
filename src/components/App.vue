@@ -14,7 +14,6 @@ body {
     app
     color="primary"
     dark
-    v-bind:height="headerHeight"
     >
     <div class="d-flex align-center">
       <v-img
@@ -63,8 +62,6 @@ import editorService from '../editor';
 import EditorCom from './Editor';
 import { throttle } from '../utils.ts';
 
-const headerHeight = 40;
-
 export default {
   name: 'husky-note',
 
@@ -78,14 +75,20 @@ export default {
     },
 
     editorHeight: function() {
-      return this.height - headerHeight;
+      return this.height - this.headerHeight;
     },
+  },
+
+  watch: {
+    '$vuetify.application.top': function(newV, oldV) {
+      this.headerHeight = this.$vuetify.application.top;
+    }
   },
 
   data: () => ({
     width: window.innerWidth,
     height: window.innerHeight,
-    headerHeight: headerHeight
+    headerHeight: 0,
   }),
 
   mounted: function() {
@@ -93,6 +96,6 @@ export default {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
     }, 100, this);
-  }
+  },
 };
 </script>
