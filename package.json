@@ -10,6 +10,7 @@
   },
   "main": "src/background.js",
   "dependencies": {
+    "@mdi/font": "^5.9.55",
     "monaco-editor": "^0.26.1",
     "vue": "^2.6.12",
     "vuetify": "^2.4.3"
