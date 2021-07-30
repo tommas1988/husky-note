@@ -4,15 +4,21 @@ html {
 }
 
 body {
-    overflow: hidden
+    overflow: hidden;
 }
 
-.left-bar-list {
+.nav-bar-list {
     padding: 0!important
 }
 
-.left-bar-list-item {
-    padding: 0 8px!important
+.nav-bar-list-item {
+    padding: 0 4px!important
+}
+
+.nav-bar-list-item-icon {
+    margin-right: 4px!important;
+    margin-left: 4px!important;
+    min-width: 32px!important;
 }
 </style>
 
@@ -20,29 +26,33 @@ body {
 <v-app>
   <v-navigation-drawer
     app
-    :mini-variant.sync="miniLeftBar"
+    :mini-variant="miniNavBar"
     permanent
+    mini-variant-width="48"
     >
     <v-list
-      class="left-bar-list"
+      class="nav-bar-list"
       v-bind:height="headerHeight"
       >
       <v-list-item
-        class="left-bar-list-item"
+        class="nav-bar-list-item"
         style="height: 100%"
         >
-        <v-list-item-icon v-bind:style="notebookIconStyle">
+        <v-list-item-icon
+          class="nav-bar-list-item-icon"
+          v-bind:style="notebookIconStyle"
+          >
           <v-icon
             color="indigo darken-4"
             v-bind:size="notebookIconSize"
-            @click.stop="miniLeftBar = !miniLeftBar"
+            @click.stop="miniNavBar = !miniNavBar"
             >
             mdi-book
           </v-icon>
         </v-list-item-icon>
 
         <v-list-item-title
-          style="font-size: 22px; font-weight: 300;"
+          style="font-size: 22px; font-weight: 300; padding-left: 20px"
           >
           Notebook
         </v-list-item-title>
@@ -52,14 +62,14 @@ body {
     <v-divider></v-divider>
 
     <v-list
-      v-bind:height="leftBarContentHeight"
-      class="left-bar-list"
+      v-bind:height="navBarContentHeight"
+      class="nav-bar-list"
       >
 
       <v-list-item
-        class="left-bar-list-item"
+        class="nav-bar-list-item"
         >
-        <v-list-item-icon></v-list-item-icon>
+        <v-list-item-icon class="nav-bar-list-item-icon"></v-list-item-icon>
         <v-divider vertical></v-divider>
 
         <v-list-item-content
@@ -93,6 +103,7 @@ body {
     app
     color="primary"
     dark
+    dense
     >
     <div class="d-flex align-center">
       <v-img
@@ -126,7 +137,7 @@ body {
     </v-btn>
   </v-app-bar>
 
-  <v-main>
+  <v-main v-bind:style="mainStyle">
     <Editor
       theme="vs-dark"
       v-bind:width="editorWidth"
@@ -141,7 +152,7 @@ import editorService from '../editor';
 import EditorCom from './Editor';
 import { throttle } from '../utils.ts';
 
-const NOTEBOOK_ICON_SIZE = 40;
+const NOTEBOOK_ICON_SIZE = 32;
 
 export default {
   name: 'husky-note',
@@ -152,13 +163,13 @@ export default {
 
   computed: {
     editorWidth: function() {
-      return this.width - this.leftBarWidth;
+      return this.width - this.navBarWidth;
     },
 
     editorHeight: function() {
       return this.height - this.headerHeight;
     },
-    leftBarContentHeight: function() {
+    navBarContentHeight: function() {
       return this.height - this.headerHeight - 1;
     },
     notebookIconStyle: function() {
@@ -170,10 +181,15 @@ export default {
     },
     noteTreeViewStyle: function() {
       return {
-        height: `${this.leftBarContentHeight}px`,
+        height: `${this.navBarContentHeight}px`,
         overflow: 'auto',
       }
-    }
+    },
+    mainStyle: function() {
+      return {
+        "background-color": '#1e1e1e',
+      };
+    },
   },
 
   watch: {
@@ -181,7 +197,7 @@ export default {
       this.headerHeight = newVal;
     },
     '$vuetify.application.left': function(newVal, oldVal) {
-      this.leftBarWidth = newVal;
+      this.navBarWidth = newVal;
     }
   },
 
@@ -189,8 +205,8 @@ export default {
     width: window.innerWidth,
     height: window.innerHeight,
     headerHeight: 0,
-    leftBarWidth: 0,
-    miniLeftBar: true,
+    navBarWidth: 0,
+    miniNavBar: true,
     notebookIconSize: NOTEBOOK_ICON_SIZE,
 
     initiallyOpen: ['public'],
@@ -264,6 +280,9 @@ export default {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
     }, 100, this);
+  },
+
+  methods: {
   },
 };
 </script>
