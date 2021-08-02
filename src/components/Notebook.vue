@@ -24,7 +24,6 @@
 
 <script>
 import { instance as notebook, NoteType } from  '../notebook';
-import { createHash } from 'crypto';
 
 export default {
   name: 'Notebook',
@@ -50,7 +49,7 @@ export default {
 
   created: function() {
     if (notebook.load()) {
-      notes = notebook.rootNote.notes;
+      this.notes = notebook.rootNote.notes;
     }
   },
 

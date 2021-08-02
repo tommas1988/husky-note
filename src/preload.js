@@ -1,13 +1,17 @@
-// import { readFileSync, writeFileSync } from 'fs';
+import { contextBridge } from 'electron';
+import { readFileSync, writeFileSync } from 'fs';
+import { createHash } from 'crypto';
 
-// window.readFileSync = readFileSync;
-// window.writeFileSync = writeFileSync;
+contextBridge.exposeInMainWorld(
+  'nodeApi',
+  {
+    fs: {
+      readFileSync,
+      writeFileSync,
+    },
 
-debugger;
-
-
-window.onload = () => {
-  window.preloadTest = function() {
-  console.log('I`m preload');
-};
-};
+    crypto: {
+      createHash,
+    },
+  }
+);

@@ -91,8 +91,7 @@ class Notebook {
     }
 
     load(): boolean {
-        debugger;
-        let content = window.readFileSync(`${this.baseDir}/${note_meta_filename}`, {
+        let content = window.nodeApi.fs.readFileSync(`${this.baseDir}/${note_meta_filename}`, {
             encoding: 'utf8'
         });
         let config = JSON.parse(content);

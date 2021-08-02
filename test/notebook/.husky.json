@@ -2,57 +2,57 @@
   "notes": [
     {
       "name": "C/C++",
-      "type": 2,
+      "type": "group",
       "notes": [
         {
           "name": "Syntax",
-          "type": 1
+          "type": "file"
         },
         {
           "name": "Tools",
-          "type": 1
+          "type": "file"
         }
       ]
     },
     {
       "name": "Typescript",
-      "type": 2,
+      "type": "group",
       "notes": [
         {
           "name": "Syntax",
-          "type": 1
+          "type": "file"
         },
         {
           "name": "Tools",
-          "type": 1
+          "type": "file"
         }
       ]
     },
     {
       "name": "PHP",
-      "type": 2,
+      "type": "group",
       "notes": [
         {
           "name": "Syntax",
-          "type": 1
+          "type": "file"
         },
         {
           "name": "Tools",
-          "type": 1
+          "type": "file"
         }
       ]
     },
     {
       "name": "Emacs",
-      "type": 2,
+      "type": "group",
       "notes": [
         {
           "name": "Modes",
-          "type": 1
+          "type": "file"
         },
         {
           "name": "Keybindings",
-          "type": 1
+          "type": "file"
         }
       ]
     }
