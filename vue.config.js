@@ -5,7 +5,7 @@ module.exports = {
     devtool: 'source-map',
     plugins: [
       new MonacoWebpackPlugin({
-        languages: ['markdown']
+        languages: ['markdown', 'json']
       })
     ]
   },
@@ -15,7 +15,8 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       mainProcessFile: 'src/background.js',
-      rendererProcessFile: 'src/main.js'
+      rendererProcessFile: 'src/main.js',
+      preload: 'src/preload.js',
     }
   }
 }

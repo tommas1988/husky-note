@@ -42,8 +42,6 @@ export default {
         theme: this.theme,
       });
       editor.resize(this.size);
-
-      console.log(this.size)
     }
   }
 }

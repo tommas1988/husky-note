@@ -47,7 +47,7 @@ body {
             v-bind:size="notebookIconSize"
             @click.stop="miniNavBar = !miniNavBar"
             >
-            mdi-book
+            mdi-notebook
           </v-icon>
         </v-list-item-icon>
 
@@ -75,25 +75,10 @@ body {
         <v-list-item-content
           style="padding: 0"
           >
-          <v-treeview
-            v-bind:style="noteTreeViewStyle"
-            v-model="tree"
-            :open="initiallyOpen"
-            :items="items"
-            activatable
-            item-key="name"
-            open-on-click
-            dense
+          <Notebook
+            v-bind:height="navBarContentHeight"
             >
-            <template v-slot:prepend="{ item, open }">
-              <v-icon v-if="!item.file">
-                {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-              </v-icon>
-              <v-icon v-else>
-                {{ files[item.file] }}
-              </v-icon>
-            </template>
-          </v-treeview>
+          </Notebook>
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -148,8 +133,8 @@ body {
 </template>
 
 <script>
-import editorService from '../editor';
-import EditorCom from './Editor';
+import Editor from './Editor';
+import Notebook from './Notebook';
 import { throttle } from '../utils.ts';
 
 const NOTEBOOK_ICON_SIZE = 32;
@@ -158,7 +143,8 @@ export default {
   name: 'husky-note',
 
   components: {
-    Editor: EditorCom,
+    Editor,
+    Notebook,
   },
 
   computed: {
@@ -177,12 +163,6 @@ export default {
       return {
         "margin-top": margin,
         "margin-bottom": margin
-      }
-    },
-    noteTreeViewStyle: function() {
-      return {
-        height: `${this.navBarContentHeight}px`,
-        overflow: 'auto',
       }
     },
     mainStyle: function() {
@@ -208,71 +188,6 @@ export default {
     navBarWidth: 0,
     miniNavBar: true,
     notebookIconSize: NOTEBOOK_ICON_SIZE,
-
-    initiallyOpen: ['public'],
-    files: {
-      html: 'mdi-language-html5',
-      js: 'mdi-nodejs',
-      json: 'mdi-code-json',
-      md: 'mdi-language-markdown',
-      pdf: 'mdi-file-pdf',
-      png: 'mdi-file-image',
-      txt: 'mdi-file-document-outline',
-      xls: 'mdi-file-excel',
-    },
-    tree: [],
-    items: [
-      {
-        name: '.git',
-      },
-      {
-        name: 'node_modules',
-      },
-      {
-        name: 'public',
-        children: [
-          {
-            name: 'static',
-            children: [{
-              name: 'logo.png',
-              file: 'png',
-            }],
-          },
-          {
-            name: 'favicon.ico',
-            file: 'png',
-          },
-          {
-            name: 'index.html',
-            file: 'html',
-          },
-        ],
-      },
-      {
-        name: '.gitignore',
-        file: 'txt',
-      },
-      {
-        name: 'babel.config.js',
-        file: 'js',
-      },
-        {
-          name: 'package.json',
-          file: 'json',
-        },
-        {
-          name: 'README.md',
-          file: 'md',
-        },
-        {
-          name: 'vue.config.js',
-          file: 'js',
-        },
-        {
-          name: 'yarn.lock',
-          file: 'txt',
-        },
-      ],
   }),
 
   mounted: function() {

@@ -1,0 +1,60 @@
+{
+  "notes": [
+    {
+      "name": "C/C++",
+      "type": 2,
+      "notes": [
+        {
+          "name": "Syntax",
+          "type": 1
+        },
+        {
+          "name": "Tools",
+          "type": 1
+        }
+      ]
+    },
+    {
+      "name": "Typescript",
+      "type": 2,
+      "notes": [
+        {
+          "name": "Syntax",
+          "type": 1
+        },
+        {
+          "name": "Tools",
+          "type": 1
+        }
+      ]
+    },
+    {
+      "name": "PHP",
+      "type": 2,
+      "notes": [
+        {
+          "name": "Syntax",
+          "type": 1
+        },
+        {
+          "name": "Tools",
+          "type": 1
+        }
+      ]
+    },
+    {
+      "name": "Emacs",
+      "type": 2,
+      "notes": [
+        {
+          "name": "Modes",
+          "type": 1
+        },
+        {
+          "name": "Keybindings",
+          "type": 1
+        }
+      ]
+    }
+  ]
+}

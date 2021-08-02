@@ -12,7 +12,8 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "webpack-env",
+      "node"
     ],
     "paths": {
       "@/*": [
@@ -29,7 +30,8 @@
   "include": [
     "@types",
     "src/editor.ts",
-    "src/utils.ts"
+    "src/utils.ts",
+    "src/notebook.ts"
   ],
   "exclude": [
     "node_modules"

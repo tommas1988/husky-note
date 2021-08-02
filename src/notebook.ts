@@ -1,8 +1,10 @@
-import { readFile, writeFile } as fs from 'fs/promises';
+// TODO: move this service into main process?
+// or is there a way to auto add node module to window
+// or create a proxy to run in main process and delegate all node module call from renderer process
 
-export enum NoteType = {
-    File = 1,
-    Group,
+export enum NoteType {
+    File = 'file',
+    Group = 'group',
 };
 
 interface NoteMeta {
@@ -12,83 +14,112 @@ interface NoteMeta {
     notes?: NoteMeta[];
 }
 
-export interface BaseNoteInterface {
+export interface NoteInterface {
     name: string;
-    type: string;
 
-    rename(name: string): void;
-    remove(): void;
+    rename(name: string): boolean;
+    remove(): boolean;
 }
 
-export interface NoteFileInterface extends NoteBaseInterface {
+export interface NoteFileInterface extends NoteInterface {
     edit(): void;
-    save(): void;
+    save(): boolean;
 }
 
-export interface NoteGroupInterface extends NoteBaseInterface {
-    add(note: BaseNoteInterface): void;
-    removeItem(note: BaseNoteInterface);
+export interface NoteGroupInterface extends NoteInterface {
+    add(note: NoteInterface): boolean;
+    removeNote(note: NoteInterface): boolean;
 }
 
-class NoteFile implement NoteFileInterface {
+abstract class AbstractNote implements NoteInterface {
+    name: string;
+
     constructor(meta: NoteMeta) {
         this.name = meta.name;
     }
+
+    rename(name: string): boolean {
+        return true;
+    }
+
+    remove(): boolean {
+        return true;
+    }
 }
 
-class NoteGroup implement NoteGroupInterface {
+class NoteFile extends AbstractNote implements NoteFileInterface {
     constructor(meta: NoteMeta) {
-        this.name = meta.name;
-        buildNoteTree(this, meta.notes);
+        super(meta);
+    }
+
+    edit() {
+
+    }
+
+    save() {
+        return true;
+    }
+}
+
+class NoteGroup extends AbstractNote implements NoteGroupInterface {
+    private notes: NoteInterface[] = [];
+
+    constructor(meta: NoteMeta) {
+        super(meta);
+    }
+
+    add(note: NoteInterface) {
+        this.notes.push(note);
+        return true;
+    }
+
+    removeNote(note: NoteInterface): boolean {
+        return true;
     }
 }
 
 const note_meta_filename = '.husky.json';
 
 class Notebook {
+    rootNote: NoteGroupInterface;
+
     private baseDir: string;
-    private rootNote: NoteGroupInterface;
 
     constructor(dir: string) {
         this.baseDir = dir;
-        this.rootNote = new NoteGroup();
+        this.rootNote = new NoteGroup({ name: 'root_note_group', type: NoteType.Group});
     }
 
-    sync load(): boolean {
-        return readFile(`${this.baseDir}/${note_meta_filename}`)
-            .then(function(content) {
-                let meta = JSON.parse(content);
-                this.build(meta);
-                return true;
-            }).catch(function(e) {
-                return false;
-            });
+    load(): boolean {
+        debugger;
+        let content = window.readFileSync(`${this.baseDir}/${note_meta_filename}`, {
+            encoding: 'utf8'
+        });
+        let config = JSON.parse(content);
+        let meta = config.notes;
+        this.build(meta);
+        return true;
+
     }
 
-    private build(meta: any) {
-        for (let item in meta) {
-            let note: BaseNoteInterface;
-            if (item.type == NoteType.Note) {
-                note = new NoteFile(item);
-            } else if (item.type == NoteType.Group) {
-                note = new NoteGroup(item);
-            } else {
-                console.log(item);
-                throw 'Unknown meta item';
-            }
-
-            this.rootNote.add(note.name, note.type);
+    private build(noteMetas: NoteMeta[]) {
+        for (let i = 0; i < noteMetas.length; i++) {
+            buildNoteTree(this.rootNote, noteMetas[i]);
         }
     }
 }
 
 function buildNoteTree(root: NoteGroupInterface, meta: NoteMeta) {
-    let note: BaseNoteInterface;
+    let note: NoteInterface;
 
-    if (meta.type == NoteType.Note) {
+    if (meta.type == NoteType.File) {
         note = new NoteFile(meta);
     } else if (meta.type == NoteType.Group) {
         note = new NoteGroup(meta);
+        let noteMetas = meta.notes || [];
+        for (let i = 0; i < noteMetas.length; i++) {
+            buildNoteTree(note as NoteGroup, noteMetas[i]);
+        }
     } else {
         console.log(meta);
         throw 'Unknown meta item';
@@ -96,3 +127,6 @@ function buildNoteTree(root: NoteGroupInterface, meta: NoteMeta) {
 
     root.add(note);
 }
+
+const testDir = './test/notebook/';
+export const instance = new Notebook(testDir);

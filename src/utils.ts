@@ -5,7 +5,8 @@
  */
 export function throttle(fn: (...args: any) => void, threshhold: number, scope: any): () => void {
     threshhold || (threshhold = 250);
-    let last: number, deferTimer: number;
+    // FIXME: Type 'Timeout' is not assignable to type 'number' when enable node types
+    let last: number, deferTimer: NodeJS.Timeout;
     return function (this:any, ...args: any) {
         let context = scope || this;
 
