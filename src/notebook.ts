@@ -16,6 +16,7 @@ interface NoteMeta {
 
 export interface NoteInterface {
     name: string;
+    type: string;
 
     rename(name: string): boolean;
     remove(): boolean;
@@ -33,9 +34,11 @@ export interface NoteGroupInterface extends NoteInterface {
 
 abstract class AbstractNote implements NoteInterface {
     name: string;
+    type: string;
 
     constructor(meta: NoteMeta) {
         this.name = meta.name;
+        this.type = meta.type;
     }
 
     rename(name: string): boolean {

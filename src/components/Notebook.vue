@@ -49,7 +49,11 @@ export default {
 
   created: function() {
     if (notebook.load()) {
-      this.notes = notebook.rootNote.notes;
+      let notes = [];
+      for (let i = 0; i < notebook.rootNote.notes.length; i++) {
+        notes.push(buildTreeViewNotes(notebook.rootNote.notes[i], '_ROOT_'));
+      }
+      this.notes = notes;
     }
   },
 
@@ -60,13 +64,24 @@ export default {
   },
 };
 
-// const sha1Hash = createHash('sha1');
-// function buildTreeViewItems(note, parentName) {
-//   let id = sha1Hash.update(`${parentName}#${note.name}`).digest('base64');
-//   if (note.type == NoteType.File) {
-//     return {
-      
-//     }
-//   }
-// }
+const md5 = window.nodeApi.crypto.md5;
+function buildTreeViewNotes(note, parentName) {
+  let noteName = `${parentName}#${note.name}`;
+  let id = md5(noteName);
+  let result = {
+    id: id,
+    name: note.name,
+  };
+  if (note.type == NoteType.Group) {
+    let notes = [];
+    for (let i = 0; i < note.notes.length; i++) {
+      notes.push(buildTreeViewNotes(note.notes[i], noteName));
+    }
+
+    result.notes = notes;
+
+  }
+
+  return result;
+}
 </script>

@@ -11,7 +11,11 @@ contextBridge.exposeInMainWorld(
     },
 
     crypto: {
-      createHash,
+      md5 (data) {
+        const md5 = createHash('md5');
+        md5.update(data);
+        return md5.digest('hex');
+      }
     },
   }
 );
