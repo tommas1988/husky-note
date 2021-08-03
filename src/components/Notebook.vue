@@ -3,19 +3,18 @@
   v-bind:style="style"
   :open="initiallyOpen"
   :items="notes"
-  activatable
-  item-key="name"
   item-children="notes"
+  expand-icon=""
+  activatable
   open-on-click
   dense
-  expand-icon=""
   transition
   >
   <template v-slot:prepend="{ item, open }">
-    <v-icon v-if="!isNoteFile(item)">
+    <v-icon color="grey darken-4" v-if="isNoteFile(item)">
       mdi-note-text
     </v-icon>
-    <v-icon v-else>
+    <v-icon color="grey darken-4" v-else>
       {{ open ? 'mdi-chevron-down' :  'mdi-chevron-right'}}
     </v-icon>
   </template>
@@ -23,7 +22,7 @@
 </template>
 
 <script>
-import { instance as notebook, NoteType } from  '../notebook';
+import { instance as notebook, NoteGroup } from  '../notebook';
 
 export default {
   name: 'Notebook',
@@ -59,7 +58,7 @@ export default {
 
   methods: {
     isNoteFile: function(item) {
-      return item.notes != undefined;
+      return item.notes === undefined;
     },
   },
 };
@@ -72,7 +71,7 @@ function buildTreeViewNotes(note, parentName) {
     id: id,
     name: note.name,
   };
-  if (note.type == NoteType.Group) {
+  if (note instanceof NoteGroup) {
     let notes = [];
     for (let i = 0; i < note.notes.length; i++) {
       notes.push(buildTreeViewNotes(note.notes[i], noteName));

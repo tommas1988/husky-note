@@ -14,31 +14,24 @@ interface NoteMeta {
     notes?: NoteMeta[];
 }
 
-export interface NoteInterface {
+interface NoteInterface {
     name: string;
-    type: string;
-
-    rename(name: string): boolean;
-    remove(): boolean;
-}
-
-export interface NoteFileInterface extends NoteInterface {
-    edit(): void;
-    save(): boolean;
-}
-
-export interface NoteGroupInterface extends NoteInterface {
-    add(note: NoteInterface): boolean;
-    removeNote(note: NoteInterface): boolean;
 }
 
 abstract class AbstractNote implements NoteInterface {
     name: string;
-    type: string;
 
     constructor(meta: NoteMeta) {
         this.name = meta.name;
-        this.type = meta.type;
+    }
+
+    abstract rename(name: string): boolean;
+    abstract remove(): boolean;
+}
+
+export class NoteFile extends AbstractNote {
+    constructor(meta: NoteMeta) {
+        super(meta);
     }
 
     rename(name: string): boolean {
@@ -47,12 +40,6 @@ abstract class AbstractNote implements NoteInterface {
 
     remove(): boolean {
         return true;
-    }
-}
-
-class NoteFile extends AbstractNote implements NoteFileInterface {
-    constructor(meta: NoteMeta) {
-        super(meta);
     }
 
     edit() {
@@ -64,11 +51,19 @@ class NoteFile extends AbstractNote implements NoteFileInterface {
     }
 }
 
-class NoteGroup extends AbstractNote implements NoteGroupInterface {
+export class NoteGroup extends AbstractNote {
     private notes: NoteInterface[] = [];
 
     constructor(meta: NoteMeta) {
         super(meta);
+    }
+
+    rename(name: string): boolean {
+        return true;
+    }
+
+    remove(): boolean {
+        return true;
     }
 
     add(note: NoteInterface) {
@@ -84,7 +79,7 @@ class NoteGroup extends AbstractNote implements NoteGroupInterface {
 const note_meta_filename = '.husky.json';
 
 class Notebook {
-    rootNote: NoteGroupInterface;
+    rootNote: NoteGroup;
 
     private baseDir: string;
 
@@ -111,7 +106,7 @@ class Notebook {
     }
 }
 
-function buildNoteTree(root: NoteGroupInterface, meta: NoteMeta) {
+function buildNoteTree(root: NoteGroup, meta: NoteMeta) {
     let note: NoteInterface;
 
     if (meta.type == NoteType.File) {
