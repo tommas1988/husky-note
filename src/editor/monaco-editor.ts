@@ -1,22 +1,7 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
 
-export interface EditorOptions {
-    theme: string;
-}
-
-export interface Dimension {
-    width: number,
-    height: number,
-}
-
-interface EditorInterface {
-    attatchOnDom(dom: HTMLElement, options: EditorOptions): void;
-    resize(dimension: Dimension): void;
-    getEngine(): any;
-}
-
-class MonacoEditorImp implements EditorInterface {
+export class MonacoEditor implements EditorInterface {
     private engine: monaco.editor.IStandaloneCodeEditor|null = null;
 
     constructor() {
@@ -56,5 +41,3 @@ class MonacoEditorImp implements EditorInterface {
         return this.engine;
     }
 }
-
-export const instance = new MonacoEditorImp();

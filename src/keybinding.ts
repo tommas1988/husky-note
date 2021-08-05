@@ -6,7 +6,12 @@ class Keybinding {
 }
 
 export class Registry {
+
     register(keybinding: Keybinding, context: ContextInterface, command: CommandInterface) {
 
     }
+}
+
+function nextKeyStrokeHandler() {
+
 }

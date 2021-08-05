@@ -1,7 +1,14 @@
-export interface ContextableServiceInterface {
-    getContext(): ContextInterface;
-}
+export interface ContextInterface<T> {
+    name: string;
+    service: T;
+};
 
-export interface ContextInterface {
+export const ContextManager = new class () {
+    getCurrentContext(): ContextInterface<any> {
 
+    }
+
+    registerContext<T>(name: string, service: T) {
+
+    }
 }
