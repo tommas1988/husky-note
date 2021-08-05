@@ -18,13 +18,15 @@ async function createWindow() {
     width: 800,
     height: 600,
     webPreferences: {
+      contextIsolation: false,
+      nodeIntegration: true,
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      // nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
 
       // solution for modlue from renderer process cannot import node module
       // See  https://blog.csdn.net/qq_38333496/article/details/102474532
-      preload: path.join(__dirname, 'preload.js')
+      // preload: path.join(__dirname, 'preload.js')
     }
   })
 

@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/node": "^16.4.10",
     "@vue/cli-plugin-typescript": "~4.5.0",
-    "@vue/cli-service": "^4.5.11",
+    "@vue/cli-service": "^4.5.13",
     "electron": "^13.1.7",
     "electron-devtools-installer": "^3.1.1",
     "monaco-editor-webpack-plugin": "^4.1.1",

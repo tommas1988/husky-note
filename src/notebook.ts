@@ -1,6 +1,4 @@
-// TODO: move this service into main process?
-// or is there a way to auto add node module to window
-// or create a proxy to run in main process and delegate all node module call from renderer process
+import { readFileSync, writeFileSync } from 'fs';
 
 export enum NoteType {
     File = 'file',
@@ -89,7 +87,8 @@ class Notebook {
     }
 
     load(): boolean {
-        let content = window.nodeApi.fs.readFileSync(`${this.baseDir}/${note_meta_filename}`, {
+        debugger;
+        let content = readFileSync(`${this.baseDir}/${note_meta_filename}`, {
             encoding: 'utf8'
         });
         let config = JSON.parse(content);

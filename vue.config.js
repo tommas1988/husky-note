@@ -14,10 +14,10 @@ module.exports = {
   ],
   pluginOptions: {
     electronBuilder: {
-      // nodeIntegration: true,
+      nodeIntegration: true,
       mainProcessFile: 'src/background.js',
       rendererProcessFile: 'src/main.js',
-      preload: 'src/preload.js',
+      //preload: 'src/preload.js',
     }
   }
 }

@@ -23,6 +23,7 @@
 
 <script>
 import { instance as notebook, NoteGroup } from  '../notebook';
+import { createHash } from 'crypto';
 
 export default {
   name: 'Notebook',
@@ -63,7 +64,11 @@ export default {
   },
 };
 
-const md5 = window.nodeApi.crypto.md5;
+const md5 = function(data) {
+  const hash = createHash('md5');
+  hash.update(data);
+  return hash.digest('hex');
+}
 function buildTreeViewNotes(note, parentName) {
   let noteName = `${parentName}#${note.name}`;
   let id = md5(noteName);
@@ -78,7 +83,6 @@ function buildTreeViewNotes(note, parentName) {
     }
 
     result.notes = notes;
-
   }
 
   return result;
