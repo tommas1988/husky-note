@@ -29,7 +29,7 @@
   },
   "include": [
     "@types",
-    "src/editor.ts",
+    "src/editor/*",
     "src/utils.ts",
     "src/notebook.ts"
   ],

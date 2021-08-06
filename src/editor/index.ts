@@ -1,5 +1,5 @@
 import { Command } from '../command';
-import MonacoEditor from './monaco-editor';
+import { MonacoEditor } from './monaco-editor';
 
 export interface EditorOptions {
     theme: string;

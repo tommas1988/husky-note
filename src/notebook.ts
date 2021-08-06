@@ -87,7 +87,6 @@ class Notebook {
     }
 
     load(): boolean {
-        debugger;
         let content = readFileSync(`${this.baseDir}/${note_meta_filename}`, {
             encoding: 'utf8'
         });
