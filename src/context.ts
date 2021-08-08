@@ -12,3 +12,9 @@ export const ContextManager = new class () {
 
     }
 }
+
+export class Context {
+    getCurrentContext(): ContextInterface {
+
+    }
+}

@@ -7,3 +7,7 @@ export interface CommandInterface {
 
     handler(...args: any);
 }
+
+export enum CommonCommandName {
+    KEYBOARD_QUIT: 'keyboard-quit',
+};

@@ -1,8 +1,4 @@
 export const enum KeyCode {
-    /**
-     * key codes that is less than 64 are composbale with other key codes
-     */
-
     Backspace = 1,
     Tab = 2,
     Space = 3,
@@ -16,174 +12,170 @@ export const enum KeyCode {
     DownArrow = 11,
     Insert = 12,
     Delete = 13,
+    Enter = 14,
+    Escape = 15,
 
-    KEY_0 = 17,
-    KEY_1 = 18,
-    KEY_2 = 19,
-    KEY_3 = 20,
-    KEY_4 = 21,
-    KEY_5 = 22,
-    KEY_6 = 23,
-    KEY_7 = 24,
-    KEY_8 = 25,
-    KEY_9 = 26,
+    F1 = 16,
+    F2 = 17,
+    F3 = 18,
+    F4 = 19,
+    F5 = 20,
+    F6 = 21,
+    F7 = 22,
+    F8 = 23,
+    F9 = 24,
+    F10 = 25,
+    F11 = 26,
+    F12 = 27,
 
-    KEY_A = 27,
-    KEY_B = 28,
-    KEY_C = 29,
-    KEY_D = 30,
-    KEY_E = 31,
-    KEY_F = 32,
-    KEY_G = 33,
-    KEY_H = 34,
-    KEY_I = 35,
-    KEY_J = 36,
-    KEY_K = 37,
-    KEY_L = 38,
-    KEY_M = 39,
-    KEY_N = 40,
-    KEY_O = 41,
-    KEY_P = 42,
-    KEY_Q = 43,
-    KEY_R = 44,
-    KEY_S = 45,
-    KEY_T = 46,
-    KEY_U = 47,
-    KEY_V = 48,
-    KEY_W = 49,
-    KEY_X = 50,
-    KEY_Y = 51,
-    KEY_Z = 52,
+    KEY_A = 41,
+    KEY_B = 42,
+    KEY_C = 43,
+    KEY_D = 44,
+    KEY_E = 45,
+    KEY_F = 46,
+    KEY_G = 47,
+    KEY_H = 48,
+    KEY_I = 49,
+    KEY_J = 50,
+    KEY_K = 61,
+    KEY_L = 62,
+    KEY_M = 63,
+    KEY_N = 64,
+    KEY_O = 65,
+    KEY_P = 66,
+    KEY_Q = 67,
+    KEY_R = 68,
+    KEY_S = 69,
+    KEY_T = 70,
+    KEY_U = 71,
+    KEY_V = 72,
+    KEY_W = 73,
+    KEY_X = 74,
+    KEY_Y = 75,
+    KEY_Z = 76,
 
+    /**
+     * The key below can be conbined with SHIFT key.
+     * key code plus 1 is the key that conbined with SHIFT.
+     */
+
+    SHIFT_CONBINED_KEY_START = 85,
+
+    /**
+     * For the US standard keyboard, the '0)' key
+     */
+    KEY_0 = 86,
+    KEY_0_SHIFT = 87,
+    /**
+     * For the US standard keyboard, the '1!' key
+     */
+    KEY_1 = 88,
+    KEY_1_SHIFT = 89,
+    /**
+     * For the US standard keyboard, the '2@' key
+     */
+    KEY_2 = 90,
+    KEY_2_SHIFT = 91,
+    /**
+     * For the US standard keyboard, the '3#' key
+     */
+    KEY_3 = 92,
+    KEY_3_SHIFT = 93,
+    /**
+     * For the US standard keyboard, the '4$' key
+     */
+    KEY_4 = 94,
+    KEY_4 = 95,
+    /**
+     * For the US standard keyboard, the '5%' key
+     */
+    KEY_5 = 96,
+    KEY_5_SHIFT = 97,
+    /**
+     * For the US standard keyboard, the '6^' key
+     */
+    KEY_6 = 98,
+    KEY_6_SHIFT = 99,
+    /**
+     * For the US standard keyboard, the '7&' key
+     */
+    KEY_7 = 100,
+    KEY_7_SHIFT = 101,
+    /**
+     * For the US standard keyboard, the '8*' key
+     */
+    KEY_8 = 102,
+    KEY_8_SHIFT = 103,
+    /**
+     * For the US standard keyboard, the '9(' key
+     */
+    KEY_9 = 104,
+    KEY_9_SHIFT = 105,
     /**
      * Used for miscellaneous characters; it can vary by keyboard.
      * For the US standard keyboard, the ';:' key
      */
-    US_SEMICOLON = 53,
+    US_SEMICOLON = 106,
+    US_SEMICOLON_SHIFT = 107,
     /**
      * For any country/region, the '+' key
      * For the US standard keyboard, the '=+' key
      */
-    US_EQUAL = 54,
+    US_EQUAL = 108,
+    US_EQUAL_SHIFT = 109,
     /**
      * For any country/region, the ',' key
      * For the US standard keyboard, the ',<' key
      */
-    US_COMMA = 55,
+    US_COMMA = 110,
+    US_COMMA_SHIFT = 111,
     /**
      * For any country/region, the '-' key
      * For the US standard keyboard, the '-_' key
      */
-    US_MINUS = 56,
+    US_MINUS = 112,
+    US_MINUS_SHIFT = 113,
     /**
      * For any country/region, the '.' key
      * For the US standard keyboard, the '.>' key
      */
-    US_DOT = 57,
+    US_DOT = 114,
+    US_DOT_SHIFT = 115,
     /**
      * Used for miscellaneous characters; it can vary by keyboard.
      * For the US standard keyboard, the '/?' key
      */
-    US_SLASH = 58,
+    US_SLASH = 116,
+    US_SLASH_SHIFT = 117,
     /**
      * Used for miscellaneous characters; it can vary by keyboard.
      * For the US standard keyboard, the '`~' key
      */
-    US_BACKTICK = 59,
+    US_BACKTICK = 118,
+    US_BACKTICK_SHIFT = 119,
     /**
      * Used for miscellaneous characters; it can vary by keyboard.
      * For the US standard keyboard, the '[{' key
      */
-    US_OPEN_SQUARE_BRACKET = 60,
+    US_OPEN_SQUARE_BRACKET = 120,
+    US_OPEN_SQUARE_BRACKET_SHIFT = 121,
     /**
      * Used for miscellaneous characters; it can vary by keyboard.
      * For the US standard keyboard, the '\|' key
      */
-    US_BACKSLASH = 61,
+    US_BACKSLASH = 122,
+    US_BACKSLASH_SHIFT = 123,
     /**
      * Used for miscellaneous characters; it can vary by keyboard.
      * For the US standard keyboard, the ']}' key
      */
-    US_CLOSE_SQUARE_BRACKET = 62,
+    US_CLOSE_SQUARE_BRACKET = 124,
+    US_CLOSE_SQUARE_BRACKET_SHIFT = 125,
     /**
      * Used for miscellaneous characters; it can vary by keyboard.
      * For the US standard keyboard, the ''"' key
      */
-    US_QUOTE = 63,
-
-
-
-    /**
-     * simple key codes
-     */
-
-    Enter = 64,
-    Escape = 65,
-    PauseBreak = 66,
-    CapsLock = 67,
-
-    Shift = 68,
-    Ctrl = 69,
-    Alt = 70,
-    Meta = 71,
-    ContextMenu = 72,
-
-    F1 = 73,
-    F2 = 74,
-    F3 = 75,
-    F4 = 76,
-    F5 = 77,
-    F6 = 78,
-    F7 = 79,
-    F8 = 80,
-    F9 = 81,
-    F10 = 82,
-    F11 = 83,
-    F12 = 84,
-    F13 = 85,
-    F14 = 86,
-    F15 = 87,
-    F16 = 88,
-    F17 = 89,
-    F18 = 90,
-    F19 = 91,
-
-    NumLock = 92,
-    ScrollLock = 93,
-
-    US_QUOTE = 94,
-    /**
-     * Used for miscellaneous characters; it can vary by keyboard.
-     */
-    OEM_8 = 95,
-    /**
-     * Either the angle bracket key or the backslash key on the RT 102-key keyboard.
-     */
-    OEM_102 = 96,
-
-    NUMPAD_0 = 97, // VK_NUMPAD0, 0x60, Numeric keypad 0 key
-    NUMPAD_1 = 98, // VK_NUMPAD1, 0x61, Numeric keypad 1 key
-    NUMPAD_2 = 99, // VK_NUMPAD2, 0x62, Numeric keypad 2 key
-    NUMPAD_3 = 100, // VK_NUMPAD3, 0x63, Numeric keypad 3 key
-    NUMPAD_4 = 101, // VK_NUMPAD4, 0x64, Numeric keypad 4 key
-    NUMPAD_5 = 102, // VK_NUMPAD5, 0x65, Numeric keypad 5 key
-    NUMPAD_6 = 103, // VK_NUMPAD6, 0x66, Numeric keypad 6 key
-    NUMPAD_7 = 104, // VK_NUMPAD7, 0x67, Numeric keypad 7 key
-    NUMPAD_8 = 105, // VK_NUMPAD8, 0x68, Numeric keypad 8 key
-    NUMPAD_9 = 106, // VK_NUMPAD9, 0x69, Numeric keypad 9 key
-
-    NUMPAD_MULTIPLY = 107,	// VK_MULTIPLY, 0x6A, Multiply key
-    NUMPAD_ADD = 108,		// VK_ADD, 0x6B, Add key
-    NUMPAD_SEPARATOR = 109,	// VK_SEPARATOR, 0x6C, Separator key
-    NUMPAD_SUBTRACT = 110,	// VK_SUBTRACT, 0x6D, Subtract key
-    NUMPAD_DECIMAL = 111,	// VK_DECIMAL, 0x6E, Decimal key
-    NUMPAD_DIVIDE = 112,	// VK_DIVIDE, 0x6F,
-
-    /**
-     * Cover all key codes when IME is processing input.
-     */
-    KEY_IN_COMPOSITION = 113,
-
-    ABNT_C1 = 114, // Brazilian (ABNT) Keyboard
-    ABNT_C2 = 115, // Brazilian (ABNT) Keyboard
-}
+    US_QUOTE = 126,
+    US_QUOTE_SHIFT = 127,
+};
