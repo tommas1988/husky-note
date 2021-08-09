@@ -1,3 +1,29 @@
-export enum {
+enum CommandName {
+    previousLine = 'previous-line',
+    nextLine = 'next-line',
+    forwardChar = 'forward-char',
+    backwardChar = 'backward-char',
+    moveBeginningOfLine = 'move-beginning-of-line',
+    moveEndOfLine = 'move-end-of-line',
+    scrollUp = 'scroll-up',
+    scrollDown = 'scroll-down',
+    beginningOfText = 'beginning-of-text',
+    endOfText = 'end-of-text',
+    toggleMark = 'toggle-mark',
+    copy = 'copy',
+    cut = 'cut',
+    paste = 'paste',
+    undo = 'undo',
+    redo = 'redo',
+    gotoLine = 'goto-line',
+    killLine = 'kill-line',
+    deleteChar = 'delete-char',
+    keyboardQuit = 'keyboard-quit',
+    searchForward = 'search-forward',
+    searchBackward = 'search-backward',
+    recenter = 'recenter',
+    insertCodeBlock = 'insert-code-block',
+    save = 'save',
+};
 
-}
+export default CommandName;

@@ -10,7 +10,7 @@ export interface Dimension {
     height: number,
 }
 
-interface EditorInterface {
+export interface EditorInterface {
     attatchOnDom(dom: HTMLElement, options: EditorOptions): void;
     resize(dimension: Dimension): void;
     getEngine(): any;

@@ -1,6 +1,7 @@
-import { Context } from 'context';
-import { CommonCommandName } from 'command';
-import { KeyCode } from './keyCodes.ts';
+import { Context, globalContext } from '../context';
+import { CommonCommandName } from '../command';
+import { KeyCode } from './keyCodes';
+import RuntimeMessage from '../runtimeMessage';
 
 let KEY_CODE_MAP: { [keyCode: number]: KeyCode } = new Array(230);
 KEY_CODE_MAP[8] = KeyCode.Backspace;
@@ -69,13 +70,6 @@ KEY_CODE_MAP[120] = KeyCode.F9;
 KEY_CODE_MAP[121] = KeyCode.F10;
 KEY_CODE_MAP[122] = KeyCode.F11;
 KEY_CODE_MAP[123] = KeyCode.F12;
-KEY_CODE_MAP[124] = KeyCode.F13;
-KEY_CODE_MAP[125] = KeyCode.F14;
-KEY_CODE_MAP[126] = KeyCode.F15;
-KEY_CODE_MAP[127] = KeyCode.F16;
-KEY_CODE_MAP[128] = KeyCode.F17;
-KEY_CODE_MAP[129] = KeyCode.F18;
-KEY_CODE_MAP[130] = KeyCode.F19;
 
 KEY_CODE_MAP[186] = KeyCode.US_SEMICOLON;
 KEY_CODE_MAP[187] = KeyCode.US_EQUAL;
@@ -89,7 +83,7 @@ KEY_CODE_MAP[220] = KeyCode.US_BACKSLASH;
 KEY_CODE_MAP[221] = KeyCode.US_CLOSE_SQUARE_BRACKET;
 KEY_CODE_MAP[222] = KeyCode.US_QUOTE;
 
-let NAME_KEY_CODE_MAP: { string: KeyCode } = new Map([
+let NAME_KEY_CODE_MAP: Map<string, KeyCode> = new Map([
     ['BACKSPACE', KeyCode.Backspace],
     ['TAB', KeyCode.Tab],
     ['SPACE', KeyCode.Space],
@@ -117,32 +111,32 @@ let NAME_KEY_CODE_MAP: { string: KeyCode } = new Map([
     ['F10', KeyCode.F10],
     ['F11', KeyCode.F11],
     ['F12', KeyCode.F12],
-    ['A', KeyCode.KEY_A],
-    ['B', KeyCode.KEY_B],
-    ['C', KeyCode.KEY_C],
-    ['D', KeyCode.KEY_D],
-    ['E', KeyCode.KEY_E],
-    ['F', KeyCode.KEY_F],
-    ['G', KeyCode.KEY_G],
-    ['H', KeyCode.KEY_H],
-    ['I', KeyCode.KEY_I],
-    ['J', KeyCode.KEY_J],
-    ['K', KeyCode.KEY_K],
-    ['L', KeyCode.KEY_L],
-    ['M', KeyCode.KEY_M],
-    ['N', KeyCode.KEY_N],
-    ['O', KeyCode.KEY_O],
-    ['P', KeyCode.KEY_P],
-    ['Q', KeyCode.KEY_Q],
-    ['R', KeyCode.KEY_R],
-    ['S', KeyCode.KEY_S],
-    ['T', KeyCode.KEY_T],
-    ['U', KeyCode.KEY_U],
-    ['V', KeyCode.KEY_V],
-    ['W', KeyCode.KEY_W],
-    ['X', KeyCode.KEY_X],
-    ['Y', KeyCode.KEY_Y],
-    ['Z', KeyCode.KEY_Z],
+    ['a', KeyCode.KEY_A],
+    ['b', KeyCode.KEY_B],
+    ['c', KeyCode.KEY_C],
+    ['d', KeyCode.KEY_D],
+    ['e', KeyCode.KEY_E],
+    ['f', KeyCode.KEY_F],
+    ['g', KeyCode.KEY_G],
+    ['h', KeyCode.KEY_H],
+    ['i', KeyCode.KEY_I],
+    ['j', KeyCode.KEY_J],
+    ['k', KeyCode.KEY_K],
+    ['l', KeyCode.KEY_L],
+    ['m', KeyCode.KEY_M],
+    ['n', KeyCode.KEY_N],
+    ['o', KeyCode.KEY_O],
+    ['p', KeyCode.KEY_P],
+    ['q', KeyCode.KEY_Q],
+    ['r', KeyCode.KEY_R],
+    ['s', KeyCode.KEY_S],
+    ['t', KeyCode.KEY_T],
+    ['u', KeyCode.KEY_U],
+    ['v', KeyCode.KEY_V],
+    ['w', KeyCode.KEY_W],
+    ['x', KeyCode.KEY_X],
+    ['y', KeyCode.KEY_Y],
+    ['z', KeyCode.KEY_Z],
     ['0', KeyCode.KEY_0],
     [')', KeyCode.KEY_0_SHIFT],
     ['1', KeyCode.KEY_1],
@@ -187,19 +181,12 @@ let NAME_KEY_CODE_MAP: { string: KeyCode } = new Map([
     ['"', KeyCode.US_QUOTE_SHIFT],
 ]);
 
-let KEY_CODE_NAME_MAP: { KeyCode: string } = new Map();
+let KEY_CODE_NAME_MAP: Map<KeyCode, string> = new Map();
 NAME_KEY_CODE_MAP.forEach(function(keyCode: KeyCode, name: string) {
     KEY_CODE_NAME_MAP.set(keyCode, name);
 });
 
-document.body.onkeyup = eventHandler;
-
-function eventHandler(e) {
-
-}
-
-
-const ALL_CONTEXT_NAME = '*';
+const GLOBAL_CONTEXT_NAME = globalContext.name;
 const CTRL_KEY_NAME = 'C';
 const ALT_KEY_NAME = 'M';
 const KEY_CHORD_SEP = '-';
@@ -210,41 +197,84 @@ export interface KeybindingInfo {
     context?: string,
 }
 
-export class KeyChord {
-    private handler: () => void;
+class KeyChordContext {
+    keyChords: KeyChord[] = [];
+    nthKeyChordKBQuit: number = 0;
 
-    constructor(handler: () => void) {
-        this.handler = handler;
+    getKeyChordLiteral(): string {
+        let keyChords = '';
+        this.keyChords.forEach((keyChord: KeyChord) => {
+            if (keyChords.length > 0)
+                keyChords += ' ';
+            keyChords += keyChord.literal;
+        });
+
+        return keyChords;
+    }
+
+    reset(): void {
+        this.keyChords = [];
+        this.nthKeyChordKBQuit = 0;
+    }
+}
+
+abstract class KeyChord {
+    // TODO: const or readonly
+    readonly literal: string;
+    readonly commandName: string;
+
+    constructor(literal: string, commandName: string) {
+        this.literal = literal;
+        this.commandName = commandName;
+    }
+
+    abstract handle(context: KeyChordContext): void;
+}
+
+class PrefixKeyChord extends KeyChord {
+    handle(context: KeyChordContext): void {
+        context.keyChords.push(this);
+        RuntimeMessage.setStatus(() => {
+            return context.getKeyChordLiteral();
+        });
+    }
+}
+
+class LastKeyChord extends KeyChord {
+    private command: Command;
+
+    handle(context: KeyChordContext): void {
+        console.log(`Execute command: ${this.commandName}`);
+        context.reset();
     }
 }
 
 class Keymap {
-    private const CTRL_KEY_MASK = 1 << 7;
-    private const ALT_KEY_MASK = 1 << 6;
+    private readonly CTRL_KEY_MASK = 1 << 7;
+    private readonly ALT_KEY_MASK = 1 << 6;
 
-    private keymap: Map[] = new Array(256);
-    private keyChordContext = new KeyChordContext();
+    private keymap: Map<string, KeyChord>[] = new Array(256);
+    private context = new KeyChordContext();
 
     config(keybindings: KeybindingInfo[]) {
         for (let i = 0; i < keybindings.length; i++) {
             let kb = keybindings[i];
 
-            let keyChords: string[] = kb.keyChord.splite(' ');
-            let context = kb.context ? kb.context : ALL_CONTEXT_NAME;
+            let keyChords: string[] = kb.keyChord.split(' ');
+            let context = kb.context ? kb.context : GLOBAL_CONTEXT_NAME;
             if (keyChords.length == 1) {
-                addKeyChord(keyChords[0], kb.keyChord, 0, kb.context, commandHandler);
+                this.addKeyChord(keyChords[0], kb.keyChord, 0, context, kb.command, true);
             } else {
-                addKeyChord(keyChords[i], kb.keyChord, i, kb.context,
-                            (keyChords.length == i+1) ? commandHandler, nextKeyChordHandler);
+                this.addKeyChord(keyChords[i], kb.keyChord, i, context, kb.command, keyChords.length == i+1);
             }
         }
     }
 
-    private addKeyChord(keyChord: string, whole: string, nth: number, context: string, handler: () => void) {
-        let keyCode = parseKeyChordString(keyChord);
+    private addKeyChord(keyChordLiteral: string, whole: string, nth: number, context: string, command: string, isLastChord: boolean) {
+        let keyCode = this.parseKeyChordLiteral(keyChordLiteral);
         let keyChordMap = this.keymap[keyCode];
         let keyChordKey = this.getKeyChordMapKey(context, nth)
-        let keyChord = new KeyChord(handler);
+        let keyChord: KeyChord = isLastChord ? new LastKeyChord(keyChordLiteral, command) : new PrefixKeyChord(keyChordLiteral, command);
 
         if (!keyChordMap) {
             keyChordMap = new Map();
@@ -259,20 +289,20 @@ class Keymap {
         keyChordMap.set(keyChordKey, keyChord);
     }
 
-    private parseKeyChordString(keyChord: string): number {
-        let keys = keyChord.splite(KEY_CHORD_SEP);
-        let keyCode = NAME_KEY_CODE_MAP.get(keys[keys.length-1]);
+    private parseKeyChordLiteral(keyChord: string): number {
+        let keys = keyChord.split(KEY_CHORD_SEP);
+        let keyCode = <KeyCode> NAME_KEY_CODE_MAP.get(keys[keys.length-1]);
 
         if (!keyCode) {
             throw new Error('Unknown key name: ' + keys[keys.length-1]);
         }
-        keys.pop();
 
-        keys.forEach(function(key: string) {
+        keys.pop();
+        keys.forEach((key: string) => {
             if (key == CTRL_KEY_NAME) {
-                keyCode |= CTRL_KEY_MASK;
+                keyCode |= this.CTRL_KEY_MASK;
             } else if (key == ALT_KEY_NAME) {
-                keyCode |= ALT_KEY_MASK;
+                keyCode |= this.ALT_KEY_MASK;
             } else {
                 throw new Error('Invalid key chord: ' + keyChord);
             }
@@ -282,10 +312,10 @@ class Keymap {
     }
 
     private getKeyChordMapKey(context: string, nthKeyChord: number) {
-        return context + (nthKeyChord > 0 `.${nthKeyChord}` : '');
+        return context + (nthKeyChord > 0 ? `.${nthKeyChord}` : '');
     }
 
-    handleEvent(e: DomEvent) {
+    handleEvent(e: DomEvent): void {
         let keyCode = KEY_CODE_MAP[e.keyCode];
 
         if (!keyCode) return;
@@ -300,40 +330,79 @@ class Keymap {
             keyCode |= this.ALT_KEY_MASK;
         }
 
-        let keyChordMap, keyChord;
+        let keyChordMap: Map<string, KeyChord>, keyChord: KeyChord|undefined, nthKeyChord: number;
+
+        keyChordMap = this.keymap[keyCode];
 
         // check keyboard-quit command first
-        keyChordMap = this.keymap[keyCode];
-        if ((keybinding = contextKeybindingMap[ALL_CONTEXT_NAME]) &&
-            keybinding.name == CommonCommandName.KEYBOARD_QUIT) {
-            // process keyboard quit command
-
-            e.preventDefault();
-            return;
+        let inKeyChordKBQuit = false;
+        if ((keyChord = keyChordMap.get(this.getKeyChordMapKey(GLOBAL_CONTEXT_NAME, this.context.nthKeyChordKBQuit))) &&
+            keyChord.commandName == CommonCommandName.KEYBOARD_QUIT) {
+            if (keyChord instanceof PrefixKeyChord) {
+                inKeyChordKBQuit = true;
+                this.context.nthKeyChordKBQuit++;
+            } else {
+                // process keyboard quit command
+                keyChord.handle(this.context);
+                e.preventDefault();
+                return;
+            }
         }
 
-        let contextName = Context.getCurrentContext().name;
-        if (this.keyChordContext.keyChords.length > 0)
-            contextName += `.${this.keyChordContext.keyChords.length}`;
+        nthKeyChord = this.context.keyChords.length;
 
-        if ((keybinding = contextKeybindingMap[contextName])) {
+        // process contexted keybinding
+        let currentContext = Context.getCurrentContext();
+        if (currentContext !== globalContext &&
+            (keyChord = keyChordMap.get(this.getKeyChordMapKey(currentContext.name, nthKeyChord)))
+           ) {
             // process key chord handler
-
+            keyChord.handle(this.context);
             e.preventDefault();
             return;
         }
+
+        // process global context keybinding
+        if (keyChord = keyChordMap.get(this.getKeyChordMapKey(currentContext.name, nthKeyChord))) {
+            keyChord.handle(this.context);
+            e.preventDefault();
+            return;
+        }
+
+        // wait for keyboard-quit key chord
+        if (inKeyChordKBQuit) {
+            e.preventDefault();
+            return;
+        }
+
+        // command or next key chord not found
+        if (this.context.keyChords.length != 0) {
+            RuntimeMessage.setStatus(() => {
+                let keyChords = this.context.getKeyChordLiteral();
+                keyChords += ` ${this.getKeyChordLiteral(keyCode)}`;
+
+                return `Can not find keybinding for ${keyChords}`;
+            });
+        }
+
+        // reset key chord context
+        this.context.reset();
     }
 
-}
+    private getKeyChordLiteral(keyCode: number): string {
+        let literal = '';
+        if (keyCode & this.CTRL_KEY_MASK) {
+            literal += CTRL_KEY_NAME + KEY_CHORD_SEP;
+            keyCode &= ~this.CTRL_KEY_MASK;
+        }
 
-class KeyChordContext {
-    keyChords: KeyChord[] = [];
-}
+        if (keyCode & this.ALT_KEY_MASK) {
+            literal += ALT_KEY_NAME + KEY_CHORD_SEP;
+            keyCode &= ~this.ALT_KEY_MASK;
+        }
 
-function commandHandler() {
+        literal += KEY_CODE_NAME_MAP.get(keyCode);
 
-}
-
-function nextKeyChordHandler() {
-
+        return literal;
+    }
 }

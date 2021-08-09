@@ -86,7 +86,7 @@ export const enum KeyCode {
      * For the US standard keyboard, the '4$' key
      */
     KEY_4 = 94,
-    KEY_4 = 95,
+    KEY_4_SHIFT = 95,
     /**
      * For the US standard keyboard, the '5%' key
      */

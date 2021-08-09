@@ -29,9 +29,7 @@
   },
   "include": [
     "@types",
-    "src/editor/*",
-    "src/utils.ts",
-    "src/notebook.ts"
+    "src"
   ],
   "exclude": [
     "node_modules"

@@ -18,3 +18,7 @@ export class Context {
 
     }
 }
+
+export const globalContext: ContextInterface = {
+    name: 'global',
+}

@@ -15,8 +15,8 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       nodeIntegration: true,
-      mainProcessFile: 'src/background.js',
-      rendererProcessFile: 'src/main.js',
+      mainProcessFile: 'src/main.ts',
+      rendererProcessFile: 'src/app.ts',
       //preload: 'src/preload.js',
     }
   }

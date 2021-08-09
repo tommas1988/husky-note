@@ -129,12 +129,17 @@ body {
       v-bind:height="editorHeight"
       ></Editor>
   </v-main>
+
+  <v-footer>
+    <StatusBar></StatusBar>
+  </v-footer>
 </v-app>
 </template>
 
 <script>
 import Editor from './Editor';
 import Notebook from './Notebook';
+import StatusBar from './StatusBar';
 import { throttle } from '../utils.ts';
 
 const NOTEBOOK_ICON_SIZE = 32;
@@ -145,6 +150,7 @@ export default {
   components: {
     Editor,
     Notebook,
+    StatusBar,
   },
 
   computed: {
@@ -153,7 +159,7 @@ export default {
     },
 
     editorHeight: function() {
-      return this.height - this.headerHeight;
+      return this.height - this.headerHeight - this.bottomHeitht;
     },
     navBarContentHeight: function() {
       return this.height - this.headerHeight - 1;
@@ -179,12 +185,16 @@ export default {
     '$vuetify.application.left': function(newVal, oldVal) {
       this.navBarWidth = newVal;
     }
+    '$vuetify.application.footer': function(newVal, oldVal) {
+      this.bottomHeitht = newVal;
+    },
   },
 
   data: () => ({
     width: window.innerWidth,
     height: window.innerHeight,
     headerHeight: 0,
+    bottomHeitht: 0,
     navBarWidth: 0,
     miniNavBar: true,
     notebookIconSize: NOTEBOOK_ICON_SIZE,

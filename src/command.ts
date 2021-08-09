@@ -5,9 +5,9 @@ export class CommandRegistry {
 export interface CommandInterface {
     argNames: string[];
 
-    handler(...args: any);
+    handler(...args: any): void;
 }
 
 export enum CommonCommandName {
-    KEYBOARD_QUIT: 'keyboard-quit',
+    KEYBOARD_QUIT = 'keyboard-quit',
 };

@@ -1,3 +1,4 @@
+import { EditorInterface, EditorOptions, Dimension } from '../editor';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
 
