@@ -1,5 +1,5 @@
-import { Context, globalContext } from '../context';
-import { CommonCommandName } from '../command';
+import { Context, globalContext, GlobalCommandName } from '../context';
+import { Command } from '../command';
 import { KeyCode } from './keyCodes';
 import RuntimeMessage from '../runtimeMessage';
 
@@ -186,11 +186,6 @@ NAME_KEY_CODE_MAP.forEach(function(keyCode: KeyCode, name: string) {
     KEY_CODE_NAME_MAP.set(keyCode, name);
 });
 
-const GLOBAL_CONTEXT_NAME = globalContext.name;
-const CTRL_KEY_NAME = 'C';
-const ALT_KEY_NAME = 'M';
-const KEY_CHORD_SEP = '-';
-
 export interface KeybindingInfo {
     keyChord: string,
     command: string,
@@ -219,7 +214,6 @@ class KeyChordContext {
 }
 
 abstract class KeyChord {
-    // TODO: const or readonly
     readonly literal: string;
     readonly commandName: string;
 
@@ -250,10 +244,14 @@ class LastKeyChord extends KeyChord {
 }
 
 class Keymap {
+    private readonly GLOBAL_CONTEXT_NAME = globalContext.name;
+    private readonly CTRL_KEY_NAME = 'C';
+    private readonly ALT_KEY_NAME = 'M';
+    private readonly KEY_CHORD_SEP = '-';
     private readonly CTRL_KEY_MASK = 1 << 7;
     private readonly ALT_KEY_MASK = 1 << 6;
 
-    private keymap: Map<string, KeyChord>[] = new Array(256);
+    private keymap: Map<string, KeyChord>[] = new Array(512);
     private context = new KeyChordContext();
 
     config(keybindings: KeybindingInfo[]) {
@@ -261,7 +259,7 @@ class Keymap {
             let kb = keybindings[i];
 
             let keyChords: string[] = kb.keyChord.split(' ');
-            let context = kb.context ? kb.context : GLOBAL_CONTEXT_NAME;
+            let context = kb.context ? kb.context : this.GLOBAL_CONTEXT_NAME;
             if (keyChords.length == 1) {
                 this.addKeyChord(keyChords[0], kb.keyChord, 0, context, kb.command, true);
             } else {
@@ -290,7 +288,7 @@ class Keymap {
     }
 
     private parseKeyChordLiteral(keyChord: string): number {
-        let keys = keyChord.split(KEY_CHORD_SEP);
+        let keys = keyChord.split(this.KEY_CHORD_SEP);
         let keyCode = <KeyCode> NAME_KEY_CODE_MAP.get(keys[keys.length-1]);
 
         if (!keyCode) {
@@ -299,9 +297,9 @@ class Keymap {
 
         keys.pop();
         keys.forEach((key: string) => {
-            if (key == CTRL_KEY_NAME) {
+            if (key == this.CTRL_KEY_NAME) {
                 keyCode |= this.CTRL_KEY_MASK;
-            } else if (key == ALT_KEY_NAME) {
+            } else if (key == this.ALT_KEY_NAME) {
                 keyCode |= this.ALT_KEY_MASK;
             } else {
                 throw new Error('Invalid key chord: ' + keyChord);
@@ -336,8 +334,8 @@ class Keymap {
 
         // check keyboard-quit command first
         let inKeyChordKBQuit = false;
-        if ((keyChord = keyChordMap.get(this.getKeyChordMapKey(GLOBAL_CONTEXT_NAME, this.context.nthKeyChordKBQuit))) &&
-            keyChord.commandName == CommonCommandName.KEYBOARD_QUIT) {
+        if ((keyChord = keyChordMap.get(this.getKeyChordMapKey(this.GLOBAL_CONTEXT_NAME, this.context.nthKeyChordKBQuit))) &&
+            keyChord.commandName == GlobalCommandName.KEYBOARD_QUIT) {
             if (keyChord instanceof PrefixKeyChord) {
                 inKeyChordKBQuit = true;
                 this.context.nthKeyChordKBQuit++;

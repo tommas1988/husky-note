@@ -1,3 +1,5 @@
+export {CommandName as GlobalCommandName} from './commandName';
+
 export interface ContextInterface<T> {
     name: string;
     service: T;
