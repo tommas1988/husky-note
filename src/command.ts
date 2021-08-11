@@ -1,76 +1,76 @@
-export interface CommandDefinition {
-    name: string;
+export abstract class Command {
+    abstract readonly name: string;
 
-    args?: string[];
+    abstract invoke(): void;
 
-    handler(...args: any): void;
+    hasArguments(): boolean {
+        return false;
+    }
+
+    currentArgumentName(): string {
+        return '';
+    }
+
+    setCurrentArgument(value: any): void {
+    }
+
+    collectAllArguments(): boolean {
+        return true;
+    }
+
+    isSessionCommand(): boolean {
+        return false;
+    }
+
+    // finish a session command
+    finish(): void {
+        // shold be override by a session command
+    }
+
+    // abort a session command
+    abort(): void {
+        // shold be override by a session command
+    }
+
+    // reset a command state for a fresh execution
+    reset(): void {
+    }
 }
 
-export class Command {
-    protected context: any = null;
-    private handler: () => void;
-
-    constructor(def: CommandDefinition) {
-        this.handler = def.handler;
+export abstract class ArgumentCommand extends Command {
+    protected abstract readonly args: string[];
+    protected values: any[] = [];
+    
+    hasArguments(): boolean {
+        return this.args && this.args.length > 0;
     }
 
-    setExecuteContext(context: any) {
-        this.context = context;
-    }
-
-    invoke(): void {
-        this.handler.apply(this.context);
-    }
-}
-
-export class ArgumentCommand {
-    private args: string[];
-    private values: any[];
-    private handler: (...args: any): void;
-
-    constructor(def: CommandDefinition) {
-        this.args = defs.args;
-        this.values = [];
-        this.handler = defs.handler;
-    }
-
-    getCurrentArg(): string {
+    currentArgumentName(): string {
         return this.args[this.values.length-1];
     }
 
-    isAllArgsSet(): boolean {
-        return this.args.length === this.values.length;
-    }
-
-    setArgValue(value: any): void {
+    setCurrentArgument(value: any): void {
         this.values.push(value);
     }
 
-    invoke() {
-        this.handler.apply(this.context, values);
+    collectAllArguments(): boolean {
+        return this.args.length === this.values.length;
+    }
+    
+    reset(): void {
+        this.values = [];
     }
 }
 
 class CommandRegistry {
     private commands: Map<string, Command> = new Map();
 
-    register(def: CommandDefinition, executeContext?: any) {
-        let command: Command;
-        if (def.args) {
-            command = new ArgumentCommand(def);
-        } else {
-            command = new Command(def);
-        }
-
-        if (executeContext) {
-            command.setExecuteContext(executeContext);
-        }
-
-        this.commands.set(def.name, command);
+    register(command: Command) {
+        this.commands.set(command.name, command);
     }
 
     get(name: string) {
-        let command = <Commmand> this.commands.get(name);
+        let command = <Command> this.commands.get(name);
         if (!command) {
             throw new Error(`Can not find command: ${name}`);
         }
@@ -79,4 +79,49 @@ class CommandRegistry {
     }
 }
 
-export const commandRegistry = new CommandRegistry();
+class SessionCommandContext {
+    setCommand(command: Command): void {
+
+    }
+
+    currentCommand(): Command {
+
+    }
+
+    reset(): void {
+
+    }
+}
+
+class CommandExecutor {
+    private context: SessionCommandContext = new SessionCommandContext();
+
+    execute(command: Command): void {
+        if (command.isSessionCommand()) {
+            this.context.setCommand(command);
+        }
+
+        if (command.hasArguments()) {
+            return;
+        }
+
+        command.invoke();
+    }
+
+    inCommandSession(): boolean {
+        return !!this.context.currentCommand();
+    }
+
+    finish(): void {
+        this.context.currentCommand().finish();
+        this.context.reset();
+    }
+
+    abort(): void {
+        this.context.currentCommand().abort();
+        this.context.reset();
+    }
+}
+
+export const registry = new CommandRegistry();
+export const executor = new CommandExecutor();

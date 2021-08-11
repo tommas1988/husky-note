@@ -1,26 +1,31 @@
-export {CommandName as GlobalCommandName} from './commandName';
+import { registry as CommandRegistry } from '../command';
+import * as command from './command';
 
-export interface ContextInterface<T> {
-    name: string;
-    service: T;
+export { CommandName as GlobalCommandName } from './commandName';
+
+export abstract class Context {
+    abstract name: string;
+
+    // should be override by subclass to process keyboard-quit command
+    keyboardQuit(): void {
+    }
 };
 
-export const ContextManager = new class () {
-    getCurrentContext(): ContextInterface<any> {
+class ContextManager {
+    current(): ContextInterface {
 
     }
 
-    registerContext<T>(name: string, service: T) {
-
-    }
-}
-
-export class Context {
-    getCurrentContext(): ContextInterface {
-
+    registryCommand() {
+        CommandRegistry.register(new command.KeyboardQuitCommand());
+        CommandRegistry.register(new command.ExecuteCommandCommand());
+        CommandRegistry.register(new command.FinishCommandCommand());
     }
 }
+
+export const manager = new ContextManager();
+manager.registryCommand();
 
 export const globalContext: ContextInterface = {
     name: 'global',
-}
+};

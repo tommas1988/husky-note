@@ -1,5 +1,5 @@
 import { Context, globalContext, GlobalCommandName } from '../context';
-import { Command } from '../command';
+import { Command, executor as CommandExecutor } from '../command';
 import { KeyCode } from './keyCodes';
 import RuntimeMessage from '../runtimeMessage';
 
@@ -195,6 +195,7 @@ export interface KeybindingInfo {
 class KeyChordContext {
     keyChords: KeyChord[] = [];
     nthKeyChordKBQuit: number = 0;
+    nthKeyChordCmdFinish: number = 0;
 
     getKeyChordLiteral(): string {
         let keyChords = '';
@@ -210,6 +211,7 @@ class KeyChordContext {
     reset(): void {
         this.keyChords = [];
         this.nthKeyChordKBQuit = 0;
+        this.nthKeyChordCmdFinish = 0;
     }
 }
 
@@ -239,6 +241,8 @@ class LastKeyChord extends KeyChord {
 
     handle(context: KeyChordContext): void {
         console.log(`Execute command: ${this.commandName}`);
+
+        CommandExecutor.execue(this.command);
         context.reset();
     }
 }
@@ -332,10 +336,10 @@ class Keymap {
 
         keyChordMap = this.keymap[keyCode];
 
-        // check keyboard-quit command first
+        // check keyboard-quit command
         let inKeyChordKBQuit = false;
         if ((keyChord = keyChordMap.get(this.getKeyChordMapKey(this.GLOBAL_CONTEXT_NAME, this.context.nthKeyChordKBQuit))) &&
-            keyChord.commandName == GlobalCommandName.KEYBOARD_QUIT) {
+            keyChord.commandName === GlobalCommandName.KEYBOARD_QUIT) {
             if (keyChord instanceof PrefixKeyChord) {
                 inKeyChordKBQuit = true;
                 this.context.nthKeyChordKBQuit++;
@@ -345,6 +349,20 @@ class Keymap {
                 e.preventDefault();
                 return;
             }
+        }
+
+        // process finish command session
+        if (CommandExecutor.inCommandSession() &&
+            (keyChord = keyChordMap.get(this.getKeyChordMapKey(this.GLOBAL_CONTEXT_NAME, this.context.nthKeyChordCmdFinish))) &&
+            keyChord.commandName === GlobalCommandName.FINISH_COMMAND) {
+            if (keyChord instanceof PrefixKeyChord) {
+                this.context.nthKeyChordKBQuit++;
+            } else {
+                keyChord.handle(this.context);
+            }
+
+            e.preventDefault();
+            return;
         }
 
         nthKeyChord = this.context.keyChords.length;
