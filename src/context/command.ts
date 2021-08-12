@@ -10,7 +10,7 @@ export class KeyboardQuitCommand extends Command {
             CommandExecutor.abort();
         }
 
-        manager.current().keyboardQuit();
+        manager.getActiveContext().keyboardQuit();
     }
 }
 
@@ -19,7 +19,7 @@ export class ExecuteCommandCommand extends ArgumentCommand {
     protected readonly args: string[] = [
         'command name',
     ];
-    
+
     invoke(): void {
 
     }
@@ -27,8 +27,20 @@ export class ExecuteCommandCommand extends ArgumentCommand {
 
 export class FinishCommandCommand extends Command {
     readonly name: string = CommandName.FINISH_COMMAND;
-    
+
     invoke(): void {
         CommandExecutor.finish();
+    }
+}
+
+export class SwitchContextCommand extends ArgumentCommand {
+    readonly name: string = CommandName.SWITCH_CONTEXT;
+    protected readonly args: string[] = [
+        'context name',
+    ];
+
+    invoke(): void {
+        let contextName = this.args[0];
+        manager.setActiveContext(contextName);
     }
 }

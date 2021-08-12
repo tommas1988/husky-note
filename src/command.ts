@@ -80,16 +80,18 @@ class CommandRegistry {
 }
 
 class SessionCommandContext {
-    setCommand(command: Command): void {
+    private command: Command|null = null;
 
+    setCommand(command: Command): void {
+        this.command = command;
     }
 
-    currentCommand(): Command {
-
+    getCommand(): Command|null {
+        return this.command;
     }
 
     reset(): void {
-
+        this.command = null;
     }
 }
 
@@ -109,16 +111,16 @@ class CommandExecutor {
     }
 
     inCommandSession(): boolean {
-        return !!this.context.currentCommand();
+        return !!this.context.getCommand();
     }
 
     finish(): void {
-        this.context.currentCommand().finish();
+        (<Command> this.context.getCommand()).finish();
         this.context.reset();
     }
 
     abort(): void {
-        this.context.currentCommand().abort();
+        (<Command> this.context.getCommand()).abort();
         this.context.reset();
     }
 }

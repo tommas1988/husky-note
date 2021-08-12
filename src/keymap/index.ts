@@ -1,5 +1,5 @@
-import { Context, globalContext, GlobalCommandName } from '../context';
-import { Command, executor as CommandExecutor } from '../command';
+import { Context, GLOBAL_CONTEXT_NAME, GlobalCommandName, manager as ContextManager } from '../context';
+import { Command, executor as CommandExecutor, registry as CommandRegistry } from '../command';
 import { KeyCode } from './keyCodes';
 import RuntimeMessage from '../runtimeMessage';
 
@@ -186,6 +186,10 @@ NAME_KEY_CODE_MAP.forEach(function(keyCode: KeyCode, name: string) {
     KEY_CODE_NAME_MAP.set(keyCode, name);
 });
 
+const CTRL_KEY_NAME = 'C';
+const ALT_KEY_NAME = 'M';
+const KEY_CHORD_SEP = '-';
+
 export interface KeybindingInfo {
     keyChord: string,
     command: string,
@@ -236,22 +240,39 @@ class PrefixKeyChord extends KeyChord {
     }
 }
 
+class NotFoundCommand extends Command {
+    name = 'command-not-found';
+    
+    private targetCommand: string;
+
+    constructor(targetCommand: string) {
+        super();
+        this.targetCommand = targetCommand;
+    }
+
+    invoke(): void {
+        RuntimeMessage.setError(() => {
+            return `Cannot find command: ${this.targetCommand}`;
+        });
+    }
+}
+
 class LastKeyChord extends KeyChord {
-    private command: Command;
+    private command: Command|null = null;
 
     handle(context: KeyChordContext): void {
         console.log(`Execute command: ${this.commandName}`);
 
-        CommandExecutor.execue(this.command);
+        if (!this.command && !(this.command = CommandRegistry.get(this.commandName))) {
+            this.command = new NotFoundCommand(this.commandName);
+        }
+
+        CommandExecutor.execute(this.command);
         context.reset();
     }
 }
 
 class Keymap {
-    private readonly GLOBAL_CONTEXT_NAME = globalContext.name;
-    private readonly CTRL_KEY_NAME = 'C';
-    private readonly ALT_KEY_NAME = 'M';
-    private readonly KEY_CHORD_SEP = '-';
     private readonly CTRL_KEY_MASK = 1 << 7;
     private readonly ALT_KEY_MASK = 1 << 6;
 
@@ -263,7 +284,7 @@ class Keymap {
             let kb = keybindings[i];
 
             let keyChords: string[] = kb.keyChord.split(' ');
-            let context = kb.context ? kb.context : this.GLOBAL_CONTEXT_NAME;
+            let context = kb.context ? kb.context : GLOBAL_CONTEXT_NAME;
             if (keyChords.length == 1) {
                 this.addKeyChord(keyChords[0], kb.keyChord, 0, context, kb.command, true);
             } else {
@@ -292,7 +313,7 @@ class Keymap {
     }
 
     private parseKeyChordLiteral(keyChord: string): number {
-        let keys = keyChord.split(this.KEY_CHORD_SEP);
+        let keys = keyChord.split(KEY_CHORD_SEP);
         let keyCode = <KeyCode> NAME_KEY_CODE_MAP.get(keys[keys.length-1]);
 
         if (!keyCode) {
@@ -301,9 +322,9 @@ class Keymap {
 
         keys.pop();
         keys.forEach((key: string) => {
-            if (key == this.CTRL_KEY_NAME) {
+            if (key == CTRL_KEY_NAME) {
                 keyCode |= this.CTRL_KEY_MASK;
-            } else if (key == this.ALT_KEY_NAME) {
+            } else if (key == ALT_KEY_NAME) {
                 keyCode |= this.ALT_KEY_MASK;
             } else {
                 throw new Error('Invalid key chord: ' + keyChord);
@@ -317,18 +338,18 @@ class Keymap {
         return context + (nthKeyChord > 0 ? `.${nthKeyChord}` : '');
     }
 
-    handleEvent(e: DomEvent): void {
+    handleEvent(e: KeyboardEvent): void {
         let keyCode = KEY_CODE_MAP[e.keyCode];
 
         if (!keyCode) return;
 
-        if (e.isShift && keyCode > KeyCode.SHIFT_CONBINED_KEY_START)
+        if (e.shiftKey && keyCode > KeyCode.SHIFT_CONBINED_KEY_START)
             keyCode++;
 
-        if (e.isCtrl)
+        if (e.ctrlKey)
             keyCode |= this.CTRL_KEY_MASK;
 
-        if (e.isAlt || e.isMeta) {
+        if (e.altKey || e.metaKey) {
             keyCode |= this.ALT_KEY_MASK;
         }
 
@@ -338,7 +359,7 @@ class Keymap {
 
         // check keyboard-quit command
         let inKeyChordKBQuit = false;
-        if ((keyChord = keyChordMap.get(this.getKeyChordMapKey(this.GLOBAL_CONTEXT_NAME, this.context.nthKeyChordKBQuit))) &&
+        if ((keyChord = keyChordMap.get(this.getKeyChordMapKey(GLOBAL_CONTEXT_NAME, this.context.nthKeyChordKBQuit))) &&
             keyChord.commandName === GlobalCommandName.KEYBOARD_QUIT) {
             if (keyChord instanceof PrefixKeyChord) {
                 inKeyChordKBQuit = true;
@@ -353,7 +374,7 @@ class Keymap {
 
         // process finish command session
         if (CommandExecutor.inCommandSession() &&
-            (keyChord = keyChordMap.get(this.getKeyChordMapKey(this.GLOBAL_CONTEXT_NAME, this.context.nthKeyChordCmdFinish))) &&
+            (keyChord = keyChordMap.get(this.getKeyChordMapKey(GLOBAL_CONTEXT_NAME, this.context.nthKeyChordCmdFinish))) &&
             keyChord.commandName === GlobalCommandName.FINISH_COMMAND) {
             if (keyChord instanceof PrefixKeyChord) {
                 this.context.nthKeyChordKBQuit++;
@@ -368,9 +389,9 @@ class Keymap {
         nthKeyChord = this.context.keyChords.length;
 
         // process contexted keybinding
-        let currentContext = Context.getCurrentContext();
-        if (currentContext !== globalContext &&
-            (keyChord = keyChordMap.get(this.getKeyChordMapKey(currentContext.name, nthKeyChord)))
+        let activeContext = ContextManager.getActiveContext();
+        if (activeContext.name !== GLOBAL_CONTEXT_NAME &&
+            (keyChord = keyChordMap.get(this.getKeyChordMapKey(activeContext.name, nthKeyChord)))
            ) {
             // process key chord handler
             keyChord.handle(this.context);
@@ -379,7 +400,7 @@ class Keymap {
         }
 
         // process global context keybinding
-        if (keyChord = keyChordMap.get(this.getKeyChordMapKey(currentContext.name, nthKeyChord))) {
+        if (keyChord = keyChordMap.get(this.getKeyChordMapKey(activeContext.name, nthKeyChord))) {
             keyChord.handle(this.context);
             e.preventDefault();
             return;

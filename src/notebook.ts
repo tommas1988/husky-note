@@ -1,5 +1,3 @@
-import { readFileSync, writeFileSync } from 'fs';
-
 export enum NoteType {
     File = 'file',
     Group = 'group',
@@ -74,30 +72,14 @@ export class NoteGroup extends AbstractNote {
     }
 }
 
-const note_meta_filename = '.husky.json';
-
 class Notebook {
     rootNote: NoteGroup;
 
-    private baseDir: string;
-
-    constructor(dir: string) {
-        this.baseDir = dir;
+    constructor() {
         this.rootNote = new NoteGroup({ name: 'root_note_group', type: NoteType.Group});
     }
 
-    load(): boolean {
-        let content = readFileSync(`${this.baseDir}/${note_meta_filename}`, {
-            encoding: 'utf8'
-        });
-        let config = JSON.parse(content);
-        let meta = config.notes;
-        this.build(meta);
-        return true;
-
-    }
-
-    private build(noteMetas: NoteMeta[]) {
+    load(noteMetas: NoteMeta[]): void {
         for (let i = 0; i < noteMetas.length; i++) {
             buildNoteTree(this.rootNote, noteMetas[i]);
         }
@@ -123,5 +105,4 @@ function buildNoteTree(root: NoteGroup, meta: NoteMeta) {
     root.add(note);
 }
 
-const testDir = './test/notebook/';
-export const instance = new Notebook(testDir);
+export const instance = new Notebook();

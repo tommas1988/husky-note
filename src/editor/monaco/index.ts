@@ -1,11 +1,28 @@
-import { EditorInterface, EditorOptions, Dimension } from '../editor';
+import { EditorInterface, EditorOptions, Dimension, EDITOR_CONTEXT_NAME } from '../index';
+import { Context as BaseContext, manager as ContextManager } from '../../context';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
 
+class Context extends BaseContext {
+    name = EDITOR_CONTEXT_NAME;
+
+    keyboardQuit(): void {
+    }
+
+    onActive(): void {
+    }
+
+    onDeactive(): void {
+    }
+}
+
 export class MonacoEditor implements EditorInterface {
     private engine: monaco.editor.IStandaloneCodeEditor|null = null;
+    private context: Context;
 
     constructor() {
+        this.context = new Context();
+
         // remove unwanted editor contributions
         let unwantedContribs = new Set();
         let editorContributions = (<any>Registry.as('editor.contributions')).editorContributions;
@@ -40,5 +57,9 @@ export class MonacoEditor implements EditorInterface {
 
     getEngine(): any {
         return this.engine;
+    }
+
+    getContext(): BaseContext {
+        return this.context;
     }
 }
