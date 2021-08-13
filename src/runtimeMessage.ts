@@ -1,28 +1,59 @@
+import { Event } from './event';
+
+type message = string | (() => string);
+
 class RuntimeMessage {
-    status: string = '';
-    info: string = '';
-    warning: string = '';
-    error: string = '';
+    private event: Event;
 
-    setStatus(provider: () => string) {
-        this.setMessage('status', provider);
+    private readonly EVENT_STATUS = 'status';
+    private readonly EVENT_INFO = 'info';
+    private readonly EVENT_WARNING = 'warning';
+    private readonly EVENT_ERROR = 'error';
+
+    constructor() {
+        this.event = new Event();
     }
 
-    setInfo(provider: () => string) {
-        this.setMessage('info', provider);
+    setStatus(msg: message) {
+        this.setMessage(this.EVENT_STATUS, msg);
     }
 
-    setWarning(provider: () => string) {
-        this.setMessage('warning', provider);
-    }
-    setError(provider: () => string) {
-        this.setMessage('error', provider);
+    onStatus(listener: (msg: string) => void) {
+        this.event.addListener(this.EVENT_STATUS, listener);
     }
 
-    private setMessage(propName: 'status'|'info'|'warning'|'error' , provider: () => string) : void {
-        setTimeout(() => {
-            this[propName] = provider();
-        }, 100);
+    setInfo(msg: message) {
+        this.setMessage(this.EVENT_INFO, msg);
+    }
+
+    onInfo(listener: (msg: string) => void) {
+        this.event.addListener(this.EVENT_INFO, listener);
+    }
+
+    setWarning(msg: message) {
+        this.setMessage(this.EVENT_WARNING, msg);
+    }
+
+    onWarning(listener: (msg: string) => void) {
+        this.event.addListener(this.EVENT_WARNING, listener);
+    }
+
+    setError(msg: message) {
+        this.setMessage(this.EVENT_ERROR, msg);
+    }
+
+    onError(listener: (msg: string) => void) {
+        this.event.addListener(this.EVENT_ERROR, listener);
+    }
+
+    private setMessage(event: string, msg: message): void {
+        if (msg instanceof Function) {
+            setImmediate(() => {
+                this.event.emit(event, msg());
+            });
+        } else {
+            this.event.emit(event, msg);
+        }
     }
 }
 

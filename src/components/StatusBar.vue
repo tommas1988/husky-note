@@ -8,10 +8,14 @@ import RuntimeMessage from  '../runtimeMessage';
 export default {
   name: 'StatusBar',
 
-  computed: {
-    statusMessage: function() {
-      return RuntimeMessage.status;
-    }
+  data: () => ({
+    statusMessage: '',
+  }),
+
+  mounted: function() {
+    RuntimeMessage.onStatus((msg) => {
+        this.statusMessage = msg;
+    });
   }
 }
 </script>

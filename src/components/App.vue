@@ -184,7 +184,7 @@ export default {
     },
     '$vuetify.application.left': function(newVal, oldVal) {
       this.navBarWidth = newVal;
-    }
+    },
     '$vuetify.application.footer': function(newVal, oldVal) {
       this.bottomHeitht = newVal;
     },

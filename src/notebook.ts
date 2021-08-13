@@ -1,3 +1,5 @@
+import { Event } from './event';
+
 export enum NoteType {
     File = 'file',
     Group = 'group',
@@ -75,14 +77,24 @@ export class NoteGroup extends AbstractNote {
 class Notebook {
     rootNote: NoteGroup;
 
+    private event: Event;
+    private readonly EVENT_ON_LOAD = 'on_load';
+
     constructor() {
         this.rootNote = new NoteGroup({ name: 'root_note_group', type: NoteType.Group});
+        this.event = new Event();
     }
 
     load(noteMetas: NoteMeta[]): void {
         for (let i = 0; i < noteMetas.length; i++) {
             buildNoteTree(this.rootNote, noteMetas[i]);
         }
+
+        this.event.emit(this.EVENT_ON_LOAD);
+    }
+
+    onLoad(listener: () => void): void {
+        this.event.addListener(this.EVENT_ON_LOAD, listener);
     }
 }
 

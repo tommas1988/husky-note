@@ -48,13 +48,13 @@ export default {
   }),
 
   created: function() {
-    if (notebook.load()) {
+    notebook.onLoad(() => {
       let notes = [];
       for (let i = 0; i < notebook.rootNote.notes.length; i++) {
         notes.push(buildTreeViewNotes(notebook.rootNote.notes[i], '_ROOT_'));
       }
       this.notes = notes;
-    }
+    });
   },
 
   methods: {
