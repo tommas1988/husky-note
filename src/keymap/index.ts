@@ -242,7 +242,7 @@ class PrefixKeyChord extends KeyChord {
 
 class NotFoundCommand extends Command {
     name = 'command-not-found';
-    
+
     private targetCommand: string;
 
     constructor(targetCommand: string) {
@@ -272,9 +272,9 @@ class LastKeyChord extends KeyChord {
     }
 }
 
-class Keymap {
-    private readonly CTRL_KEY_MASK = 1 << 7;
-    private readonly ALT_KEY_MASK = 1 << 6;
+export class Keymap {
+    private readonly CTRL_KEY_MASK = 1 << 8;
+    private readonly ALT_KEY_MASK = 1 << 7;
 
     private keymap: Map<string, KeyChord>[] = new Array(512);
     private context = new KeyChordContext();
@@ -288,7 +288,9 @@ class Keymap {
             if (keyChords.length == 1) {
                 this.addKeyChord(keyChords[0], kb.keyChord, 0, context, kb.command, true);
             } else {
-                this.addKeyChord(keyChords[i], kb.keyChord, i, context, kb.command, keyChords.length == i+1);
+                for (let j = 0; j < keyChords.length; j++) {
+                    this.addKeyChord(keyChords[j], kb.keyChord, j, context, kb.command, keyChords.length == j+1);
+                }
             }
         }
     }
@@ -300,7 +302,7 @@ class Keymap {
         let keyChord: KeyChord = isLastChord ? new LastKeyChord(keyChordLiteral, command) : new PrefixKeyChord(keyChordLiteral, command);
 
         if (!keyChordMap) {
-            keyChordMap = new Map();
+            this.keymap[keyCode] = keyChordMap = new Map();
             keyChordMap.set(keyChordKey, keyChord);
             return;
         }
@@ -355,7 +357,26 @@ class Keymap {
 
         let keyChordMap: Map<string, KeyChord>, keyChord: KeyChord|undefined, nthKeyChord: number;
 
+        let keybindingNotFound = () => {
+            // command or next key chord not found
+            if (this.context.keyChords.length != 0) {
+                RuntimeMessage.setStatus(() => {
+                    let keyChords = this.context.getKeyChordLiteral();
+                    keyChords += ` ${this.getKeyChordLiteral(keyCode)}`;
+
+                    return `Can not find keybinding for ${keyChords}`;
+                });
+            }
+
+            // reset key chord context
+            this.context.reset();
+        }
+
         keyChordMap = this.keymap[keyCode];
+        if (!keyChordMap) {
+            keybindingNotFound();
+            return;
+        }
 
         // check keyboard-quit command
         let inKeyChordKBQuit = false;
@@ -412,18 +433,7 @@ class Keymap {
             return;
         }
 
-        // command or next key chord not found
-        if (this.context.keyChords.length != 0) {
-            RuntimeMessage.setStatus(() => {
-                let keyChords = this.context.getKeyChordLiteral();
-                keyChords += ` ${this.getKeyChordLiteral(keyCode)}`;
-
-                return `Can not find keybinding for ${keyChords}`;
-            });
-        }
-
-        // reset key chord context
-        this.context.reset();
+        keybindingNotFound();
     }
 
     private getKeyChordLiteral(keyCode: number): string {
