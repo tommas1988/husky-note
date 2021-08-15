@@ -1,5 +1,6 @@
 import { registry as CommandRegistry } from '../command';
 import * as command from './command';
+import { Event } from '../event';
 
 export { CommandName as GlobalCommandName } from './commandName';
 
@@ -27,11 +28,15 @@ class GlobalContext extends Context {
 class ContextManager {
     private contextMap: Map<string, Context> = new Map();
     private activeContext: Context;
+    private event: Event;
+    private readonly EVENT_CONTEXT_CHANGE = 'context_change';
 
     constructor() {
         let globalContext = new GlobalContext();
         this.activeContext = globalContext;
         this.registerContext(globalContext);
+
+        this.event = new Event();
     }
 
     getActiveContext(): Context {
@@ -52,6 +57,8 @@ class ContextManager {
         this.activeContext = context;
 
         prevContext.onDeactive();
+
+        this.event.emit(this.EVENT_CONTEXT_CHANGE, context);
     }
 
     registerContext(context: Context) {
@@ -63,6 +70,10 @@ class ContextManager {
         CommandRegistry.register(new command.ExecuteCommandCommand());
         CommandRegistry.register(new command.FinishCommandCommand());
         CommandRegistry.register(new command.SwitchContextCommand());
+    }
+
+    onContextChange(listener: (context: Context) => void) {
+        this.event.addListener(this.EVENT_CONTEXT_CHANGE, listener);
     }
 }
 

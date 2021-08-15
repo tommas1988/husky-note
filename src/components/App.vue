@@ -122,7 +122,7 @@ body {
     </v-btn>
   </v-app-bar>
 
-  <v-main v-bind:style="mainStyle">
+  <v-main app v-bind:style="mainStyle">
     <Editor
       theme="vs-dark"
       v-bind:width="editorWidth"
@@ -130,7 +130,9 @@ body {
       ></Editor>
   </v-main>
 
-  <v-footer>
+  <v-footer
+   app
+   v-bind:padless="true">
     <StatusBar></StatusBar>
   </v-footer>
 </v-app>
@@ -159,10 +161,10 @@ export default {
     },
 
     editorHeight: function() {
-      return this.height - this.headerHeight - this.bottomHeitht;
+      return this.height - this.headerHeight - this.bottomHeight;
     },
     navBarContentHeight: function() {
-      return this.height - this.headerHeight - 1;
+      return this.height - this.headerHeight - this.bottomHeight - 1;
     },
     notebookIconStyle: function() {
       let margin = `${(this.headerHeight - NOTEBOOK_ICON_SIZE)/2}px`;
@@ -186,7 +188,7 @@ export default {
       this.navBarWidth = newVal;
     },
     '$vuetify.application.footer': function(newVal, oldVal) {
-      this.bottomHeitht = newVal;
+      this.bottomHeight = newVal;
     },
   },
 
@@ -194,7 +196,7 @@ export default {
     width: window.innerWidth,
     height: window.innerHeight,
     headerHeight: 0,
-    bottomHeitht: 0,
+    bottomHeight: 0,
     navBarWidth: 0,
     miniNavBar: true,
     notebookIconSize: NOTEBOOK_ICON_SIZE,

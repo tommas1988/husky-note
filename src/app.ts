@@ -6,6 +6,7 @@ import '@mdi/font/css/materialdesignicons.css';
 import { readFile } from 'fs';
 import { instance as Notebook } from './notebook';
 import { Keymap } from './keymap'
+import { manager as ContextManager, GLOBAL_CONTEXT_NAME } from './context';
 
 Vue.config.productionTip = false
 
@@ -40,4 +41,8 @@ readFile(keymapConfigFile, 'utf8', (err, data) => {
 
 document.body.onkeyup = (e: KeyboardEvent) => {
     keymap.handleEvent(e);
+};
+
+document.body.onclick = (e: MouseEvent) => {
+    ContextManager.setActiveContext(GLOBAL_CONTEXT_NAME);
 };
