@@ -5,10 +5,10 @@ type message = string | (() => string);
 class RuntimeMessage {
     private event: Event;
 
-    private readonly EVENT_STATUS = 'status';
-    private readonly EVENT_INFO = 'info';
-    private readonly EVENT_WARNING = 'warning';
-    private readonly EVENT_ERROR = 'error';
+    private readonly EVENT_STATUS = '__status__';
+    private readonly EVENT_INFO = '__info__';
+    private readonly EVENT_WARNING = '__warning__';
+    private readonly EVENT_ERROR = '__error__';
 
     constructor() {
         this.event = new Event();

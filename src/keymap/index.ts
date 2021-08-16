@@ -216,6 +216,9 @@ class KeyChordContext {
         this.keyChords = [];
         this.nthKeyChordKBQuit = 0;
         this.nthKeyChordCmdFinish = 0;
+
+        // clear status info
+        RuntimeMessage.setStatus('');
     }
 }
 
@@ -348,35 +351,41 @@ export class Keymap {
         if (e.shiftKey && keyCode > KeyCode.SHIFT_CONBINED_KEY_START)
             keyCode++;
 
-        if (e.ctrlKey)
+        if (e.ctrlKey) {
             keyCode |= this.CTRL_KEY_MASK;
-
+        }
+            
         if (e.altKey || e.metaKey) {
             keyCode |= this.ALT_KEY_MASK;
         }
 
-        let keyChordMap: Map<string, KeyChord>, keyChord: KeyChord|undefined, nthKeyChord: number;
+        let shouldPreventDefault = this.dispatch(keyCode);
+        let keybindingNotFound = !shouldPreventDefault && this.context.keyChords.length != 0;
 
-        let keybindingNotFound = () => {
-            // command or next key chord not found
-            if (this.context.keyChords.length != 0) {
-                RuntimeMessage.setStatus(() => {
-                    let keyChords = this.context.getKeyChordLiteral();
-                    keyChords += ` ${this.getKeyChordLiteral(keyCode)}`;
+        if (keybindingNotFound) {
+            let keyChords = this.context.getKeyChordLiteral();
+            keyChords += ` ${this.getKeyChordLiteral(keyCode)}`;
+            RuntimeMessage.setStatus(`Can not find keybinding for ${keyChords}`);
 
-                    return `Can not find keybinding for ${keyChords}`;
-                });
-            }
-
-            // reset key chord context
             this.context.reset();
         }
 
-        keyChordMap = this.keymap[keyCode];
-        if (!keyChordMap) {
-            keybindingNotFound();
+        if (shouldPreventDefault || keybindingNotFound) {
+            e.preventDefault();
+            e.stopPropagation();
             return;
         }
+
+        // reset key chord context
+        this.context.reset();
+    }
+
+    private dispatch(keyCode: number): boolean {
+        let keyChordMap: Map<string, KeyChord>, keyChord: KeyChord|undefined, nthKeyChord: number;
+
+        keyChordMap = this.keymap[keyCode];
+        if (!keyChordMap)
+            return false;
 
         // check keyboard-quit command
         let inKeyChordKBQuit = false;
@@ -388,8 +397,7 @@ export class Keymap {
             } else {
                 // process keyboard quit command
                 keyChord.handle(this.context);
-                e.preventDefault();
-                return;
+                return true;
             }
         }
 
@@ -403,8 +411,7 @@ export class Keymap {
                 keyChord.handle(this.context);
             }
 
-            e.preventDefault();
-            return;
+            return true;
         }
 
         nthKeyChord = this.context.keyChords.length;
@@ -416,24 +423,21 @@ export class Keymap {
            ) {
             // process key chord handler
             keyChord.handle(this.context);
-            e.preventDefault();
-            return;
+            return true;
         }
 
         // process global context keybinding
         if (keyChord = keyChordMap.get(this.getKeyChordMapKey(activeContext.name, nthKeyChord))) {
             keyChord.handle(this.context);
-            e.preventDefault();
-            return;
+            return true;
         }
 
         // wait for keyboard-quit key chord
         if (inKeyChordKBQuit) {
-            e.preventDefault();
-            return;
+            return true;
         }
 
-        keybindingNotFound();
+        return false;
     }
 
     private getKeyChordLiteral(keyCode: number): string {

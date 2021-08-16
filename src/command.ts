@@ -1,3 +1,6 @@
+import runtimeMessage from './runtimeMessage';
+import RuntimeMessage from './runtimeMessage';
+
 export abstract class Command {
     abstract readonly name: string;
 
@@ -72,7 +75,7 @@ class CommandRegistry {
     get(name: string) {
         let command = <Command> this.commands.get(name);
         if (!command) {
-            throw new Error(`Can not find command: ${name}`);
+            return null;
         }
 
         return command;
@@ -107,7 +110,17 @@ class CommandExecutor {
             return;
         }
 
-        command.invoke();
+        try {
+            command.invoke();
+        } catch (e) {
+            if (e instanceof String) {
+                runtimeMessage.setError(<string> e);
+            } else if (e instanceof Error) {
+                runtimeMessage.setError((<Error> e).message);
+            } else {
+                runtimeMessage.setError(e);
+            }
+        }
     }
 
     inCommandSession(): boolean {

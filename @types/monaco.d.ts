@@ -24,3 +24,9 @@ declare module 'monaco-editor/esm/vs/platform/registry/common/platform' {
 
     export const Registry: IRegistry;
 }
+
+declare module 'monaco-editor/esm/vs/base/browser/dom' {
+    export class DomListener {
+        _type: string;
+    }
+}

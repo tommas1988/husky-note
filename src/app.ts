@@ -7,6 +7,7 @@ import { readFile } from 'fs';
 import { instance as Notebook } from './notebook';
 import { Keymap } from './keymap'
 import { manager as ContextManager, GLOBAL_CONTEXT_NAME } from './context';
+import RuntimeMessage from './runtimeMessage';
 
 Vue.config.productionTip = false
 
@@ -46,3 +47,7 @@ document.body.onkeyup = (e: KeyboardEvent) => {
 document.body.onclick = (e: MouseEvent) => {
     ContextManager.setActiveContext(GLOBAL_CONTEXT_NAME);
 };
+
+RuntimeMessage.onError((err) => {
+    console.log(err);
+});

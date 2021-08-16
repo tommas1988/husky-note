@@ -2,6 +2,7 @@ import { EditorInterface, EditorOptions, Dimension, EDITOR_CONTEXT_NAME } from '
 import { Context as BaseContext, manager as ContextManager } from '../../context';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
+import { DomListener } from 'monaco-editor/esm/vs/base/browser/dom';
 
 class Context extends BaseContext {
     name = EDITOR_CONTEXT_NAME;
@@ -46,7 +47,25 @@ export class MonacoEditor implements EditorInterface {
             automaticLayout: false,
             theme: options.theme
         };
-        this.engine = monaco.editor.create(dom, monacoOptions);
+        let engine = monaco.editor.create(dom, monacoOptions);
+
+        // disable monaco keybinding function
+        let dumyResolver: any = {
+            resolve: function(): null {
+                return null;
+            }
+        };
+        (<any> engine)._standaloneKeybindingService._cachedResolver = dumyResolver;
+        let disposeSet: Set<monaco.IDisposable> = (<any> engine)._modelData.view._textAreaHandler._textAreaInput._store._toDispose;
+        for (let item of disposeSet) {
+            if ((<DomListener> item)._type === 'cut' || item._type === 'copy' || item._type === 'past') {
+                    item.dispose();
+            }
+        }
+
+        //(<any> engine)._modelData.view._textAreaHandler.dispose();
+
+        this.engine = engine;
     }
 
     resize(dimension: Dimension): void {

@@ -8,7 +8,9 @@ export class Event extends EventEmitter {
 
         this.on('error', (err) => {
             // require is use to avoid error arised by loop dependency
-            require('./runtimeMessage').setError(err);
+            import('./runtimeMessage').then((module) => {
+                module.default.setError(err);
+            });
         });
     }
 
