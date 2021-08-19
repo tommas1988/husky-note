@@ -1,4 +1,3 @@
-import runtimeMessage from './runtimeMessage';
 import RuntimeMessage from './runtimeMessage';
 
 export abstract class Command {
@@ -43,7 +42,7 @@ export abstract class Command {
 export abstract class ArgumentCommand extends Command {
     protected abstract readonly args: string[];
     protected values: any[] = [];
-    
+
     hasArguments(): boolean {
         return this.args && this.args.length > 0;
     }
@@ -114,11 +113,11 @@ class CommandExecutor {
             command.invoke();
         } catch (e) {
             if (e instanceof String) {
-                runtimeMessage.setError(<string> e);
+                RuntimeMessage.setError(<string> e);
             } else if (e instanceof Error) {
-                runtimeMessage.setError((<Error> e).message);
+                RuntimeMessage.setError((<Error> e).message);
             } else {
-                runtimeMessage.setError(e);
+                RuntimeMessage.setError(e);
             }
         }
     }

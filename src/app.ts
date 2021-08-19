@@ -47,6 +47,11 @@ document.body.onclick = (e: MouseEvent) => {
     ContextManager.setActiveContext(GLOBAL_CONTEXT_NAME);
 };
 
+// prevent 'all selection'
+document.onselectstart = () => {
+    return false;
+}
+
 RuntimeMessage.onError((err) => {
     console.log(err);
 });

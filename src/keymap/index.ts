@@ -216,9 +216,6 @@ class KeyChordContext {
         this.keyChords = [];
         this.nthKeyChordKBQuit = 0;
         this.nthKeyChordCmdFinish = 0;
-
-        // clear status info
-        RuntimeMessage.setStatus('');
     }
 }
 
@@ -365,7 +362,7 @@ export class Keymap {
         if (keybindingNotFound) {
             let keyChords = this.context.getKeyChordLiteral();
             keyChords += ` ${this.getKeyChordLiteral(keyCode)}`;
-            RuntimeMessage.setStatus(`Can not find keybinding for ${keyChords}`);
+            RuntimeMessage.setStatus(`Can not find keybinding: ${keyChords}`);
 
             this.context.reset();
         }
