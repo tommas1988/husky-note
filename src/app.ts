@@ -8,7 +8,6 @@ import { instance as Notebook } from './notebook';
 import { Keymap } from './keymap'
 import { manager as ContextManager, GLOBAL_CONTEXT_NAME } from './context';
 import RuntimeMessage from './runtimeMessage';
-import Settings from './settings';
 
 Vue.config.productionTip = false
 
@@ -33,14 +32,8 @@ readFile(notebookConfigFile, 'utf8', (err, data) => {
 
 // app setting file
 
-// keymap
-const keymap = new Keymap();
-Settings.getKeybindings().then(keybindings => {
-    keymap.config(keybindings);
-});
-
 document.body.onkeydown = (e: KeyboardEvent) => {
-    keymap.handleEvent(e);
+    Keymap.INSTANCE.handleEvent(e);
 };
 
 document.body.onclick = (e: MouseEvent) => {

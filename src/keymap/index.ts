@@ -2,6 +2,7 @@ import { Context, GLOBAL_CONTEXT_NAME, GlobalCommandName, manager as ContextMana
 import { Command, executor as CommandExecutor, registry as CommandRegistry } from '../command';
 import { KeyCode } from './keyCodes';
 import RuntimeMessage from '../runtimeMessage';
+import Settings from '../settings';
 
 let KEY_CODE_MAP: { [keyCode: number]: KeyCode } = new Array(230);
 KEY_CODE_MAP[8] = KeyCode.Backspace;
@@ -273,11 +274,19 @@ class LastKeyChord extends KeyChord {
 }
 
 export class Keymap {
+    public static readonly INSTANCE = new Keymap();
+
     private readonly CTRL_KEY_MASK = 1 << 8;
     private readonly ALT_KEY_MASK = 1 << 7;
 
     private keymap: Map<string, KeyChord>[] = new Array(512);
     private context = new KeyChordContext();
+
+    private constructor() {
+        Settings.getKeybindings().then(keybindings => {
+            this.config(keybindings);
+        });
+    }
 
     config(keybindings: KeybindingInfo[]) {
         for (let i = 0; i < keybindings.length; i++) {

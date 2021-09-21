@@ -3,7 +3,6 @@ import { Context as BaseContext, manager as ContextManager } from '../../context
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
 import { Keymap } from '../../keymap';
-import Settings from '../../settings';
 
 class Context extends BaseContext {
     name = EDITOR_CONTEXT_NAME;
@@ -20,15 +19,10 @@ class Context extends BaseContext {
 
 export class MonacoEditor implements EditorInterface {
     private engine: monaco.editor.IStandaloneCodeEditor | null = null;
-    private keymap: Keymap;
     private context: Context;
 
     constructor() {
         this.context = new Context();
-        this.keymap = new Keymap();
-        Settings.getKeybindings().then(keybindings => {
-            this.keymap.config(keybindings);
-        });
 
         // remove unwanted editor contributions
         let unwantedContribs = new Set();
@@ -64,7 +58,7 @@ export class MonacoEditor implements EditorInterface {
         (<any>engine)._standaloneKeybindingService._cachedResolver = dumyResolver;
 
         dom.addEventListener('keydown', (e: KeyboardEvent) => {
-            this.keymap.handleEvent(e);
+            Keymap.INSTANCE.handleEvent(e);
         });
 
         this.engine = engine;
