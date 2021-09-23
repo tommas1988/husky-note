@@ -107,9 +107,9 @@ body {
         v-bind:height="editorHeight"
       ></Editor>
     </v-main>
-
-    <CommandBar />
+    
     <v-footer app v-bind:padless="true">
+      <CommandBar></CommandBar>
       <StatusBar></StatusBar>
     </v-footer>
   </v-app>
