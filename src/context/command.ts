@@ -20,9 +20,7 @@ export class ExecuteCommandCommand extends ArgumentCommand {
         'command name',
     ];
 
-    invoke(): void {
-
-    }
+    invoke(): void {}
 }
 
 export class FinishCommandCommand extends Command {

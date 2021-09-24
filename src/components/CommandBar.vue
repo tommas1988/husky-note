@@ -1,20 +1,76 @@
+<style lang="sass" scoped>
+.command-container
+    width: 100%
+
+    .input-container
+        display: flex
+        flex-direction: row
+        flex-wrap: nowrap
+
+        width: 100%
+        padding: 0
+
+        .inputted-info
+            max-width: 500px
+            padding: 0 10px
+        .input-area
+            flex-grow: 1
+</style>
+
 <template>
-  <v-toolbar tag="div" bottom dense width="100%" style="">
-    <template v-slot:extension>
-      <v-container fluid>
-        <v-textarea
+  <div class="command-container">
+    <div class="input-container">
+      <div class="inputted-info">
+        <v-card-text style="padding: 9px 4px" v-if="commandName.length > 0">
+          {{ inputted }}
+        </v-card-text>
+      </div>
+      <div class="input-area">
+        <v-text-field
           placeholder="command to execute..."
-          rows="1"
-          no-resize
           dense
-        ></v-textarea>
-      </v-container>
-    </template>
-  </v-toolbar>
+          single-line
+          full-width
+          hide-details
+          solo
+          style="margin: 0"
+        ></v-text-field>
+      </div>
+    </div>
+    <div class="output-container"></div>
+  </div>
 </template>
 
 <script>
 export default {
   name: "CommandBar",
+
+  data: () => {
+    return {
+      commandName: "",
+      args: [],
+    };
+  },
+
+  computed: {
+    inputted: function () {
+      if (this.commandName.length == 0) {
+        return "";
+      }
+
+      let r = this.commandName;
+      if (this.args.length > 0) {
+        r += ": ";
+        r + this.args.join(", ");
+      }
+
+      return r;
+    },
+  },
+
+  mounted: function () {
+    this.commandName = "test-command";
+    //this.args = ['arg1', 'arg2'];
+  },
 };
 </script>

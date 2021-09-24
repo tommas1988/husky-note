@@ -1,4 +1,5 @@
 import RuntimeMessage from './runtimeMessage';
+import { Event } from './event';
 
 export abstract class Command {
     abstract readonly name: string;
@@ -100,6 +101,14 @@ class SessionCommandContext {
 class CommandExecutor {
     private context: SessionCommandContext = new SessionCommandContext();
 
+    private readonly EVENT_ON_BEFORE_EXECUTE = 'on_before_execute';
+    private readonly EVENT_ON_AFTER_EXECUTE = 'on_after_execute';
+    private event: Event;
+
+    constructor() {
+        this.event = new Event;
+    }
+
     execute(command: Command): void {
         if (command.isSessionCommand()) {
             this.context.setCommand(command);
@@ -108,6 +117,8 @@ class CommandExecutor {
         if (command.hasArguments()) {
             return;
         }
+
+        this.event.emit(this.EVENT_ON_BEFORE_EXECUTE, command);
 
         try {
             command.invoke();
@@ -120,6 +131,8 @@ class CommandExecutor {
                 RuntimeMessage.setError(e);
             }
         }
+
+        this.event.emit(this.EVENT_ON_AFTER_EXECUTE, command);
     }
 
     inCommandSession(): boolean {
@@ -134,6 +147,14 @@ class CommandExecutor {
     abort(): void {
         (<Command> this.context.getCommand()).abort();
         this.context.reset();
+    }
+
+    onBeforeExecute(listener: () => void): void {
+        this.event.addListener(this.EVENT_ON_BEFORE_EXECUTE, listener);
+    }
+
+    onAfterExecute(listener: () => void): void {
+        this.event.addListener(this.EVENT_ON_AFTER_EXECUTE, listener);
     }
 }
 
