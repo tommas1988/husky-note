@@ -1,5 +1,5 @@
-import { Context, manager as ContextManager } from '../context';
-import { Command } from '../command';
+import { Context, ContextManager } from '@/context';
+import { Command } from '@/command';
 import { MonacoEditor } from './monaco';
 
 export const EDITOR_CONTEXT_NAME = 'editor';
@@ -21,4 +21,4 @@ export interface EditorInterface {
 }
 
 export const instance = new MonacoEditor();
-ContextManager.registerContext(instance.getContext());
+ContextManager.INSTANCE.registerContext(instance.getContext());

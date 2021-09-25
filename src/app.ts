@@ -6,8 +6,12 @@ import '@mdi/font/css/materialdesignicons.css';
 import { readFile } from 'fs';
 import { instance as Notebook } from './notebook';
 import { Keymap } from './keymap'
-import { manager as ContextManager, GLOBAL_CONTEXT_NAME } from './context';
+import * as context from './context';
+import * as command from './command';
 import RuntimeMessage from './runtimeMessage';
+
+context.initialize();
+command.initialize();
 
 Vue.config.productionTip = false
 
@@ -37,7 +41,7 @@ document.body.onkeydown = (e: KeyboardEvent) => {
 };
 
 document.body.onclick = (e: MouseEvent) => {
-    ContextManager.setActiveContext(GLOBAL_CONTEXT_NAME);
+    context.ContextManager.INSTANCE.setActiveContext(context.GLOBAL_CONTEXT_NAME);
 };
 
 // prevent 'all selection'

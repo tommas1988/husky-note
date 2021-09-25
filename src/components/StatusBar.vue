@@ -28,8 +28,8 @@
 </template>
 
 <script>
-import RuntimeMessage from "../runtimeMessage";
-import { manager as ContextManager } from "../context";
+import RuntimeMessage from "@/runtimeMessage";
+import { ContextManager } from "@/context";
 
 export default {
   name: "StatusBar",
@@ -44,11 +44,11 @@ export default {
       this.statusMessage = msg;
     });
 
-    ContextManager.onContextChange((context) => {
+    ContextManager.INSTANCE.onContextChange((context) => {
       this.contextName = context.name;
     });
 
-    this.contextName = ContextManager.getActiveContext().name;
+    this.contextName = ContextManager.INSTANCE.getActiveContext().name;
   },
 };
 </script>

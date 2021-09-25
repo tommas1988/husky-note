@@ -1,4 +1,4 @@
-import { manager as ContextManager } from '../../context';
+import { ContextManager } from '@/context';
 import Vue from 'vue';
 
 export default {
@@ -9,7 +9,7 @@ export default {
         }
 
         this.$el.addEventListener('click', (e) => {
-            ContextManager.setActiveContext(contextName);
+            ContextManager.INSTANCE.setActiveContext(contextName);
             e.stopPropagation();
         });
     }

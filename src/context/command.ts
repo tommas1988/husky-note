@@ -1,33 +1,16 @@
-import { manager } from './index';
-import { CommandName } from './commandName';
-import { Command, ArgumentCommand, executor as CommandExecutor } from '../command';
+import { ContextManager } from './index';
+import { CommandName } from '@/common/commandName';
+import { Command, ArgumentCommand, CommandExecutor } from '@/command';
 
 export class KeyboardQuitCommand extends Command {
     readonly name: string = CommandName.KEYBOARD_QUIT;
 
     invoke(): void {
-        if (CommandExecutor.inCommandSession()) {
-            CommandExecutor.abort();
+        if (CommandExecutor.INSTANCE.inCommandSession()) {
+            CommandExecutor.INSTANCE.abort();
         }
 
-        manager.getActiveContext().keyboardQuit();
-    }
-}
-
-export class ExecuteCommandCommand extends ArgumentCommand {
-    readonly name: string = CommandName.EXECUTE_COMMAND;
-    protected readonly args: string[] = [
-        'command name',
-    ];
-
-    invoke(): void {}
-}
-
-export class FinishCommandCommand extends Command {
-    readonly name: string = CommandName.FINISH_COMMAND;
-
-    invoke(): void {
-        CommandExecutor.finish();
+        ContextManager.INSTANCE.getActiveContext().keyboardQuit();
     }
 }
 
@@ -39,6 +22,6 @@ export class SwitchContextCommand extends ArgumentCommand {
 
     invoke(): void {
         let contextName = this.args[0];
-        manager.setActiveContext(contextName);
+        ContextManager.INSTANCE.setActiveContext(contextName);
     }
 }

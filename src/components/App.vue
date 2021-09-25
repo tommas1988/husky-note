@@ -109,7 +109,7 @@ body {
     </v-main>
     
     <v-footer app v-bind:padless="true">
-      <CommandBar v-if="openCommandBar"></CommandBar>
+      <CommandBar></CommandBar>
       <v-divider dark></v-divider>
       <StatusBar></StatusBar>
     </v-footer>
@@ -121,7 +121,7 @@ import Editor from "./Editor";
 import Notebook from "./Notebook";
 import StatusBar from "./StatusBar";
 import CommandBar from "./CommandBar";
-import { throttle } from "../utils.ts";
+import { throttle } from "@/common/utils.ts";
 
 const NOTEBOOK_ICON_SIZE = 32;
 
@@ -180,7 +180,6 @@ export default {
     navBarWidth: 0,
     miniNavBar: true,
     notebookIconSize: NOTEBOOK_ICON_SIZE,
-    openCommandBar: false,
   }),
 
   mounted: function () {

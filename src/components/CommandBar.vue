@@ -18,7 +18,7 @@
 </style>
 
 <template>
-  <div class="command-container">
+  <div class="command-container" v-if="open">
     <div class="input-container">
       <div class="inputted-info">
         <v-card-text style="padding: 9px 4px" v-if="commandName.length > 0">
@@ -42,11 +42,15 @@
 </template>
 
 <script>
+import { ContextManager } from '@/context';
+import { CONTEXT_NAME as COMMAND_CONTEXT_NAME } from '@/command';
+
 export default {
   name: "CommandBar",
 
   data: () => {
     return {
+      open: false,
       commandName: "",
       args: [],
     };
@@ -69,6 +73,14 @@ export default {
   },
 
   mounted: function () {
+    ContextManager.INSTANCE.onContextChange((context) => {
+      if (context.name === COMMAND_CONTEXT_NAME) {
+        this.open = true;
+      } else {
+        this.open = false;
+      }
+    });
+    
     this.commandName = "test-command";
     //this.args = ['arg1', 'arg2'];
   },

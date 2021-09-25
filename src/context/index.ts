@@ -1,8 +1,11 @@
-import { registry as CommandRegistry } from '../command';
+import { CommandRegistry } from '@/command';
 import * as command from './command';
-import { Event } from '../event';
+import { Event } from '@/event';
 
-export { CommandName as GlobalCommandName } from './commandName';
+export function initialize() {
+    CommandRegistry.INSTANCE.register(new command.KeyboardQuitCommand());
+    CommandRegistry.INSTANCE.register(new command.SwitchContextCommand());
+}
 
 export abstract class Context {
     abstract name: string;
@@ -25,7 +28,9 @@ class GlobalContext extends Context {
     name = GLOBAL_CONTEXT_NAME;
 }
 
-class ContextManager {
+export class ContextManager {
+    public static readonly INSTANCE = new ContextManager();
+
     private contextMap: Map<string, Context> = new Map();
     private activeContext: Context;
     private event: Event;
@@ -43,10 +48,10 @@ class ContextManager {
         return this.activeContext;
     }
 
-    setActiveContext(context: Context|string): void {
+    setActiveContext(context: Context | string): void {
         if (!(context instanceof Context)) {
             let contextName = context;
-            if (!(context = <Context> this.contextMap.get(context))) {
+            if (!(context = <Context>this.contextMap.get(context))) {
                 throw new Error(`Cannot find context: ${contextName}`);
             }
         }
@@ -65,17 +70,7 @@ class ContextManager {
         this.contextMap.set(context.name, context);
     }
 
-    registryCommand() {
-        CommandRegistry.register(new command.KeyboardQuitCommand());
-        CommandRegistry.register(new command.ExecuteCommandCommand());
-        CommandRegistry.register(new command.FinishCommandCommand());
-        CommandRegistry.register(new command.SwitchContextCommand());
-    }
-
     onContextChange(listener: (context: Context) => void) {
         this.event.addListener(this.EVENT_CONTEXT_CHANGE, listener);
     }
 }
-
-export const manager = new ContextManager();
-manager.registryCommand();

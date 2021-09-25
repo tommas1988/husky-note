@@ -1,5 +1,5 @@
 import { EditorInterface, EditorOptions, Dimension, EDITOR_CONTEXT_NAME } from '../index';
-import { Context as BaseContext, manager as ContextManager } from '../../context';
+import { Context as BaseContext, ContextManager } from '../../context';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { Registry } from 'monaco-editor/esm/vs/platform/registry/common/platform';
 import { Keymap } from '../../keymap';

@@ -1,8 +1,9 @@
-import { Context, GLOBAL_CONTEXT_NAME, GlobalCommandName, manager as ContextManager } from '../context';
-import { Command, executor as CommandExecutor, registry as CommandRegistry } from '../command';
+import { GLOBAL_CONTEXT_NAME, ContextManager } from '@/context';
+import { Command, CommandExecutor, CommandRegistry } from '@/command';
 import { KeyCode } from './keyCodes';
-import RuntimeMessage from '../runtimeMessage';
-import Settings from '../settings';
+import RuntimeMessage from '@/runtimeMessage';
+import Settings from '@/settings';
+import { CommandName } from '@/common/commandName';
 
 let KEY_CODE_MAP: { [keyCode: number]: KeyCode } = new Array(230);
 KEY_CODE_MAP[8] = KeyCode.Backspace;
@@ -264,11 +265,11 @@ class LastKeyChord extends KeyChord {
     handle(context: KeyChordContext): void {
         console.log(`Execute command: ${this.commandName}`);
 
-        if (!this.command && !(this.command = CommandRegistry.get(this.commandName))) {
+        if (!this.command && !(this.command = CommandRegistry.INSTANCE.get(this.commandName))) {
             this.command = new NotFoundCommand(this.commandName);
         }
 
-        CommandExecutor.execute(this.command);
+        CommandExecutor.INSTANCE.execute(this.command);
         context.reset();
     }
 }
@@ -396,7 +397,7 @@ export class Keymap {
         // check keyboard-quit command
         let inKeyChordKBQuit = false;
         if ((keyChord = keyChordMap.get(this.getKeyChordMapKey(GLOBAL_CONTEXT_NAME, this.context.nthKeyChordKBQuit))) &&
-            keyChord.commandName === GlobalCommandName.KEYBOARD_QUIT) {
+            keyChord.commandName === CommandName.KEYBOARD_QUIT) {
             if (keyChord instanceof PrefixKeyChord) {
                 inKeyChordKBQuit = true;
                 this.context.nthKeyChordKBQuit++;
@@ -408,9 +409,9 @@ export class Keymap {
         }
 
         // process finish command session
-        if (CommandExecutor.inCommandSession() &&
+        if (CommandExecutor.INSTANCE.inCommandSession() &&
             (keyChord = keyChordMap.get(this.getKeyChordMapKey(GLOBAL_CONTEXT_NAME, this.context.nthKeyChordCmdFinish))) &&
-            keyChord.commandName === GlobalCommandName.FINISH_COMMAND) {
+            keyChord.commandName === CommandName.FINISH_COMMAND) {
             if (keyChord instanceof PrefixKeyChord) {
                 this.context.nthKeyChordKBQuit++;
             } else {
@@ -423,7 +424,7 @@ export class Keymap {
         nthKeyChord = this.context.keyChords.length;
 
         // process contexted keybinding
-        let activeContext = ContextManager.getActiveContext();
+        let activeContext = ContextManager.INSTANCE.getActiveContext();
         if (activeContext.name !== GLOBAL_CONTEXT_NAME &&
             (keyChord = keyChordMap.get(this.getKeyChordMapKey(activeContext.name, nthKeyChord)))
            ) {

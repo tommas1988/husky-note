@@ -1,5 +1,37 @@
-import RuntimeMessage from './runtimeMessage';
-import { Event } from './event';
+import RuntimeMessage from '@/runtimeMessage';
+import { CommandName } from '@/common/commandName';
+import { Context as BaseContext, ContextManager } from '@/context';
+
+export function initialize() {
+    class Context extends BaseContext {
+        name = CONTEXT_NAME;
+    }
+
+    const context = new Context();
+
+    class ExecuteCommandCommand extends Command {
+        readonly name: string = CommandName.EXECUTE_COMMAND;
+
+        invoke(): void {
+            ContextManager.INSTANCE.setActiveContext(context);
+        }
+    }
+
+    class FinishCommandCommand extends Command {
+        readonly name: string = CommandName.FINISH_COMMAND;
+
+        invoke(): void {
+            CommandExecutor.INSTANCE.finish();
+        }
+    }
+
+    CommandRegistry.INSTANCE.register(new ExecuteCommandCommand());
+    CommandRegistry.INSTANCE.register(new FinishCommandCommand());
+
+    ContextManager.INSTANCE.registerContext(context);
+}
+
+export const CONTEXT_NAME = 'command';
 
 export abstract class Command {
     abstract readonly name: string;
@@ -49,7 +81,7 @@ export abstract class ArgumentCommand extends Command {
     }
 
     currentArgumentName(): string {
-        return this.args[this.values.length-1];
+        return this.args[this.values.length - 1];
     }
 
     setCurrentArgument(value: any): void {
@@ -59,13 +91,15 @@ export abstract class ArgumentCommand extends Command {
     collectAllArguments(): boolean {
         return this.args.length === this.values.length;
     }
-    
+
     reset(): void {
         this.values = [];
     }
 }
 
-class CommandRegistry {
+export class CommandRegistry {
+    public static readonly INSTANCE = new CommandRegistry();
+
     private commands: Map<string, Command> = new Map();
 
     register(command: Command) {
@@ -73,7 +107,7 @@ class CommandRegistry {
     }
 
     get(name: string) {
-        let command = <Command> this.commands.get(name);
+        let command = <Command>this.commands.get(name);
         if (!command) {
             return null;
         }
@@ -83,13 +117,13 @@ class CommandRegistry {
 }
 
 class SessionCommandContext {
-    private command: Command|null = null;
+    private command: Command | null = null;
 
     setCommand(command: Command): void {
         this.command = command;
     }
 
-    getCommand(): Command|null {
+    getCommand(): Command | null {
         return this.command;
     }
 
@@ -98,16 +132,10 @@ class SessionCommandContext {
     }
 }
 
-class CommandExecutor {
+export class CommandExecutor {
+    public static readonly INSTANCE = new CommandExecutor();
+
     private context: SessionCommandContext = new SessionCommandContext();
-
-    private readonly EVENT_ON_BEFORE_EXECUTE = 'on_before_execute';
-    private readonly EVENT_ON_AFTER_EXECUTE = 'on_after_execute';
-    private event: Event;
-
-    constructor() {
-        this.event = new Event;
-    }
 
     execute(command: Command): void {
         if (command.isSessionCommand()) {
@@ -118,21 +146,17 @@ class CommandExecutor {
             return;
         }
 
-        this.event.emit(this.EVENT_ON_BEFORE_EXECUTE, command);
-
         try {
             command.invoke();
         } catch (e) {
             if (e instanceof String) {
-                RuntimeMessage.setError(<string> e);
+                RuntimeMessage.setError(<string>e);
             } else if (e instanceof Error) {
-                RuntimeMessage.setError((<Error> e).message);
+                RuntimeMessage.setError((<Error>e).message);
             } else {
-                RuntimeMessage.setError(e);
+                RuntimeMessage.setError(<any>e);
             }
         }
-
-        this.event.emit(this.EVENT_ON_AFTER_EXECUTE, command);
     }
 
     inCommandSession(): boolean {
@@ -140,23 +164,12 @@ class CommandExecutor {
     }
 
     finish(): void {
-        (<Command> this.context.getCommand()).finish();
+        (<Command>this.context.getCommand()).finish();
         this.context.reset();
     }
 
     abort(): void {
-        (<Command> this.context.getCommand()).abort();
+        (<Command>this.context.getCommand()).abort();
         this.context.reset();
     }
-
-    onBeforeExecute(listener: () => void): void {
-        this.event.addListener(this.EVENT_ON_BEFORE_EXECUTE, listener);
-    }
-
-    onAfterExecute(listener: () => void): void {
-        this.event.addListener(this.EVENT_ON_AFTER_EXECUTE, listener);
-    }
 }
-
-export const registry = new CommandRegistry();
-export const executor = new CommandExecutor();
