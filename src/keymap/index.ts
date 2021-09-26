@@ -434,7 +434,7 @@ export class Keymap {
         }
 
         // process global context keybinding
-        if (keyChord = keyChordMap.get(this.getKeyChordMapKey(activeContext.name, nthKeyChord))) {
+        if (keyChord = keyChordMap.get(this.getKeyChordMapKey(GLOBAL_CONTEXT_NAME, nthKeyChord))) {
             keyChord.handle(this.context);
             return true;
         }

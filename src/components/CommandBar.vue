@@ -84,5 +84,15 @@ export default {
     this.commandName = "test-command";
     //this.args = ['arg1', 'arg2'];
   },
+
+  watch: {
+    open: function(newVal, oldVal) {
+      if (newVal != oldVal) {
+        this.$nextTick(function() {
+          this.$emit('update-footer-height');
+        });
+      }
+    }
+  }
 };
 </script>

@@ -108,8 +108,8 @@ body {
       ></Editor>
     </v-main>
     
-    <v-footer app v-bind:padless="true">
-      <CommandBar></CommandBar>
+    <v-footer app v-bind:padless="true" ref="footer">
+      <CommandBar v-on:update-footer-height="updateFooterHeight"></CommandBar>
       <v-divider dark></v-divider>
       <StatusBar></StatusBar>
     </v-footer>
@@ -193,6 +193,13 @@ export default {
     );
   },
 
-  methods: {},
+  methods: {
+    // TODO： use ResizeObserver instead of hack method
+    updateFooterHeight: function() {
+      let footer = this.$refs['footer'];
+      // hack method to update footer height
+      footer.callUpdate();
+    }
+  },
 };
 </script>
