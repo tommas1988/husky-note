@@ -1,5 +1,5 @@
 import { CommandRegistry } from '@/command';
-import * as command from './command';
+import * as command from './commands';
 import { Event } from '@/event';
 
 export function initialize() {

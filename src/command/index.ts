@@ -1,5 +1,4 @@
 import RuntimeMessage from '@/runtimeMessage';
-import { CommandName } from '@/common/commandName';
 import { Context as BaseContext, ContextManager } from '@/context';
 
 export function initialize() {
@@ -9,24 +8,10 @@ export function initialize() {
 
     const context = new Context();
 
-    class ExecuteCommandCommand extends Command {
-        readonly name: string = CommandName.EXECUTE_COMMAND;
+    const commands = require('./commands');
 
-        invoke(): void {
-            ContextManager.INSTANCE.setActiveContext(context);
-        }
-    }
-
-    class FinishCommandCommand extends Command {
-        readonly name: string = CommandName.FINISH_COMMAND;
-
-        invoke(): void {
-            CommandExecutor.INSTANCE.finish();
-        }
-    }
-
-    CommandRegistry.INSTANCE.register(new ExecuteCommandCommand());
-    CommandRegistry.INSTANCE.register(new FinishCommandCommand());
+    CommandRegistry.INSTANCE.register(new commands.ExecuteCommandCommand());
+    CommandRegistry.INSTANCE.register(new commands.FinishCommandCommand());
 
     ContextManager.INSTANCE.registerContext(context);
 }
@@ -172,4 +157,8 @@ export class CommandExecutor {
         (<Command>this.context.getCommand()).abort();
         this.context.reset();
     }
+}
+
+export class CommandReader {
+    
 }

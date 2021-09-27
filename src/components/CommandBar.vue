@@ -18,35 +18,43 @@
 </style>
 
 <template>
-  <div class="command-container" v-if="open">
-    <div class="input-container">
-      <div class="inputted-info">
-        <v-card-text style="padding: 9px 4px" v-if="commandName.length > 0">
-          {{ inputted }}
-        </v-card-text>
+  <div class="command-container">
+    <div v-if="open">
+      <div class="input-container">
+        <div class="inputted-info">
+          <v-card-text style="padding: 9px 4px" v-if="commandName.length > 0">
+            {{ inputted }}
+          </v-card-text>
+        </div>
+        <div class="input-area">
+          <v-text-field
+            placeholder="command to execute..."
+            autofocus
+            dense
+            single-line
+            full-width
+            hide-details
+            solo
+            style="margin: 0"
+          ></v-text-field>
+        </div>
       </div>
-      <div class="input-area">
-        <v-text-field
-          placeholder="command to execute..."
-          dense
-          single-line
-          full-width
-          hide-details
-          solo
-          style="margin: 0"
-        ></v-text-field>
-      </div>
+      <div class="output-container"></div>
     </div>
-    <div class="output-container"></div>
   </div>
 </template>
 
 <script>
-import { ContextManager } from '@/context';
-import { CONTEXT_NAME as COMMAND_CONTEXT_NAME } from '@/command';
+import { ContextManager } from "@/context";
+import { CONTEXT_NAME as COMMAND_CONTEXT_NAME } from "@/command";
+import ContextableMixin from "./mixins/contextable";
 
 export default {
   name: "CommandBar",
+
+  contextName: COMMAND_CONTEXT_NAME,
+
+  mixins: [ContextableMixin],
 
   data: () => {
     return {
@@ -72,7 +80,7 @@ export default {
     },
   },
 
-  mounted: function () {
+  mounted() {
     ContextManager.INSTANCE.onContextChange((context) => {
       if (context.name === COMMAND_CONTEXT_NAME) {
         this.open = true;
@@ -80,19 +88,19 @@ export default {
         this.open = false;
       }
     });
-    
+
     this.commandName = "test-command";
     //this.args = ['arg1', 'arg2'];
   },
 
   watch: {
-    open: function(newVal, oldVal) {
+    open: function (newVal, oldVal) {
       if (newVal != oldVal) {
-        this.$nextTick(function() {
-          this.$emit('update-footer-height');
+        this.$nextTick(function () {
+          this.$emit("update-footer-height");
         });
       }
-    }
-  }
+    },
+  },
 };
 </script>

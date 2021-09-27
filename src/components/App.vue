@@ -39,7 +39,7 @@ body {
             <v-icon
               color="indigo darken-4"
               v-bind:size="notebookIconSize"
-              @click.stop="miniNavBar = !miniNavBar"
+              @click="miniNavBar = !miniNavBar"
             >
               mdi-notebook
             </v-icon>
@@ -110,7 +110,6 @@ body {
     
     <v-footer app v-bind:padless="true" ref="footer">
       <CommandBar v-on:update-footer-height="updateFooterHeight"></CommandBar>
-      <v-divider dark></v-divider>
       <StatusBar></StatusBar>
     </v-footer>
   </v-app>
@@ -195,6 +194,7 @@ export default {
 
   methods: {
     // TODO： use ResizeObserver instead of hack method
+    // create a Footer component witch extends VFooter
     updateFooterHeight: function() {
       let footer = this.$refs['footer'];
       // hack method to update footer height
