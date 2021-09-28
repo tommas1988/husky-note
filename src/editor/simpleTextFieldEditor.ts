@@ -21,7 +21,7 @@ export class SimpleTextFieldEditor {
         return s;
     }
 
-    movePointer(pos: number) {
+    cursorMove(pos: number) {
 
     }
 

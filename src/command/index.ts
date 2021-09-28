@@ -1,5 +1,6 @@
 import RuntimeMessage from '@/runtimeMessage';
 import { Context as BaseContext, ContextManager } from '@/context';
+import { SimpleTextFieldEditor } from '@/editor/simpleTextFieldEditor';
 
 export function initialize() {
     class Context extends BaseContext {
@@ -160,5 +161,13 @@ export class CommandExecutor {
 }
 
 export class CommandReader {
+    private static INSTACE = new CommandReader();
+    
+    private textFieldEditor: SimpleTextFieldEditor;
+    
+    bindTextFieldElement(el: HTMLInputElement|HTMLTextAreaElement): void {
+        this.textFieldEditor = new SimpleTextFieldEditor(el);
+    }
+
     
 }

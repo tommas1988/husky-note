@@ -50,7 +50,7 @@ import { CONTEXT_NAME as COMMAND_CONTEXT_NAME } from "@/command";
 import ContextableMixin from "./mixins/contextable";
 
 export default {
-  name: "CommandBar",
+  name: "CommandPanel",
 
   contextName: COMMAND_CONTEXT_NAME,
 

@@ -1,5 +1,4 @@
 import { Context, ContextManager } from '@/context';
-import { Command } from '@/command';
 import { MonacoEditor } from './monaco';
 
 export const EDITOR_CONTEXT_NAME = 'editor';

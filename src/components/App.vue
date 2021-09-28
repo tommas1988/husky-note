@@ -109,7 +109,7 @@ body {
     </v-main>
     
     <v-footer app v-bind:padless="true" ref="footer">
-      <CommandBar v-on:update-footer-height="updateFooterHeight"></CommandBar>
+      <CommandPanel v-on:update-footer-height="updateFooterHeight"></CommandPanel>
       <StatusBar></StatusBar>
     </v-footer>
   </v-app>
@@ -119,7 +119,7 @@ body {
 import Editor from "./Editor";
 import Notebook from "./Notebook";
 import StatusBar from "./StatusBar";
-import CommandBar from "./CommandBar";
+import CommandPanel from "./CommandPanel";
 import { throttle } from "@/common/utils.ts";
 
 const NOTEBOOK_ICON_SIZE = 32;
@@ -131,7 +131,7 @@ export default {
     Editor,
     Notebook,
     StatusBar,
-    CommandBar,
+    CommandPanel,
   },
 
   computed: {
